@@ -1,0 +1,25 @@
+# Environment
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+**/venv/
+**/__pycache__/
+
+# Swytchcode managed credentials
+.swytchcode/credentials.db
+**/.swytchcode/
+
+# IDE & Logs
+.vscode/
+.idea/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

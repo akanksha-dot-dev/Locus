@@ -1,0 +1,70 @@
+{
+  "policies": [
+    {
+      "id": "rate-limit-jira-tickets",
+      "description": "Prevent runaway ticket creation — max 10 Jira tickets per hour",
+      "match": {
+        "tool": "jira.issue.create"
+      },
+      "action": "rate_limit",
+      "limit": {
+        "max": 10,
+        "window": "1h"
+      }
+    },
+    {
+      "id": "rate-limit-resend-emails",
+      "description": "Prevent email spam — max 20 emails per hour",
+      "match": {
+        "tool": "resend.emails.send"
+      },
+      "action": "rate_limit",
+      "limit": {
+        "max": 20,
+        "window": "1h"
+      }
+    },
+    {
+      "id": "rate-limit-github-issues",
+      "description": "Prevent excessive GitHub issue creation — max 15 per hour",
+      "match": {
+        "tool": "github.issue.create"
+      },
+      "action": "rate_limit",
+      "limit": {
+        "max": 15,
+        "window": "1h"
+      }
+    },
+    {
+      "id": "require-body-on-github-issues",
+      "description": "All auto-generated GitHub issues must include a description body",
+      "match": {
+        "tool": "github.issue.create"
+      },
+      "conditions": [
+        {
+          "field": "body.body",
+          "operator": "is_empty"
+        }
+      ],
+      "action": "block",
+      "message": "GitHub issues must include a description body"
+    },
+    {
+      "id": "require-recipient-on-emails",
+      "description": "All outbound emails must have a valid recipient",
+      "match": {
+        "tool": "resend.emails.send"
+      },
+      "conditions": [
+        {
+          "field": "body.to",
+          "operator": "is_empty"
+        }
+      ],
+      "action": "block",
+      "message": "Emails must have at least one recipient"
+    }
+  ]
+}
