@@ -399,13 +399,13 @@ swy get github
 By default, all tools are disabled for safety. You must explicitly enable each one:
 
 ```powershell
-swy add gmail.messages.list
-swy add gmail.messages.get
-swy add notion.databases.query
-swy add notion.pages.retrieve
-swy add jira.issue.create
-swy add jira.issue.search
-swy add resend.emails.send
+swy add gmail.user.messages.get
+swy add gmail.user.messages.get1
+swy add notion.query.create
+swy add notion.page.get
+swy add jira.api.issue.create
+swy add jira.api.search.create1
+swy add resend.email.create
 swy add github.issue.create
 swy add github.issue.list
 ```

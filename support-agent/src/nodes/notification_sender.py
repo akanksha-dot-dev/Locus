@@ -65,7 +65,7 @@ def run(state: dict) -> dict:
     try:
         html_content = _format_html(state.get("draft_reply", ""), state)
 
-        result = swy_exec("resend.emails.send", {
+        result = swy_exec("resend.email.create", {
             "body": {
                 "from": Config.RESEND_FROM_EMAIL,
                 "to": [recipient],

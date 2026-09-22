@@ -55,8 +55,9 @@ def run(state: dict) -> dict:
 
     try:
         # Step 1: List unread emails with the support label
-        listing = swy_exec("gmail.messages.list", {
-            "params": {
+        listing = swy_exec("gmail.user.messages.get", {
+            "path": {"userId": "me"},
+            "query": {
                 "q": f"is:unread label:{Config.SUPPORT_LABEL}",
                 "maxResults": 1,
             }
@@ -70,8 +71,9 @@ def run(state: dict) -> dict:
         msg_id = messages[0]["id"]
 
         # Step 2: Get full email details
-        email = swy_exec("gmail.messages.get", {
-            "params": {"id": msg_id, "format": "full"}
+        email = swy_exec("gmail.user.messages.get1", {
+            "path": {"userId": "me", "id": msg_id},
+            "query": {"format": "full"}
         })
 
         headers = email.get("payload", {}).get("headers", [])

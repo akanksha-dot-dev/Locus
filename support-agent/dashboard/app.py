@@ -139,7 +139,7 @@ with tab1:
     use_demo = st.checkbox("Use demo email (simulated)", value=True)
 
     if use_demo:
-        demo_from = st.text_input("From", value="jane.doe@customer.com")
+        demo_from = st.text_input("From", value=os.getenv("JIRA_EMAIL", "smartycookieeee@gmail.com"))
         demo_subject = st.text_input("Subject", value="Unable to reset my password — getting error 500")
         demo_body = st.text_area("Body", value=(
             "Hi Support Team,\n\n"

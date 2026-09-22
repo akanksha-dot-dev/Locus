@@ -31,13 +31,13 @@ echo.
 
 REM 4. Enable specific tools
 echo [4/5] Enabling tools...
-call swy add gmail.messages.list
-call swy add gmail.messages.get
-call swy add notion.databases.query
-call swy add notion.pages.retrieve
-call swy add jira.issue.create
-call swy add jira.issue.search
-call swy add resend.emails.send
+call swy add gmail.user.messages.get
+call swy add gmail.user.messages.get1
+call swy add notion.query.create
+call swy add notion.page.get
+call swy add jira.api.issue.create
+call swy add jira.api.search.create1
+call swy add resend.email.create
 call swy add github.issue.create
 call swy add github.issue.list
 echo.

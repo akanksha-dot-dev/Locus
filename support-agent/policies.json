@@ -4,7 +4,7 @@
       "id": "rate-limit-jira-tickets",
       "description": "Prevent runaway ticket creation — max 10 Jira tickets per hour",
       "match": {
-        "tool": "jira.issue.create"
+        "tool": "jira.api.issue.create"
       },
       "action": "rate_limit",
       "limit": {
@@ -16,7 +16,7 @@
       "id": "rate-limit-resend-emails",
       "description": "Prevent email spam — max 20 emails per hour",
       "match": {
-        "tool": "resend.emails.send"
+        "tool": "resend.email.create"
       },
       "action": "rate_limit",
       "limit": {
@@ -55,7 +55,7 @@
       "id": "require-recipient-on-emails",
       "description": "All outbound emails must have a valid recipient",
       "match": {
-        "tool": "resend.emails.send"
+        "tool": "resend.email.create"
       },
       "conditions": [
         {

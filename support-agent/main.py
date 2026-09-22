@@ -17,6 +17,13 @@ Track 1: AI Customer Support Knowledge Agent
 import sys
 import json
 from datetime import datetime
+
+# Fix Windows console UTF-8 encoding for Rich/emojis
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -81,7 +88,7 @@ def run_demo():
 
     demo_state = {
         "email_id": "demo-001",
-        "email_from": "jane.doe@customer.com",
+        "email_from": Config.JIRA_EMAIL or "smartycookieeee@gmail.com",
         "email_subject": "Unable to reset my password — getting error 500",
         "email_body": (
             "Hi Support Team,\n\n"

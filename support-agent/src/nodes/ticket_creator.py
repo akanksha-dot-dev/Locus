@@ -58,7 +58,7 @@ def run(state: dict) -> dict:
             for article in state["kb_results"][:3]:
                 description_parts.append(f"- [{article.get('title', 'Untitled')}]({article.get('url', '')})")
 
-        result = swy_exec("jira.issue.create", {
+        result = swy_exec("jira.api.issue.create", {
             "body": {
                 "fields": {
                     "project": {"key": Config.JIRA_PROJECT_KEY},

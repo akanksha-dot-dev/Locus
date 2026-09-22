@@ -61,8 +61,8 @@ def run(state: dict) -> dict:
     try:
         query_filter = _build_notion_filter(keywords, category)
 
-        results = swy_exec("notion.databases.query", {
-            "params": {"database_id": Config.NOTION_KB_DATABASE_ID},
+        results = swy_exec("notion.query.create", {
+            "path": {"data_source_id": Config.NOTION_KB_DATABASE_ID},
             "body": {
                 "filter": query_filter,
                 "page_size": 5,
