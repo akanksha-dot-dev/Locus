@@ -21,6 +21,7 @@ class Config:
     # --- Jira ---
     JIRA_PROJECT_KEY: str = os.getenv("JIRA_PROJECT_KEY", "SUP")
     JIRA_DOMAIN: str = os.getenv("JIRA_DOMAIN", "")
+    JIRA_EMAIL: str = os.getenv("JIRA_EMAIL", "")
 
     # --- GitHub ---
     GITHUB_OWNER: str = os.getenv("GITHUB_OWNER", "")
