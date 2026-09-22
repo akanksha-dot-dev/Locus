@@ -6,11 +6,11 @@ detect customer sentiment, and assign priority. This is the brain
 of the agent — it drives the conditional routing in the LangGraph.
 """
 import json
-import google.generativeai as genai
+from google import genai
 from src.config import Config
 
-# Configure Gemini
-genai.configure(api_key=Config.GOOGLE_API_KEY)
+# Configure Gemini client
+_client = genai.Client(api_key=Config.GOOGLE_API_KEY)
 
 CLASSIFICATION_PROMPT = """\
 You are a customer support AI classifier. Analyze the following support email and return a JSON object with these fields:
@@ -56,14 +56,16 @@ def run(state: dict) -> dict:
         }
 
     try:
-        model = genai.GenerativeModel(Config.LLM_MODEL)
         prompt = CLASSIFICATION_PROMPT.format(
             sender=state.get("email_from", ""),
             subject=state.get("email_subject", ""),
             body=state.get("email_body", ""),
         )
 
-        response = model.generate_content(prompt)
+        response = _client.models.generate_content(
+            model=Config.LLM_MODEL,
+            contents=prompt,
+        )
         text = response.text.strip()
 
         # Parse JSON from response (handle markdown fences)
