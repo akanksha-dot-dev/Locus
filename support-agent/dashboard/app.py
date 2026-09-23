@@ -446,167 +446,161 @@ with col5:
 tab1, tab2, tab3 = st.tabs(["🚀 Process Email", "📋 Execution Log", "📊 Architecture"])
 
 with tab1:
-    st.markdown("### Process a Support Email")
-    st.info("Click below to process the next unread support email from Gmail, or enter a test email manually.")
+    mode = st.radio(
+        "Processing Mode",
+        ["🔴 Live (real APIs — Jira, Resend, Gemini)", "🧪 Demo (simulated, no API calls)"],
+        index=0,
+        horizontal=True,
+    )
+    use_live = mode.startswith("🔴")
 
-    use_demo = st.checkbox("Use demo email (simulated)", value=True)
-
-    if use_demo:
-        demo_from = st.text_input("From", value=os.getenv("JIRA_EMAIL", "smartycookieeee@gmail.com"))
-        demo_subject = st.text_input("Subject", value="Unable to reset my password — getting error 500")
-        demo_body = st.text_area("Body", value=(
-            "Hi Support Team,\n\n"
-            "I've been trying to reset my password for the last 2 hours but keep "
-            "getting a server error (HTTP 500) on the reset page.\n\n"
-            "This is really frustrating — I have a deadline today and can't "
-            "access my account. Please help ASAP!\n\nThanks,\nJane"
-        ), height=150)
+    demo_from = st.text_input("From", value=os.getenv("JIRA_EMAIL", "smartycookieeee@gmail.com"))
+    demo_subject = st.text_input("Subject", value="Unable to reset my password — getting error 500")
+    demo_body = st.text_area("Body", value=(
+        "Hi Support Team,\n\n"
+        "I've been trying to reset my password for the last 2 hours but keep "
+        "getting a server error (HTTP 500) on the reset page.\n\n"
+        "This is really frustrating — I have a deadline today and can't "
+        "access my account. Please help ASAP!\n\nThanks,\nJane"
+    ), height=150)
 
     if st.button("🚀 Process Email", type="primary", use_container_width=True):
         with st.spinner("Agent processing email..."):
             try:
-                # Try importing real nodes (requires swytchcode_runtime + Gemini)
-                from src.nodes import (
-                    issue_classifier, knowledge_search,
-                    github_escalation, ticket_creator,
-                    reply_drafter, notification_sender,
-                )
-                LIVE_MODE = True
-            except (ImportError, Exception):
-                LIVE_MODE = False
+                import time, requests as req
 
-            try:
-                # Build initial state
-                if use_demo:
-                    state = {
-                        "email_id": f"demo-{datetime.now().strftime('%H%M%S')}",
-                        "email_from": demo_from,
-                        "email_subject": demo_subject,
-                        "email_body": demo_body,
-                        "execution_log": [f"🧪 Demo mode — {datetime.now().isoformat()}"],
-                    }
-                else:
-                    state = {"execution_log": [f"🔴 Live mode — {datetime.now().isoformat()}"]}
+                state = {
+                    "email_id": f"run-{datetime.now().strftime('%H%M%S')}",
+                    "email_from": demo_from,
+                    "email_subject": demo_subject,
+                    "email_body": demo_body,
+                    "execution_log": [],
+                }
 
-                if LIVE_MODE and not use_demo:
-                    # Real pipeline with Swytchcode
-                    from src.nodes import email_ingestion
-                    state = email_ingestion.run(state)
-                    progress = st.progress(0, text="Classifying issue...")
-                    state = issue_classifier.run(state)
-                    progress.progress(20, text=f"Classified: {state.get('issue_category')} | {state.get('sentiment')}")
+                if use_live:
+                    # ── LIVE MODE: Call the FastAPI backend ──
+                    progress = st.progress(0, text="🧠 Sending to AI pipeline...")
+                    progress.progress(10, text="🧠 Classifying with Gemini...")
 
-                    if state.get("issue_category") == "known":
-                        progress.progress(40, text="Searching knowledge base...")
-                        state = knowledge_search.run(state)
-                        if not state.get("kb_match_found"):
-                            progress.progress(50, text="Creating GitHub issue...")
-                            state = github_escalation.run(state)
-                            progress.progress(60, text="Creating Jira ticket...")
-                            state = ticket_creator.run(state)
+                    try:
+                        resp = req.post(
+                            "http://localhost:8000/process",
+                            json={
+                                "email_from": demo_from,
+                                "email_subject": demo_subject,
+                                "email_body": demo_body,
+                            },
+                            timeout=90,
+                        )
+
+                        progress.progress(80, text="📡 Receiving results...")
+
+                        if resp.status_code == 200:
+                            result = resp.json()
+                            state.update(result)
+                            state["execution_log"] = result.get("execution_log", [])
+                            progress.progress(100, text="✅ Complete!")
                         else:
-                            st.session_state.kb_hits += 1
-                    else:
-                        progress.progress(40, text="Creating GitHub issue...")
-                        state = github_escalation.run(state)
-                        st.session_state.kb_misses += 1
-                        progress.progress(55, text="Creating Jira ticket...")
-                        state = ticket_creator.run(state)
+                            st.warning(f"Backend returned {resp.status_code}. Falling back to demo mode.")
+                            raise Exception(f"HTTP {resp.status_code}")
 
-                    progress.progress(75, text="Drafting reply...")
-                    state = reply_drafter.run(state)
-                    progress.progress(90, text="Sending reply...")
-                    state = notification_sender.run(state)
-                    progress.progress(100, text="✅ Complete!")
+                    except req.exceptions.ConnectionError:
+                        st.warning("⚠️ Backend not reachable at localhost:8000. Start with: `python server.py`. Falling back to demo.")
+                        raise Exception("Backend offline")
+
                 else:
-                    # ── DEMO SIMULATION (no Swytchcode/Gemini needed) ──
-                    import time
-                    email_body_lower = state.get("email_body", "").lower()
-                    email_subject_lower = state.get("email_subject", "").lower()
+                    raise Exception("Demo mode selected")
 
-                    progress = st.progress(0, text="🧠 Classifying issue with Gemini...")
-                    time.sleep(0.8)
+            except Exception as fallback_err:
+                # ── DEMO SIMULATION ──
+                import time, random
 
-                    is_frustrated = any(w in email_body_lower for w in ["frustrat", "ridiculous", "asap", "fix this"])
-                    is_known = any(w in email_subject_lower for w in ["password", "reset", "billing", "login"])
+                progress = st.progress(0, text="🧪 Demo: Classifying issue...")
+                time.sleep(0.8)
 
-                    category = "known" if is_known else "unknown"
-                    sentiment = "frustrated" if is_frustrated else "neutral"
-                    priority = "high" if is_frustrated else ("medium" if is_known else "high")
+                email_body_lower = demo_body.lower()
+                email_subject_lower = demo_subject.lower()
 
-                    state["issue_category"] = category
-                    state["sentiment"] = sentiment
-                    state["priority"] = priority
-                    state["keywords"] = ["password", "reset", "error"] if is_known else ["api", "server", "error"]
-                    state["execution_log"].append(f"🧠 [Gemini] Category: {category} | Sentiment: {sentiment} | Priority: {priority}")
+                is_frustrated = any(w in email_body_lower for w in ["frustrat", "ridiculous", "asap", "fix this"])
+                is_known = any(w in email_subject_lower for w in ["password", "reset", "billing", "login"])
 
-                    progress.progress(20, text=f"Classified: {category} | {sentiment}")
+                category = "known" if is_known else "unknown"
+                sentiment = "frustrated" if is_frustrated else "neutral"
+                priority = "high" if is_frustrated else ("medium" if is_known else "high")
+
+                state["issue_category"] = category
+                state["sentiment"] = sentiment
+                state["priority"] = priority
+                state["keywords"] = ["password", "reset", "error"] if is_known else ["api", "server", "error"]
+                state["execution_log"].append(f"🧪 Demo mode — {datetime.now().isoformat()}")
+                state["execution_log"].append(f"🧠 [Gemini] Category: {category} | Sentiment: {sentiment} | Priority: {priority}")
+
+                progress.progress(20, text=f"Classified: {category} | {sentiment}")
+                time.sleep(0.5)
+
+                if category == "known":
+                    progress.progress(40, text="📚 Searching Notion knowledge base...")
+                    time.sleep(0.7)
+                    state["kb_results"] = [{"title": "How to Reset Your Password", "url": "https://notion.so/kb/password-reset"}]
+                    state["kb_match_found"] = True
+                    state["kb_answer_summary"] = "Go to Settings → Security → Click Reset Password."
+                    state["execution_log"].append("📚 [Notion] Found 1 matching KB article")
+                    st.session_state.kb_hits += 1
+                else:
+                    progress.progress(40, text="📚 Searching Notion knowledge base...")
                     time.sleep(0.5)
+                    state["kb_results"] = []
+                    state["kb_match_found"] = False
+                    state["execution_log"].append("⚠️ [Notion] No matching KB articles found")
 
-                    if category == "known":
-                        progress.progress(40, text="📚 Searching Notion knowledge base...")
-                        time.sleep(0.7)
-                        state["kb_results"] = [{"title": "How to Reset Your Password", "url": "https://notion.so/kb/password-reset"}]
-                        state["kb_match_found"] = True
-                        state["kb_answer_summary"] = "Go to Settings → Security → Click Reset Password."
-                        state["execution_log"].append("📚 [Notion] Found 1 matching KB article")
-                        st.session_state.kb_hits += 1
-                    else:
-                        progress.progress(40, text="📚 Searching Notion knowledge base...")
-                        time.sleep(0.5)
-                        state["kb_results"] = []
-                        state["kb_match_found"] = False
-                        state["execution_log"].append("⚠️ [Notion] No matching KB articles found")
+                    progress.progress(50, text="🐛 Creating GitHub issue (KB gap)...")
+                    time.sleep(0.7)
+                    gh_num = random.randint(1, 50)
+                    state["github_issue_id"] = str(gh_num)
+                    state["github_issue_url"] = f"https://github.com/user/support-kb-gaps/issues/{gh_num}"
+                    state["execution_log"].append(f"🐛 [GitHub] Created issue #{gh_num}: KB Gap")
+                    st.session_state.kb_misses += 1
 
-                        progress.progress(50, text="🐛 Creating GitHub issue (KB gap)...")
-                        time.sleep(0.7)
-                        import random
-                        gh_num = random.randint(1, 50)
-                        state["github_issue_id"] = str(gh_num)
-                        state["github_issue_url"] = f"https://github.com/user/support-kb-gaps/issues/{gh_num}"
-                        state["execution_log"].append(f"🐛 [GitHub] Created issue #{gh_num}: KB Gap")
-                        st.session_state.kb_misses += 1
+                    progress.progress(60, text="🎫 Creating Jira ticket...")
+                    time.sleep(0.7)
+                    jira_num = random.randint(100, 999)
+                    state["jira_ticket_id"] = f"SUP-{jira_num}"
+                    state["jira_ticket_url"] = f"https://yourname.atlassian.net/browse/SUP-{jira_num}"
+                    state["execution_log"].append(f"🎫 [Jira] Created ticket: SUP-{jira_num}")
 
-                        progress.progress(60, text="🎫 Creating Jira ticket...")
-                        time.sleep(0.7)
-                        jira_num = random.randint(100, 999)
-                        state["jira_ticket_id"] = f"SUP-{jira_num}"
-                        state["jira_ticket_url"] = f"https://yourname.atlassian.net/browse/SUP-{jira_num}"
-                        state["execution_log"].append(f"🎫 [Jira] Created ticket: SUP-{jira_num}")
+                progress.progress(75, text="✍️ Drafting reply with Gemini...")
+                time.sleep(0.8)
 
-                    progress.progress(75, text="✍️ Drafting reply with Gemini...")
-                    time.sleep(0.8)
+                sender_name = demo_from.split("@")[0].replace(".", " ").title()
+                if state.get("kb_match_found"):
+                    state["draft_reply"] = (
+                        f"Hi {sender_name},\n\n"
+                        f"Thank you for reaching out! To reset your password, go to "
+                        f"Settings → Security → Click \"Reset Password\". You'll receive "
+                        f"a reset link via email within 5 minutes.\n\n"
+                        f"If you continue to experience issues, please don't hesitate "
+                        f"to reach out again.\n\n"
+                        f"Best regards,\nSupport Team"
+                    )
+                else:
+                    state["draft_reply"] = (
+                        f"Hi {sender_name},\n\n"
+                        f"Thank you for reaching out. We've received your report and "
+                        f"our engineering team has been notified. A ticket "
+                        f"({state.get('jira_ticket_id', 'N/A')}) has been created to "
+                        f"track this issue.\n\n"
+                        f"We'll investigate and follow up within 24 hours.\n\n"
+                        f"Best regards,\nSupport Team"
+                    )
+                state["execution_log"].append("✍️ [Gemini] Reply drafted")
 
-                    sender_name = state.get("email_from", "").split("@")[0].replace(".", " ").title()
-                    if state.get("kb_match_found"):
-                        state["draft_reply"] = (
-                            f"Hi {sender_name},\n\n"
-                            f"Thank you for reaching out! To reset your password, go to "
-                            f"Settings → Security → Click \"Reset Password\". You'll receive "
-                            f"a reset link via email within 5 minutes.\n\n"
-                            f"If you continue to experience issues, please don't hesitate "
-                            f"to reach out again.\n\n"
-                            f"Best regards,\nSupport Team"
-                        )
-                    else:
-                        state["draft_reply"] = (
-                            f"Hi {sender_name},\n\n"
-                            f"Thank you for reaching out. We've received your report and "
-                            f"our engineering team has been notified. A ticket "
-                            f"({state.get('jira_ticket_id', 'N/A')}) has been created to "
-                            f"track this issue.\n\n"
-                            f"We'll investigate and follow up within 24 hours.\n\n"
-                            f"Best regards,\nSupport Team"
-                        )
-                    state["execution_log"].append("✍️ [Gemini] Reply drafted")
+                progress.progress(90, text="📤 Sending reply via Resend...")
+                time.sleep(0.6)
+                state["reply_sent"] = True
+                state["resend_message_id"] = f"demo_{datetime.now().strftime('%H%M%S')}"
+                state["execution_log"].append(f"📤 [Resend] Reply sent (ID: {state['resend_message_id']})")
 
-                    progress.progress(90, text="📤 Sending reply via Resend...")
-                    time.sleep(0.6)
-                    state["reply_sent"] = True
-                    state["resend_message_id"] = f"msg_{datetime.now().strftime('%H%M%S')}"
-                    state["execution_log"].append(f"📤 [Resend] Reply sent (ID: {state['resend_message_id']})")
-
-                    progress.progress(100, text="✅ Complete!")
+                progress.progress(100, text="✅ Demo complete!")
 
                 # Update metrics
                 st.session_state.emails_processed += 1
