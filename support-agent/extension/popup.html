@@ -4,12 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Support Agent</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
 
-  <!-- ── Header ──────────────────────────────────────────── -->
+  <!-- ── Header ──────────────────────────────────────────────── -->
   <header class="header">
     <div class="header-brand">
       <div class="logo-ring">
@@ -20,13 +19,19 @@
         <p class="header-sub">Swytchcode × LangGraph × Gemini</p>
       </div>
     </div>
-    <div class="conn-badge" id="connBadge">
-      <span class="conn-dot" id="connDot"></span>
-      <span class="conn-label" id="connLabel">Checking…</span>
+    <div class="header-right">
+      <div class="auto-pill" id="autoPill" title="Auto-processing status">
+        <span class="auto-dot" id="autoDot"></span>
+        <span id="autoLabel">AUTO OFF</span>
+      </div>
+      <div class="conn-badge">
+        <span class="conn-dot" id="connDot"></span>
+        <span id="connLabel">…</span>
+      </div>
     </div>
   </header>
 
-  <!-- ── Stats Bar ────────────────────────────────────────── -->
+  <!-- ── Stats Bar ────────────────────────────────────────────── -->
   <div class="stats-bar">
     <div class="stat-item">
       <span class="stat-val" id="statProcessed">0</span>
@@ -47,15 +52,36 @@
       <span class="stat-val" id="statReplies">0</span>
       <span class="stat-lbl">Replies</span>
     </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-val breach-val" id="statBreaching">0</span>
+      <span class="stat-lbl">SLA ⚠️</span>
+    </div>
   </div>
 
-  <!-- ── Tab Panels ───────────────────────────────────────── -->
+  <!-- ── Main Content ─────────────────────────────────────────── -->
   <main class="main-content">
 
-    <!-- PROCESS TAB -->
+    <!-- PROCESS TAB ─────────────────────────────────────────── -->
     <div class="tab-panel active" id="panel-process">
+
+      <!-- Auto-mode toggle -->
+      <div class="auto-toggle-row">
+        <span class="auto-toggle-label">
+          <span class="auto-icon">🤖</span>
+          Auto-Process Gmail
+          <span class="auto-desc">Polls every 60s automatically</span>
+        </span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="autoToggle">
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+        </label>
+      </div>
+
       <div id="pendingBanner" class="pending-banner hidden">
-        <span>📋 Text pasted from context menu</span>
+        <span>📋 Text captured from right-click — pre-filled below</span>
         <button id="btnClearPending">✕</button>
       </div>
 
@@ -83,7 +109,7 @@ Please help ASAP!
       </div>
 
       <button class="btn-process" id="btnProcess">
-        <span class="btn-icon">🚀</span>
+        <span class="btn-icon-process">🚀</span>
         <span class="btn-text">Process Email</span>
       </button>
 
@@ -97,6 +123,7 @@ Please help ASAP!
 
       <!-- Results -->
       <div class="results-wrap hidden" id="resultsWrap">
+        <!-- Classification -->
         <div class="result-card">
           <div class="result-card-title">Classification</div>
           <div class="result-grid">
@@ -117,8 +144,22 @@ Please help ASAP!
               <span class="badge" id="resKB">—</span>
             </div>
           </div>
+          <!-- Confidence bar -->
+          <div class="conf-row" id="confRow">
+            <span class="conf-label">Confidence</span>
+            <div class="conf-track">
+              <div class="conf-fill" id="confFill"></div>
+            </div>
+            <span class="conf-pct" id="confPct">—</span>
+          </div>
+          <!-- SLA -->
+          <div class="sla-row" id="slaRow">
+            <span class="sla-label">SLA Deadline</span>
+            <span class="sla-val" id="slaVal">—</span>
+          </div>
         </div>
 
+        <!-- Tickets -->
         <div class="result-card" id="ticketsCard">
           <div class="result-card-title">Tickets Created</div>
           <div class="ticket-row hidden" id="rowJira">
@@ -129,23 +170,30 @@ Please help ASAP!
             <span class="ticket-badge github-badge">GitHub</span>
             <a class="ticket-link" id="linkGitHub" href="#" target="_blank" rel="noopener">—</a>
           </div>
-          <span class="no-tickets hidden" id="noTickets">No tickets needed — resolved from KB</span>
+          <span class="no-tickets hidden" id="noTickets">No tickets needed — resolved from KB ✓</span>
         </div>
 
-        <div class="result-card">
+        <!-- 3-Tone Reply Variants -->
+        <div class="result-card" id="replyCard">
           <div class="result-card-title">Draft Reply</div>
+          <div class="tone-tabs" id="toneTabs" style="display:none">
+            <button class="tone-tab active" data-tone="0">💬 Empathetic</button>
+            <button class="tone-tab" data-tone="1">🎩 Formal</button>
+            <button class="tone-tab" data-tone="2">⚡ Concise</button>
+          </div>
           <div class="draft-reply" id="resDraft">—</div>
           <button class="btn-copy" id="btnCopyDraft">Copy Reply</button>
         </div>
 
-        <div class="success-bar" id="successBar">
+        <!-- Success -->
+        <div class="success-bar hidden" id="successBar">
           <span>✅</span>
           <span id="successMsg">Reply sent via Resend</span>
         </div>
       </div>
     </div>
 
-    <!-- HISTORY TAB -->
+    <!-- HISTORY TAB ─────────────────────────────────────────── -->
     <div class="tab-panel" id="panel-history">
       <div class="tab-toolbar">
         <span class="toolbar-title">Recent Emails</span>
@@ -159,25 +207,30 @@ Please help ASAP!
       </div>
     </div>
 
-    <!-- ANALYTICS TAB -->
+    <!-- ANALYTICS TAB ──────────────────────────────────────── -->
     <div class="tab-panel" id="panel-analytics">
       <div class="tab-toolbar">
         <span class="toolbar-title">Performance</span>
         <button class="toolbar-btn" id="btnRefreshAnalytics">↺ Refresh</button>
       </div>
-
       <div class="analytics-grid">
         <div class="analytics-kpi">
           <span class="kpi-val" id="kpiKBRate">—%</span>
-          <span class="kpi-lbl">KB Resolution Rate</span>
+          <span class="kpi-lbl">KB Resolution</span>
         </div>
         <div class="analytics-kpi">
           <span class="kpi-val" id="kpiTickets">—</span>
-          <span class="kpi-lbl">Tickets Created</span>
+          <span class="kpi-lbl">Tickets</span>
+        </div>
+        <div class="analytics-kpi">
+          <span class="kpi-val" id="kpiConfidence">—%</span>
+          <span class="kpi-lbl">Avg Confidence</span>
+        </div>
+        <div class="analytics-kpi">
+          <span class="kpi-val breach-val" id="kpiBreached">—</span>
+          <span class="kpi-lbl">SLA Breached</span>
         </div>
       </div>
-
-      <!-- Donut chart for categories -->
       <div class="chart-section">
         <div class="chart-title">Issue Categories</div>
         <div class="donut-wrap">
@@ -185,35 +238,48 @@ Please help ASAP!
           <div class="donut-legend" id="donutLegend"></div>
         </div>
       </div>
-
-      <!-- Sentiment bars -->
       <div class="chart-section">
         <div class="chart-title">Sentiment Breakdown</div>
         <div class="bar-chart" id="barSentiment"></div>
       </div>
-
-      <!-- Priority bars -->
       <div class="chart-section">
         <div class="chart-title">Priority Distribution</div>
         <div class="bar-chart" id="barPriority"></div>
       </div>
     </div>
 
-    <!-- KB GAPS TAB -->
+    <!-- KB GAPS TAB ────────────────────────────────────────── -->
     <div class="tab-panel" id="panel-gaps">
       <div class="tab-toolbar">
-        <span class="toolbar-title">KB Gaps on GitHub</span>
+        <span class="toolbar-title">KB Gaps</span>
         <button class="toolbar-btn" id="btnRefreshGaps">↺ Refresh</button>
       </div>
       <div class="gaps-list" id="gapsList">
         <div class="empty-state">
           <div class="empty-icon">🎉</div>
-          <p>No KB gaps yet — great coverage!</p>
+          <p>No KB gaps — great coverage!</p>
         </div>
       </div>
     </div>
 
-    <!-- SETTINGS TAB -->
+    <!-- LIVE FEED TAB ──────────────────────────────────────── -->
+    <div class="tab-panel" id="panel-live">
+      <div class="tab-toolbar">
+        <span class="toolbar-title">Live Activity</span>
+        <div class="live-conn-row">
+          <span class="live-dot-indicator" id="liveDotIndicator"></span>
+          <span class="live-conn-label" id="liveConnLabel">Disconnected</span>
+        </div>
+      </div>
+      <div class="live-feed" id="liveFeed">
+        <div class="empty-state">
+          <div class="empty-icon">📡</div>
+          <p>Connecting to live feed…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB ───────────────────────────────────────── -->
     <div class="tab-panel" id="panel-settings">
       <div class="settings-section">
         <div class="settings-title">Backend Connection</div>
@@ -230,51 +296,16 @@ Please help ASAP!
       <div class="settings-section">
         <div class="settings-title">Integrations</div>
         <div class="integration-list">
-          <div class="integration-row">
-            <span class="int-icon">📧</span>
-            <div class="int-info">
-              <strong>Gmail</strong>
-              <span>Read support inbox</span>
-            </div>
-            <code class="int-tool">gmail.messages.list</code>
-          </div>
-          <div class="integration-row">
-            <span class="int-icon">📚</span>
-            <div class="int-info">
-              <strong>Notion KB</strong>
-              <span>Search knowledge base</span>
-            </div>
-            <code class="int-tool">notion.databases.query</code>
-          </div>
-          <div class="integration-row">
-            <span class="int-icon">🎫</span>
-            <div class="int-info">
-              <strong>Jira</strong>
-              <span>Create support tickets</span>
-            </div>
-            <code class="int-tool">jira.issue.create</code>
-          </div>
-          <div class="integration-row">
-            <span class="int-icon">🐛</span>
-            <div class="int-info">
-              <strong>GitHub</strong>
-              <span>Track KB gaps</span>
-            </div>
-            <code class="int-tool">github.issue.create</code>
-          </div>
-          <div class="integration-row">
-            <span class="int-icon">📤</span>
-            <div class="int-info">
-              <strong>Resend</strong>
-              <span>Send reply emails</span>
-            </div>
-            <code class="int-tool">resend.emails.send</code>
-          </div>
+          <div class="integration-row"><span class="int-icon">📧</span><div class="int-info"><strong>Gmail</strong><span>Read &amp; inject replies</span></div><code class="int-tool">gmail.messages.list</code></div>
+          <div class="integration-row"><span class="int-icon">📚</span><div class="int-info"><strong>Notion KB</strong><span>Search + auto-generate articles</span></div><code class="int-tool">notion.databases.query</code></div>
+          <div class="integration-row"><span class="int-icon">🎫</span><div class="int-info"><strong>Jira</strong><span>Create support tickets</span></div><code class="int-tool">jira.issue.create</code></div>
+          <div class="integration-row"><span class="int-icon">🐛</span><div class="int-info"><strong>GitHub</strong><span>Track KB gaps</span></div><code class="int-tool">github.issue.create</code></div>
+          <div class="integration-row"><span class="int-icon">📤</span><div class="int-info"><strong>Resend</strong><span>Send reply emails</span></div><code class="int-tool">resend.emails.send</code></div>
         </div>
       </div>
 
       <div class="settings-section">
-        <div class="settings-title">Swytchcode Features</div>
+        <div class="settings-title">Swytchcode Features Active</div>
         <div class="feature-grid">
           <div class="feature-chip active">🔐 Managed Auth</div>
           <div class="feature-chip active">📜 Policy Engine</div>
@@ -282,6 +313,8 @@ Please help ASAP!
           <div class="feature-chip active">🔄 Auto Retries</div>
           <div class="feature-chip active">📊 Audit Logging</div>
           <div class="feature-chip active">🛡️ Trust Boundary</div>
+          <div class="feature-chip active">⚡ Auto-Process</div>
+          <div class="feature-chip active">🎯 3-Tone Replies</div>
         </div>
       </div>
 
@@ -293,7 +326,7 @@ Please help ASAP!
 
   </main>
 
-  <!-- ── Bottom Navigation ─────────────────────────────────── -->
+  <!-- ── Bottom Navigation ────────────────────────────────────── -->
   <nav class="bottom-nav">
     <button class="nav-btn active" data-tab="process" id="nav-process">
       <span class="nav-icon">🚀</span>
@@ -310,6 +343,11 @@ Please help ASAP!
     <button class="nav-btn" data-tab="gaps" id="nav-gaps">
       <span class="nav-icon">🐛</span>
       <span class="nav-label">KB Gaps</span>
+    </button>
+    <button class="nav-btn" data-tab="live" id="nav-live">
+      <span class="nav-icon">📡</span>
+      <span class="nav-label">Live</span>
+      <span class="live-badge hidden" id="liveBadge">0</span>
     </button>
     <button class="nav-btn" data-tab="settings" id="nav-settings">
       <span class="nav-icon">⚙️</span>
