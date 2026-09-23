@@ -619,27 +619,101 @@ with tab1:
                 # Show results
                 st.success("Email processed successfully!")
 
-                rcol1, rcol2 = st.columns(2)
-                with rcol1:
-                    st.markdown("#### 📊 Classification")
-                    st.json({
-                        "category": state.get("issue_category"),
-                        "sentiment": state.get("sentiment"),
-                        "priority": state.get("priority"),
-                        "kb_match": state.get("kb_match_found"),
-                    })
-                with rcol2:
-                    st.markdown("#### 🎫 Tickets Created")
-                    if state.get("jira_ticket_id"):
-                        st.markdown(f"**Jira:** `{state['jira_ticket_id']}`")
-                    if state.get("github_issue_id"):
-                        st.markdown(f"**GitHub:** #{state['github_issue_id']}")
-
-                st.markdown("#### 📧 Draft Reply")
-                st.markdown(state.get("draft_reply", "No reply generated"))
+                # ── Store results in session state so they persist ──
+                st.session_state.last_result = {
+                    "issue_category": state.get("issue_category"),
+                    "sentiment": state.get("sentiment"),
+                    "priority": state.get("priority"),
+                    "kb_match_found": state.get("kb_match_found"),
+                    "jira_ticket_id": state.get("jira_ticket_id"),
+                    "jira_ticket_url": state.get("jira_ticket_url"),
+                    "github_issue_id": state.get("github_issue_id"),
+                    "github_issue_url": state.get("github_issue_url"),
+                    "draft_reply": state.get("draft_reply", ""),
+                    "reply_sent": state.get("reply_sent"),
+                    "resend_message_id": state.get("resend_message_id"),
+                    "email_from": state.get("email_from"),
+                    "email_subject": state.get("email_subject"),
+                }
 
             except Exception as e:
                 st.error(f"Error: {e}")
+
+    # ── Persistent Results Display (survives Streamlit reruns) ──
+    if "last_result" in st.session_state and st.session_state.last_result:
+        result = st.session_state.last_result
+
+        st.markdown("---")
+
+        # Classification + Tickets row
+        rcol1, rcol2 = st.columns(2)
+        with rcol1:
+            st.markdown("#### 📊 Classification")
+            st.json({
+                "category": result.get("issue_category"),
+                "sentiment": result.get("sentiment"),
+                "priority": result.get("priority"),
+                "kb_match": result.get("kb_match_found"),
+            })
+        with rcol2:
+            st.markdown("#### 🎫 Tickets Created")
+            if result.get("jira_ticket_id"):
+                st.markdown(f"**Jira:** [`{result['jira_ticket_id']}`]({result.get('jira_ticket_url', '#')})")
+            if result.get("github_issue_id"):
+                st.markdown(f"**GitHub:** [#{result['github_issue_id']}]({result.get('github_issue_url', '#')})")
+            if not result.get("jira_ticket_id") and not result.get("github_issue_id"):
+                st.markdown("_No tickets needed — resolved from KB_ ✅")
+
+        # ── Draft Reply — prominent styled card ──
+        st.markdown("#### 📧 Draft Reply")
+
+        reply_text = result.get("draft_reply", "No reply generated")
+        sent_badge = ""
+        if result.get("reply_sent"):
+            msg_id = result.get("resend_message_id", "")
+            sent_badge = f"""
+            <div style="
+                display: inline-flex; align-items: center; gap: 6px;
+                background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;
+                padding: 4px 12px; border-radius: 20px; font-size: 0.82rem;
+                font-weight: 600; margin-bottom: 10px;
+            ">
+                ✅ Reply sent via Resend{f' (ID: {msg_id})' if msg_id else ''}
+            </div>
+            """
+
+        # Escape HTML in reply text for safe rendering
+        import html as html_mod
+        safe_reply = html_mod.escape(reply_text).replace("\\n", "<br>").replace("\n", "<br>")
+
+        st.markdown(f"""
+        {sent_badge}
+        <div style="
+            background: #ffffff;
+            border: 1px solid #e2e6ef;
+            border-left: 4px solid #4f46e5;
+            border-radius: 0 12px 12px 0;
+            padding: 20px 24px;
+            font-size: 0.95rem;
+            line-height: 1.75;
+            color: #111827;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+            font-family: 'Inter', -apple-system, sans-serif;
+        ">
+            <div style="
+                display: flex; align-items: center; gap: 8px;
+                margin-bottom: 12px; padding-bottom: 10px;
+                border-bottom: 1px solid #f1f3f8;
+                font-size: 0.82rem; color: #9ca3af;
+            ">
+                <span>To: <strong style="color: #4b5563;">{html_mod.escape(str(result.get('email_from', '')))}</strong></span>
+                <span style="margin-left: auto;">Re: {html_mod.escape(str(result.get('email_subject', '')))}</span>
+            </div>
+            {safe_reply}
+        </div>
+        """, unsafe_allow_html=True)
 
 with tab2:
     st.markdown("### 📋 Execution Log")
