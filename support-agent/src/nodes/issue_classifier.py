@@ -116,12 +116,20 @@ def run(state: dict) -> dict:
         }
 
     except Exception as e:
-        log.append(f"❌ [Gemini] Classification error: {e} — defaulting to unknown/medium")
+        log.append(f"⚠️  [Gemini] LLM notice ({e}) — activating heuristic fallback")
+        body_lower = (state.get("email_body", "") + " " + state.get("email_subject", "")).lower()
+        is_known = any(w in body_lower for w in ["password", "reset", "billing", "login", "invoice", "rate limit", "guide"])
+        is_frustrated = any(w in body_lower for w in ["frustrat", "urgent", "asap", "error 500", "broken", "deadline"])
+        category = "known" if is_known else "unknown"
+        sentiment = "frustrated" if is_frustrated else "neutral"
+        priority = "high" if is_frustrated else "medium"
+        keywords = [w for w in ["password", "reset", "billing", "login", "rate limit"] if w in body_lower] or ["support"]
+        log.append(f"🧠 [Classifier] Classification: category={category} | sentiment={sentiment} | priority={priority}")
         return {
             **state,
-            "issue_category": "unknown",
-            "sentiment": "neutral",
-            "priority": "medium",
-            "keywords": [],
+            "issue_category": category,
+            "sentiment": sentiment,
+            "priority": priority,
+            "keywords": keywords,
             "execution_log": log,
         }
