@@ -21,6 +21,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
+from collections import deque
+from typing import Any
+
+# ── In-memory history store (max 200 entries, server lifetime) ─
+HISTORY: deque = deque(maxlen=200)
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -85,7 +90,77 @@ async def health_check():
         "timestamp": datetime.now().isoformat(),
         "agent": "AI Support Agent",
         "integrations": ["gmail", "notion", "jira", "resend", "github"],
+        "history_count": len(HISTORY),
     }
+
+
+@app.get("/history")
+async def get_history():
+    """Return all processed email results (newest first)."""
+    items = list(reversed(list(HISTORY)))
+    return {"items": items, "count": len(items)}
+
+
+@app.get("/analytics")
+async def get_analytics():
+    """Return aggregate metrics for the Analytics dashboard tab."""
+    items = list(HISTORY)
+    total = len(items)
+    if total == 0:
+        return {
+            "total_processed": 0,
+            "kb_hit_rate": 0,
+            "tickets_created": 0,
+            "replies_sent": 0,
+            "categories": {},
+            "sentiments": {},
+            "priorities": {},
+        }
+
+    kb_hits = sum(1 for i in items if i.get("kb_match_found"))
+    tickets  = sum(1 for i in items if i.get("jira_ticket_id"))
+    replies  = sum(1 for i in items if i.get("reply_sent"))
+
+    categories: dict[str, int] = {}
+    sentiments: dict[str, int] = {}
+    priorities: dict[str, int] = {}
+
+    for item in items:
+        cat  = item.get("issue_category", "unknown")
+        sent = item.get("sentiment", "neutral")
+        pri  = item.get("priority", "medium")
+        categories[cat]  = categories.get(cat, 0)  + 1
+        sentiments[sent] = sentiments.get(sent, 0) + 1
+        priorities[pri]  = priorities.get(pri, 0)  + 1
+
+    return {
+        "total_processed": total,
+        "kb_hit_rate": round(kb_hits / total * 100, 1),
+        "tickets_created": tickets,
+        "replies_sent": replies,
+        "categories": categories,
+        "sentiments": sentiments,
+        "priorities": priorities,
+    }
+
+
+@app.get("/kb-gaps")
+async def get_kb_gaps():
+    """Return emails where KB had no answer and a GitHub issue was filed."""
+    items = list(HISTORY)
+    gaps = [
+        {
+            "issue_id": item["github_issue_id"],
+            "issue_url": item.get("github_issue_url", "#"),
+            "subject": item.get("email_subject", "Unknown issue"),
+            "priority": item.get("priority", "medium"),
+            "created_at": item.get("processed_at", ""),
+            "keywords": item.get("keywords", []),
+        }
+        for item in items
+        if item.get("github_issue_id") and not item.get("kb_match_found")
+    ]
+    return {"gaps": gaps, "count": len(gaps)}
 
 
 @app.post("/process", response_model=ProcessResponse)
@@ -138,22 +213,28 @@ async def process_email(request: EmailRequest):
         # Step 4: Send reply
         state = notification_sender.run(state)
 
-        return ProcessResponse(
-            email_from=state.get("email_from", ""),
-            email_subject=state.get("email_subject", ""),
-            issue_category=state.get("issue_category", "unknown"),
-            sentiment=state.get("sentiment", "neutral"),
-            priority=state.get("priority", "medium"),
-            kb_match_found=state.get("kb_match_found", False),
-            jira_ticket_id=state.get("jira_ticket_id"),
-            jira_ticket_url=state.get("jira_ticket_url"),
-            github_issue_id=state.get("github_issue_id"),
-            github_issue_url=state.get("github_issue_url"),
-            draft_reply=state.get("draft_reply", ""),
-            reply_sent=state.get("reply_sent", False),
-            resend_message_id=state.get("resend_message_id"),
-            execution_log=state.get("execution_log", []),
-        )
+        response_data = {
+            "email_from": state.get("email_from", ""),
+            "email_subject": state.get("email_subject", ""),
+            "issue_category": state.get("issue_category", "unknown"),
+            "sentiment": state.get("sentiment", "neutral"),
+            "priority": state.get("priority", "medium"),
+            "kb_match_found": state.get("kb_match_found", False),
+            "jira_ticket_id": state.get("jira_ticket_id"),
+            "jira_ticket_url": state.get("jira_ticket_url"),
+            "github_issue_id": state.get("github_issue_id"),
+            "github_issue_url": state.get("github_issue_url"),
+            "draft_reply": state.get("draft_reply", ""),
+            "reply_sent": state.get("reply_sent", False),
+            "resend_message_id": state.get("resend_message_id"),
+            "execution_log": state.get("execution_log", []),
+            "keywords": state.get("keywords", []),
+            "processed_at": datetime.now().isoformat(),
+        }
+        # Persist to in-memory history
+        HISTORY.append(response_data)
+
+        return ProcessResponse(**{k: v for k, v in response_data.items() if k in ProcessResponse.model_fields})
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

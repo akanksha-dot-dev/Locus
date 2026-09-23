@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "AI Support Agent — Swytchcode",
-  "version": "1.0.0",
-  "description": "AI-powered customer support agent. Classify emails, search KB, create tickets, and draft replies — all from your browser.",
+  "name": "AI Support Agent",
+  "version": "2.0.0",
+  "description": "Classify support emails, search your knowledge base, create Jira tickets, file GitHub issues, and send AI-drafted replies — all from your browser.",
   "permissions": [
-    "activeTab",
-    "storage"
+    "storage",
+    "contextMenus",
+    "notifications"
   ],
   "host_permissions": [
     "http://localhost:8000/*"
