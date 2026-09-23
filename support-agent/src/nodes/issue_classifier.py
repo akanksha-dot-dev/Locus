@@ -64,10 +64,11 @@ def run(state: dict) -> dict:
             body=state.get("email_body", ""),
         )
 
-        import time
+        import time, re
+
         response = None
         last_err = None
-        for attempt in range(3):
+        for attempt in range(4):
             try:
                 chat = _client.chats.create(model=Config.LLM_MODEL)
                 response = chat.send_message(prompt)
@@ -75,7 +76,21 @@ def run(state: dict) -> dict:
                     break
             except Exception as e:
                 last_err = e
-                time.sleep(1.5 * (attempt + 1))
+                err_str = str(e)
+
+                # Extract retryDelay from Gemini 429 response
+                retry_after = None
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    # Try to parse "retryDelay": "56s" or "56.87s"
+                    m = re.search(r"retryDelay['\"]?\s*[:\s]+['\"]?(\d+(?:\.\d+)?)s", err_str)
+                    if m:
+                        retry_after = min(float(m.group(1)) + 2, 90)  # cap at 90s
+
+                if retry_after and attempt < 3:
+                    log.append(f"⏳ [Gemini] Rate limited — waiting {int(retry_after)}s before retry {attempt+2}/4...")
+                    time.sleep(retry_after)
+                elif attempt < 3:
+                    time.sleep(2 ** attempt)  # exponential backoff for other errors
 
         if not response or not response.text:
             raise last_err or Exception("Gemini returned empty response")

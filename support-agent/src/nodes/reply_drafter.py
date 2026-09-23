@@ -102,10 +102,11 @@ def run(state: dict) -> dict:
         context=context,
     )
 
-    # ── Try variants call (3 attempts) ────────────────────────
+    # ── Try variants call (with 429 retry) ──────────────────────
+    import re as _re
     variants_result = None
     last_err = None
-    for attempt in range(3):
+    for attempt in range(4):
         try:
             chat = _client.chats.create(model=Config.LLM_MODEL)
             resp = chat.send_message(prompt)
@@ -119,7 +120,14 @@ def run(state: dict) -> dict:
                 break
         except Exception as e:
             last_err = e
-            time.sleep(1.5 * (attempt + 1))
+            err_str = str(e)
+            m = _re.search(r"retryDelay['\"]?\s*[:\s]+['\"]?(\d+(?:\.\d+)?)s", err_str)
+            if m and attempt < 3:
+                wait = min(float(m.group(1)) + 2, 90)
+                log.append(f"⏳ [Gemini/Reply] Rate limited — waiting {int(wait)}s...")
+                time.sleep(wait)
+            elif attempt < 3:
+                time.sleep(2 ** attempt)
 
     if variants_result and all(k in variants_result for k in ("formal", "empathetic", "concise")):
         reply_variants = [
@@ -172,14 +180,20 @@ def _generate_single_reply(state: dict, context: str, log: list) -> str:
             ticket_info=ticket_info,
         )
 
-    for attempt in range(3):
+    import re as _re
+    for attempt in range(4):
         try:
             chat = _client.chats.create(model=Config.LLM_MODEL)
             resp = chat.send_message(prompt)
             if resp and resp.text:
                 return resp.text.strip()
         except Exception as e:
-            time.sleep(1.5 * (attempt + 1))
+            err_str = str(e)
+            m = _re.search(r"retryDelay['\"]?\s*[:\s]+['\"]?(\d+(?:\.\d+)?)s", err_str)
+            if m and attempt < 3:
+                time.sleep(min(float(m.group(1)) + 2, 90))
+            elif attempt < 3:
+                time.sleep(2 ** attempt)
 
     # Last-resort template
     ticket_msg = f" (Ticket: {state.get('jira_ticket_id')})" if state.get("jira_ticket_id") else ""
