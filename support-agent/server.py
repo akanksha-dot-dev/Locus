@@ -307,10 +307,162 @@ async def generate_kb_article(request: KBArticleRequest):
             "issue_id": request.issue_id,
         },
     )
+    # Log to Swytchcode audit trail
+    SWY_AUDIT.append({
+        "tool": "notion.pages.create + gemini.generate",
+        "timestamp": datetime.now().isoformat(),
+        "trigger": "manual",
+        "subject": request.subject,
+        "notion_url": result.get("notion_url"),
+        "success": result.get("notion_pushed", False),
+    })
+    await manager.broadcast({"type": "kb_article_generated", "data": result})
     return result
 
 
-# ── Auto-processing background loop ───────────────────────────
+@app.get("/sla-breaches")
+async def get_sla_breaches():
+    """Return only currently breached or near-breach tickets."""
+    now = datetime.now()
+    breaches = []
+    for item in HISTORY:
+        if not item.get("jira_ticket_id"):
+            continue
+        priority = item.get("priority", "medium")
+        sla_h = SLA_HOURS.get(priority, 24)
+        try:
+            processed = datetime.fromisoformat(item.get("processed_at", now.isoformat()))
+            deadline = processed + timedelta(hours=sla_h)
+            hrs_remaining = (deadline - now).total_seconds() / 3600
+        except Exception:
+            hrs_remaining = float(sla_h)
+        if hrs_remaining <= 2:
+            breaches.append({
+                "jira_ticket_id": item["jira_ticket_id"],
+                "jira_ticket_url": item.get("jira_ticket_url"),
+                "subject": item.get("email_subject", ""),
+                "email_from": item.get("email_from", ""),
+                "priority": priority,
+                "hours_remaining": round(hrs_remaining, 2),
+                "breached": hrs_remaining < 0,
+                "near_breach": 0 <= hrs_remaining <= 2,
+            })
+    return {"breaches": breaches, "count": len(breaches)}
+
+
+@app.get("/customer/{email}")
+async def get_customer_profile(email: str):
+    """Return full customer interaction history, repeat detection, and VIP status."""
+    from urllib.parse import unquote
+    email = unquote(email)
+    interactions = list(CUSTOMER_HISTORY.get(email, []))
+    count = len(interactions)
+
+    sentiments = [i.get("sentiment", "neutral") for i in interactions]
+    priorities = [i.get("priority", "medium") for i in interactions]
+    categories = [i.get("issue_category", "unknown") for i in interactions]
+
+    return {
+        "email": email,
+        "contact_count": count,
+        "is_repeat_customer": count > 1,
+        "is_vip": count >= 3,
+        "sentiment_history": sentiments,
+        "priority_history": priorities,
+        "category_history": categories,
+        "last_contact": interactions[-1].get("processed_at") if interactions else None,
+        "first_contact": interactions[0].get("processed_at") if interactions else None,
+        "open_tickets": [i.get("jira_ticket_id") for i in interactions if i.get("jira_ticket_id")],
+        "interactions": interactions[-10:],  # Last 10 interactions
+    }
+
+
+@app.get("/customer-stats")
+async def get_customer_stats():
+    """Overall customer analytics: total customers, repeat rate, top issues."""
+    all_emails = list(CUSTOMER_HISTORY.keys())
+    repeat_customers = [e for e in all_emails if len(CUSTOMER_HISTORY[e]) > 1]
+    vip_customers = [e for e in all_emails if len(CUSTOMER_HISTORY[e]) >= 3]
+
+    # Sentiment breakdown
+    all_sentiments = []
+    for interactions in CUSTOMER_HISTORY.values():
+        all_sentiments.extend(i.get("sentiment", "neutral") for i in interactions)
+
+    from collections import Counter
+    sentiment_counts = dict(Counter(all_sentiments))
+
+    return {
+        "total_customers": len(all_emails),
+        "repeat_customers": len(repeat_customers),
+        "vip_customers": len(vip_customers),
+        "repeat_rate": round(len(repeat_customers) / max(len(all_emails), 1) * 100, 1),
+        "sentiment_distribution": sentiment_counts,
+        "top_repeat_customers": [
+            {"email": e, "contacts": len(CUSTOMER_HISTORY[e])}
+            for e in sorted(all_emails, key=lambda x: len(CUSTOMER_HISTORY[x]), reverse=True)[:5]
+        ],
+    }
+
+
+@app.get("/swytchcode-audit")
+async def get_swytchcode_audit():
+    """Return the Swytchcode execution audit trail — all tool calls, timestamps, and results."""
+    audit_list = list(SWY_AUDIT)
+    return {
+        "audit_trail": audit_list,
+        "total_calls": len(audit_list),
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+# ── SLA Breach Monitor (background task) ──────────────────────
+async def _sla_breach_monitor():
+    """Background task: check for SLA breaches every 60s, alert via WebSocket."""
+    while True:
+        await asyncio.sleep(60)
+        now = datetime.now()
+        for item in HISTORY:
+            if not item.get("jira_ticket_id") or item.get("breach_alerted"):
+                continue
+            priority = item.get("priority", "medium")
+            sla_h = SLA_HOURS.get(priority, 24)
+            try:
+                processed = datetime.fromisoformat(item.get("processed_at", now.isoformat()))
+                deadline = processed + timedelta(hours=sla_h)
+                hrs_remaining = (deadline - now).total_seconds() / 3600
+            except Exception:
+                continue
+
+            if hrs_remaining < 0 and not item.get("breach_alerted"):
+                item["breach_alerted"] = True
+                await manager.broadcast({
+                    "type": "sla_breach",
+                    "ticket": item.get("jira_ticket_id"),
+                    "subject": item.get("email_subject", ""),
+                    "priority": priority,
+                    "hours_overdue": round(abs(hrs_remaining), 1),
+                    "timestamp": now.isoformat(),
+                })
+            elif 0 <= hrs_remaining <= 1 and not item.get("near_breach_alerted"):
+                item["near_breach_alerted"] = True
+                await manager.broadcast({
+                    "type": "sla_warning",
+                    "ticket": item.get("jira_ticket_id"),
+                    "subject": item.get("email_subject", ""),
+                    "priority": priority,
+                    "hours_remaining": round(hrs_remaining, 1),
+                    "timestamp": now.isoformat(),
+                })
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Start SLA breach monitor on server startup."""
+    global _sla_monitor_task
+    _sla_monitor_task = asyncio.create_task(_sla_breach_monitor())
+
+
 async def _auto_process_loop(interval: int):
     """Poll Gmail every `interval` seconds, process new emails, broadcast results."""
     while True:
