@@ -1,21 +1,28 @@
 """
-AI Support Agent — FastAPI Backend Server.
+AI Support Agent v3.0 — FastAPI Backend Server.
 
-This lightweight server exposes the LangGraph agent as a REST API,
-allowing the Chrome Extension (and any other client) to process
-support emails through the full Swytchcode pipeline.
+Enhanced with:
+  - Auto KB Article Generation (gap → Gemini writes → Notion push)
+  - Customer Memory & Repeat Detection
+  - Live SLA Breach Monitor (WebSocket alerts)
+  - Multi-language Detection & Reply
+  - Confidence-based Human Escalation
+  - Swytchcode Audit Trail Capture
 
 Endpoints:
-    GET  /health               — health check
-    POST /process              — run the full LangGraph pipeline
-    GET  /history              — past processed emails
-    GET  /analytics            — aggregate metrics
-    GET  /kb-gaps              — unanswered issues filed on GitHub
-    GET  /sla-status           — ticket SLA breach tracking
-    POST /generate-kb-article  — Gemini-writes + Notion-pushes a KB article
-    POST /auto-process/start   — start background Gmail polling loop
-    DELETE /auto-process/stop  — stop the polling loop
-    WS   /ws                   — real-time activity feed (WebSocket)
+    GET  /health                — health check
+    POST /process               — run the full LangGraph pipeline
+    GET  /history               — past processed emails
+    GET  /analytics             — aggregate metrics
+    GET  /kb-gaps               — unanswered issues filed on GitHub
+    GET  /sla-status            — ticket SLA breach tracking
+    GET  /sla-breaches          — currently breached tickets
+    POST /generate-kb-article   — Gemini-writes + Notion-pushes a KB article
+    GET  /customer/{email}      — customer history & repeat detection
+    GET  /customer-stats        — overall customer analytics
+    POST /auto-process/start    — start background Gmail polling loop
+    DELETE /auto-process/stop   — stop the polling loop
+    WS   /ws                    — real-time activity feed (WebSocket)
 
 Run with:
     python server.py
@@ -24,6 +31,7 @@ import sys
 import os
 import asyncio
 import json
+import re
 
 # Force UTF-8 output on Windows
 if sys.stdout.encoding != 'utf-8':
@@ -34,15 +42,18 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime, timedelta
-from collections import deque
-from typing import Optional
+from collections import deque, defaultdict
+from typing import Optional, List
 
 # ── In-memory stores ───────────────────────────────────────────
-HISTORY: deque = deque(maxlen=200)      # Processed email results
-ACTIVITY: deque = deque(maxlen=100)     # Live feed events
+HISTORY: deque = deque(maxlen=200)          # All processed email results
+ACTIVITY: deque = deque(maxlen=100)         # Live feed events
+CUSTOMER_HISTORY: dict = defaultdict(list)  # email → list of interactions
+SWY_AUDIT: deque = deque(maxlen=500)        # Swytchcode execution audit trail
 
-# ── Auto-process state ─────────────────────────────────────────
+# ── Background task handles ─────────────────────────────────────
 _auto_task: Optional[asyncio.Task] = None
+_sla_monitor_task: Optional[asyncio.Task] = None
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -56,6 +67,7 @@ from src.nodes import (
     reply_drafter,
     notification_sender,
     email_ingestion,
+    kb_article_generator,
 )
 
 # ── WebSocket Connection Manager ───────────────────────────────
@@ -90,9 +102,9 @@ manager = ConnectionManager()
 
 # ── FastAPI App ────────────────────────────────────────────────
 app = FastAPI(
-    title="AI Support Agent API",
-    description="Process support emails through the Swytchcode + LangGraph pipeline",
-    version="2.0.0",
+    title="AI Support Agent API v3.0",
+    description="AI Support Agent — Swytchcode + LangGraph + Gemini + Auto KB Loop + Customer Memory",
+    version="3.0.0",
 )
 
 app.add_middleware(
@@ -156,10 +168,20 @@ async def health_check():
         "status": "ok",
         "timestamp": datetime.now().isoformat(),
         "agent": "AI Support Agent",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "integrations": ["gmail", "notion", "jira", "resend", "github"],
+        "v3_features": [
+            "auto_kb_generation",
+            "customer_memory",
+            "sla_breach_monitor",
+            "multi_language",
+            "human_escalation",
+            "swytchcode_audit",
+        ],
         "history_count": len(HISTORY),
+        "customer_count": len(CUSTOMER_HISTORY),
         "auto_processing": _auto_task is not None and not _auto_task.done(),
+        "sla_monitor": _sla_monitor_task is not None and not _sla_monitor_task.done(),
         "live_connections": len(manager.active),
     }
 
