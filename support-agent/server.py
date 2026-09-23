@@ -141,6 +141,13 @@ class ProcessResponse(BaseModel):
     resend_message_id: Optional[str] = None
     sla_deadline_hours: Optional[float] = None
     execution_log: list[str]
+    # ── v3.0 new fields ──────────────────────────────────────
+    detected_language: Optional[str] = None
+    auto_kb_article_url: Optional[str] = None
+    auto_kb_article_title: Optional[str] = None
+    human_escalation_required: bool = False
+    customer_contact_count: int = 1
+    is_repeat_customer: bool = False
 
 
 class KBArticleRequest(BaseModel):
