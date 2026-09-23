@@ -13,7 +13,7 @@ class Config:
 
     # --- LLM ---
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-2.0-flash")
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-2.5-flash")
 
     # --- Notion ---
     NOTION_KB_DATABASE_ID: str = os.getenv("NOTION_KB_DATABASE_ID", "")

@@ -74,7 +74,8 @@ def run(state: dict) -> dict:
             }
         })
 
-        msg_id = result.get("id", "unknown")
+        # Resend returns either {"id": "..."} or {"data": {"id": "..."}}
+        msg_id = result.get("id") or result.get("data", {}).get("id", "unknown")
         log.append(f"✅ [Resend] Reply sent (Message ID: {msg_id})")
 
         return {
