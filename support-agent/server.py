@@ -13,6 +13,9 @@ Or:
 """
 import sys
 import os
+# Force UTF-8 output on Windows
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -158,7 +161,7 @@ async def process_email(request: EmailRequest):
 
 # ── Run ────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print("🤖 AI Support Agent API Server")
+    print("[AI Support Agent] API Server starting...")
     print("   Chrome Extension backend at http://localhost:8000")
     print("   Docs at http://localhost:8000/docs")
     print()
