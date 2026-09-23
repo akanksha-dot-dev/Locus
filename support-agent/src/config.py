@@ -13,18 +13,20 @@ class Config:
 
     # --- LLM ---
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-2.5-flash")
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "gemini-3.6-flash")
 
     # --- Notion ---
     NOTION_KB_DATABASE_ID: str = os.getenv("NOTION_KB_DATABASE_ID", "")
+    NOTION_API_KEY: str = os.getenv("NOTION_API_KEY", "")
 
     # --- Jira ---
-    JIRA_PROJECT_KEY: str = os.getenv("JIRA_PROJECT_KEY", "SUP")
+    JIRA_PROJECT_KEY: str = os.getenv("JIRA_PROJECT_KEY", "CCS")
     JIRA_DOMAIN: str = os.getenv("JIRA_DOMAIN", "")
     JIRA_EMAIL: str = os.getenv("JIRA_EMAIL", "")
+    JIRA_API_TOKEN: str = os.getenv("JIRA_API_TOKEN", "")
 
     # --- GitHub ---
-    GITHUB_OWNER: str = os.getenv("GITHUB_OWNER", "")
+    GITHUB_OWNER: str = os.getenv("GITHUB_OWNER", "iakankshaa")
     GITHUB_REPO: str = os.getenv("GITHUB_REPO", "support-kb-gaps")
 
     # --- Resend ---

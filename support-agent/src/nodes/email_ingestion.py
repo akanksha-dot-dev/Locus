@@ -56,14 +56,15 @@ def run(state: dict) -> dict:
     try:
         # Step 1: List unread emails with the support label
         listing = swy_exec("gmail.user.messages.get", {
-            "path": {"userId": "me"},
-            "query": {
+            "params": {
+                "userId": "me",
                 "q": f"is:unread label:{Config.SUPPORT_LABEL}",
                 "maxResults": 1,
             }
         })
 
-        messages = listing.get("messages", [])
+        list_data = listing.get("data", listing) if isinstance(listing, dict) else {}
+        messages = list_data.get("messages", [])
         if not messages:
             log.append("⚠️  No unread support emails found")
             return {**state, "execution_log": log, "email_id": "", "email_body": ""}
@@ -72,14 +73,14 @@ def run(state: dict) -> dict:
 
         # Step 2: Get full email details
         email = swy_exec("gmail.user.messages.get1", {
-            "path": {"userId": "me", "id": msg_id},
-            "query": {"format": "full"}
+            "params": {"userId": "me", "id": msg_id, "format": "full"}
         })
 
-        headers = email.get("payload", {}).get("headers", [])
+        email_data = email.get("data", email) if isinstance(email, dict) else {}
+        headers = email_data.get("payload", {}).get("headers", [])
         sender = _extract_header(headers, "From")
         subject = _extract_header(headers, "Subject")
-        body_raw = _decode_body(email.get("payload", {}))
+        body_raw = _decode_body(email_data.get("payload", {}))
         body = _clean_text(body_raw)
 
         log.append(f"✅ [Gmail] Email ingested — From: {sender} | Subject: {subject}")

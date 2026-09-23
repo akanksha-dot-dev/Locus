@@ -62,10 +62,24 @@ def run(state: dict) -> dict:
             body=state.get("email_body", ""),
         )
 
-        response = _client.models.generate_content(
-            model=Config.LLM_MODEL,
-            contents=prompt,
-        )
+        import time
+        response = None
+        last_err = None
+        for attempt in range(3):
+            try:
+                response = _client.models.generate_content(
+                    model=Config.LLM_MODEL,
+                    contents=prompt,
+                )
+                if response and response.text:
+                    break
+            except Exception as e:
+                last_err = e
+                time.sleep(1.5 * (attempt + 1))
+
+        if not response or not response.text:
+            raise last_err or Exception("Gemini returned empty response")
+
         text = response.text.strip()
 
         # Parse JSON from response (handle markdown fences)

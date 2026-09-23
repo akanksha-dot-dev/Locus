@@ -58,22 +58,61 @@ def run(state: dict) -> dict:
             for article in state["kb_results"][:3]:
                 description_parts.append(f"- [{article.get('title', 'Untitled')}]({article.get('url', '')})")
 
-        result = swy_exec("jira.api.issue.create", {
-            "body": {
-                "fields": {
-                    "project": {"key": Config.JIRA_PROJECT_KEY},
-                    "summary": f"[Support] {state.get('email_subject', 'Customer Issue')}",
-                    "description": "\n".join(description_parts),
-                    "issuetype": {"name": "Bug"},
-                    "priority": {"name": jira_priority},
+        ticket_key = None
+        ticket_url = None
+
+        # 1. Try Swytchcode tool first
+        try:
+            result = swy_exec("jira.api.issue.create", {
+                "body": {
+                    "fields": {
+                        "project": {"key": Config.JIRA_PROJECT_KEY},
+                        "summary": f"[Support] {state.get('email_subject', 'Customer Issue')}",
+                        "description": "\n".join(description_parts),
+                        "issuetype": {"name": "Bug"},
+                        "priority": {"name": jira_priority},
+                    }
                 }
-            }
-        })
+            })
+            res_data = result.get("data", result) if isinstance(result, dict) else {}
+            if isinstance(res_data, dict) and res_data.get("key"):
+                ticket_key = res_data["key"]
+                ticket_url = f"https://{Config.JIRA_DOMAIN}/browse/{ticket_key}"
+        except Exception as swy_err:
+            log.append(f"ℹ️  [Jira] Swytchcode attempt notice: {swy_err}")
 
-        ticket_key = result.get("key", "UNKNOWN")
-        ticket_url = f"https://{Config.JIRA_DOMAIN}/browse/{ticket_key}"
+        # 2. Fall back to Jira REST API if needed
+        if not ticket_key and Config.JIRA_API_TOKEN and Config.JIRA_EMAIL and Config.JIRA_DOMAIN:
+            import requests
+            import base64
+            auth_str = f"{Config.JIRA_EMAIL}:{Config.JIRA_API_TOKEN}"
+            auth_b64 = base64.b64encode(auth_str.encode()).decode()
+            resp = requests.post(
+                f"https://{Config.JIRA_DOMAIN}/rest/api/2/issue",
+                headers={
+                    "Authorization": f"Basic {auth_b64}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "fields": {
+                        "project": {"key": Config.JIRA_PROJECT_KEY},
+                        "summary": f"[Support] {state.get('email_subject', 'Customer Issue')}",
+                        "description": "\n".join(description_parts),
+                        "issuetype": {"name": "Bug"},
+                        "priority": {"name": jira_priority},
+                    }
+                },
+                timeout=10,
+            )
+            if resp.status_code in (200, 201):
+                ticket_data = resp.json()
+                ticket_key = ticket_data.get("key", "UNKNOWN")
+                ticket_url = f"https://{Config.JIRA_DOMAIN}/browse/{ticket_key}"
 
-        log.append(f"✅ [Jira] Created ticket: {ticket_key}")
+        if ticket_key:
+            log.append(f"✅ [Jira] Created ticket: {ticket_key}")
+        else:
+            log.append("⚠️  [Jira] Ticket could not be created")
 
         return {
             **state,

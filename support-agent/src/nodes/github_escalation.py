@@ -76,10 +76,14 @@ def run(state: dict) -> dict:
             }
         })
 
-        issue_number = result.get("number", "?")
-        issue_url = result.get("html_url", "")
+        res_data = result.get("data", result) if isinstance(result, dict) else {}
+        issue_number = res_data.get("number", "?")
+        issue_url = res_data.get("html_url", "")
 
-        log.append(f"✅ [GitHub] Created issue #{issue_number}: KB Gap")
+        if issue_number != "?":
+            log.append(f"✅ [GitHub] Created issue #{issue_number}: KB Gap")
+        else:
+            log.append(f"⚠️  [GitHub] Issue creation response: {res_data.get('message', 'pending')}")
 
         return {
             **state,

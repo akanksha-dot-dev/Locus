@@ -60,16 +60,56 @@ def run(state: dict) -> dict:
 
     try:
         query_filter = _build_notion_filter(keywords, category)
+        pages = []
 
-        results = swy_exec("notion.query.create", {
-            "path": {"data_source_id": Config.NOTION_KB_DATABASE_ID},
-            "body": {
-                "filter": query_filter,
-                "page_size": 5,
+        # 1. Try Swytchcode tool first
+        try:
+            results = swy_exec("notion.query.create", {
+                "params": {"data_source_id": Config.NOTION_KB_DATABASE_ID},
+                "body": {
+                    "filter": query_filter,
+                    "page_size": 5,
+                }
+            })
+            data = results.get("data", results) if isinstance(results, dict) else {}
+            if isinstance(data, dict) and data.get("status_code") not in (400, 404, 500) and "results" in data:
+                pages = data.get("results", [])
+        except Exception as swy_err:
+            log.append(f"ℹ️  [Notion] Swytchcode query notice: {swy_err}")
+
+        # 2. Fall back to direct Notion API if needed and NOTION_API_KEY is available
+        if not pages and Config.NOTION_API_KEY:
+            import requests
+            headers = {
+                "Authorization": f"Bearer {Config.NOTION_API_KEY}",
+                "Notion-Version": "2022-06-28",
+                "Content-Type": "application/json",
             }
-        })
+            resp = requests.post(
+                f"https://api.notion.com/v1/databases/{Config.NOTION_KB_DATABASE_ID}/query",
+                headers=headers,
+                json={"filter": query_filter, "page_size": 5},
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                pages = resp.json().get("results", [])
+            else:
+                # Try simple query without filter to see all articles if filter returned empty
+                resp_all = requests.post(
+                    f"https://api.notion.com/v1/databases/{Config.NOTION_KB_DATABASE_ID}/query",
+                    headers=headers,
+                    json={"page_size": 5},
+                    timeout=10,
+                )
+                if resp_all.status_code == 200:
+                    all_pages = resp_all.json().get("results", [])
+                    # In-memory keyword match
+                    for p in all_pages:
+                        title_info = _extract_page_content(p)
+                        title_lower = title_info["title"].lower()
+                        if any(kw.lower() in title_lower for kw in keywords) or category.lower() in title_lower:
+                            pages.append(p)
 
-        pages = results.get("results", [])
         kb_articles = [_extract_page_content(p) for p in pages]
         found = len(kb_articles) > 0
 

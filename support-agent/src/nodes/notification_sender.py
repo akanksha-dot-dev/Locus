@@ -64,26 +64,61 @@ def run(state: dict) -> dict:
 
     try:
         html_content = _format_html(state.get("draft_reply", ""), state)
+        msg_id = None
 
-        result = swy_exec("resend.email.create", {
-            "body": {
-                "from": Config.RESEND_FROM_EMAIL,
-                "to": [recipient],
-                "subject": f"Re: {subject}",
-                "html": html_content,
+        # 1. Try Swytchcode tool first
+        try:
+            result = swy_exec("resend.email.create", {
+                "body": {
+                    "from": Config.RESEND_FROM_EMAIL,
+                    "to": [recipient],
+                    "subject": f"Re: {subject}",
+                    "html": html_content,
+                }
+            })
+            if isinstance(result, dict):
+                msg_id = result.get("id") or result.get("data", {}).get("id")
+        except Exception as swy_err:
+            log.append(f"ℹ️  [Resend] Swytchcode attempt notice: {swy_err}")
+
+        # 2. Fall back to direct Resend API if needed
+        import os
+        resend_key = os.getenv("RESEND_API_KEY")
+        if not msg_id and resend_key:
+            import requests
+            resp = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from": Config.RESEND_FROM_EMAIL,
+                    "to": [recipient],
+                    "subject": f"Re: {subject}",
+                    "html": html_content,
+                },
+                timeout=10,
+            )
+            if resp.status_code in (200, 201):
+                msg_id = resp.json().get("id")
+
+        if msg_id:
+            log.append(f"✅ [Resend] Reply sent (Message ID: {msg_id})")
+            return {
+                **state,
+                "reply_sent": True,
+                "resend_message_id": msg_id,
+                "execution_log": log,
             }
-        })
-
-        # Resend returns either {"id": "..."} or {"data": {"id": "..."}}
-        msg_id = result.get("id") or result.get("data", {}).get("id", "unknown")
-        log.append(f"✅ [Resend] Reply sent (Message ID: {msg_id})")
-
-        return {
-            **state,
-            "reply_sent": True,
-            "resend_message_id": msg_id,
-            "execution_log": log,
-        }
+        else:
+            log.append("⚠️  [Resend] Email could not be sent")
+            return {
+                **state,
+                "reply_sent": False,
+                "resend_message_id": None,
+                "execution_log": log,
+            }
 
     except Exception as e:
         log.append(f"❌ [Resend] Send error: {e}")
