@@ -117,12 +117,24 @@ def run(state: dict) -> dict:
         }
 
     except Exception as e:
-        log.append(f"❌ [Gemini] Reply drafting error: {e}")
-        fallback = (
-            "Thank you for reaching out. We've received your request and our "
-            "team is looking into it. We'll follow up with you shortly.\n\n"
-            "Best regards,\nSupport Team"
-        )
+        log.append(f"⚠️  [Gemini] Reply drafting notice ({e}) — using structured template")
+        if state.get("kb_match_found") and state.get("kb_results"):
+            articles_text = "\n".join(f"- {a.get('title')}: {a.get('url') or 'See Knowledge Base'}" for a in state["kb_results"][:2])
+            fallback = (
+                f"Hello,\n\n"
+                f"Thank you for reaching out to support. We found relevant solution(s) in our knowledge base:\n\n"
+                f"{articles_text}\n\n"
+                f"Please follow the steps outlined in the article(s) above. If you continue experiencing issues, reply to this email and our team will assist you further.\n\n"
+                f"Best regards,\nSupport Team"
+            )
+        else:
+            ticket_msg = f" (Tracking ticket: {state.get('jira_ticket_id')})" if state.get("jira_ticket_id") else ""
+            fallback = (
+                f"Hello,\n\n"
+                f"Thank you for reaching out. We have logged your issue with our engineering team{ticket_msg}. "
+                f"A support specialist is actively reviewing it and will follow up with you shortly.\n\n"
+                f"Best regards,\nSupport Team"
+            )
         return {
             **state,
             "draft_reply": fallback,
