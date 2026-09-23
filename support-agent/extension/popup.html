@@ -4,200 +4,318 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Support Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <!-- Header -->
+
+  <!-- ── Header ──────────────────────────────────────────── -->
   <header class="header">
     <div class="header-brand">
-      <div class="logo-icon">🤖</div>
-      <div>
+      <div class="logo-ring">
+        <div class="logo-icon">⚡</div>
+      </div>
+      <div class="header-text">
         <h1 class="header-title">AI Support Agent</h1>
-        <p class="header-subtitle">Swytchcode × LangGraph × Gemini</p>
+        <p class="header-sub">Swytchcode × LangGraph × Gemini</p>
       </div>
     </div>
-    <div class="connection-status" id="statusDot">
-      <span class="status-dot"></span>
-      <span class="status-text" id="statusText">Checking...</span>
+    <div class="conn-badge" id="connBadge">
+      <span class="conn-dot" id="connDot"></span>
+      <span class="conn-label" id="connLabel">Checking…</span>
     </div>
   </header>
 
-  <!-- Metrics Bar -->
-  <div class="metrics-bar">
-    <div class="metric">
-      <span class="metric-value" id="metricProcessed">0</span>
-      <span class="metric-label">Processed</span>
+  <!-- ── Stats Bar ────────────────────────────────────────── -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-val" id="statProcessed">0</span>
+      <span class="stat-lbl">Emails</span>
     </div>
-    <div class="metric">
-      <span class="metric-value" id="metricTickets">0</span>
-      <span class="metric-label">Tickets</span>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-val" id="statKBHits">0</span>
+      <span class="stat-lbl">Resolved</span>
     </div>
-    <div class="metric">
-      <span class="metric-value" id="metricKBHits">0</span>
-      <span class="metric-label">KB Hits</span>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-val" id="statTickets">0</span>
+      <span class="stat-lbl">Tickets</span>
     </div>
-    <div class="metric">
-      <span class="metric-value" id="metricReplies">0</span>
-      <span class="metric-label">Replies</span>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-val" id="statReplies">0</span>
+      <span class="stat-lbl">Replies</span>
     </div>
   </div>
 
-  <!-- Tab Navigation -->
-  <nav class="tabs">
-    <button class="tab active" data-tab="process">🚀 Process</button>
-    <button class="tab" data-tab="log">📋 Log</button>
-    <button class="tab" data-tab="integrations">🔌 Integrations</button>
-  </nav>
+  <!-- ── Tab Panels ───────────────────────────────────────── -->
+  <main class="main-content">
 
-  <!-- Tab: Process Email -->
-  <div class="tab-content active" id="tab-process">
-    <div class="input-group">
-      <label for="emailFrom">From</label>
-      <input type="email" id="emailFrom" placeholder="customer@example.com" value="jane.doe@customer.com">
-    </div>
-    <div class="input-group">
-      <label for="emailSubject">Subject</label>
-      <input type="text" id="emailSubject" placeholder="Subject line..." value="Unable to reset my password — error 500">
-    </div>
-    <div class="input-group">
-      <label for="emailBody">Email Body</label>
-      <textarea id="emailBody" rows="4" placeholder="Paste the customer email here...">Hi Support Team,
+    <!-- PROCESS TAB -->
+    <div class="tab-panel active" id="panel-process">
+      <div id="pendingBanner" class="pending-banner hidden">
+        <span>📋 Text pasted from context menu</span>
+        <button id="btnClearPending">✕</button>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="emailFrom">From</label>
+        <input class="field-input" type="email" id="emailFrom"
+               placeholder="customer@example.com"
+               value="jane.doe@customer.com">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="emailSubject">Subject</label>
+        <input class="field-input" type="text" id="emailSubject"
+               placeholder="Issue subject…"
+               value="Unable to reset my password — error 500">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="emailBody">Email Body</label>
+        <textarea class="field-input field-textarea" id="emailBody" rows="4"
+                  placeholder="Paste the customer email here…">Hi Support Team,
 
 I've been trying to reset my password for the last 2 hours but keep getting a server error (HTTP 500). This is really frustrating — I have a deadline today!
 
 Please help ASAP!
 — Jane</textarea>
+      </div>
+
+      <button class="btn-process" id="btnProcess">
+        <span class="btn-icon">🚀</span>
+        <span class="btn-text">Process Email</span>
+      </button>
+
+      <!-- Progress -->
+      <div class="progress-wrap hidden" id="progressWrap">
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="steps-list" id="stepsList"></div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-wrap hidden" id="resultsWrap">
+        <div class="result-card">
+          <div class="result-card-title">Classification</div>
+          <div class="result-grid">
+            <div class="result-row">
+              <span class="result-key">Category</span>
+              <span class="badge" id="resCat">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-key">Sentiment</span>
+              <span class="badge" id="resSent">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-key">Priority</span>
+              <span class="badge" id="resPri">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-key">KB Match</span>
+              <span class="badge" id="resKB">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-card" id="ticketsCard">
+          <div class="result-card-title">Tickets Created</div>
+          <div class="ticket-row hidden" id="rowJira">
+            <span class="ticket-badge jira-badge">Jira</span>
+            <a class="ticket-link" id="linkJira" href="#" target="_blank" rel="noopener">—</a>
+          </div>
+          <div class="ticket-row hidden" id="rowGitHub">
+            <span class="ticket-badge github-badge">GitHub</span>
+            <a class="ticket-link" id="linkGitHub" href="#" target="_blank" rel="noopener">—</a>
+          </div>
+          <span class="no-tickets hidden" id="noTickets">No tickets needed — resolved from KB</span>
+        </div>
+
+        <div class="result-card">
+          <div class="result-card-title">Draft Reply</div>
+          <div class="draft-reply" id="resDraft">—</div>
+          <button class="btn-copy" id="btnCopyDraft">Copy Reply</button>
+        </div>
+
+        <div class="success-bar" id="successBar">
+          <span>✅</span>
+          <span id="successMsg">Reply sent via Resend</span>
+        </div>
+      </div>
     </div>
 
-    <button class="btn-primary" id="btnProcess">
-      <span class="btn-icon">🚀</span>
-      <span class="btn-text">Process Email</span>
+    <!-- HISTORY TAB -->
+    <div class="tab-panel" id="panel-history">
+      <div class="tab-toolbar">
+        <span class="toolbar-title">Recent Emails</span>
+        <button class="toolbar-btn" id="btnRefreshHistory">↺ Refresh</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>No emails processed yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS TAB -->
+    <div class="tab-panel" id="panel-analytics">
+      <div class="tab-toolbar">
+        <span class="toolbar-title">Performance</span>
+        <button class="toolbar-btn" id="btnRefreshAnalytics">↺ Refresh</button>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="analytics-kpi">
+          <span class="kpi-val" id="kpiKBRate">—%</span>
+          <span class="kpi-lbl">KB Resolution Rate</span>
+        </div>
+        <div class="analytics-kpi">
+          <span class="kpi-val" id="kpiTickets">—</span>
+          <span class="kpi-lbl">Tickets Created</span>
+        </div>
+      </div>
+
+      <!-- Donut chart for categories -->
+      <div class="chart-section">
+        <div class="chart-title">Issue Categories</div>
+        <div class="donut-wrap">
+          <div class="donut" id="donutChart"></div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+
+      <!-- Sentiment bars -->
+      <div class="chart-section">
+        <div class="chart-title">Sentiment Breakdown</div>
+        <div class="bar-chart" id="barSentiment"></div>
+      </div>
+
+      <!-- Priority bars -->
+      <div class="chart-section">
+        <div class="chart-title">Priority Distribution</div>
+        <div class="bar-chart" id="barPriority"></div>
+      </div>
+    </div>
+
+    <!-- KB GAPS TAB -->
+    <div class="tab-panel" id="panel-gaps">
+      <div class="tab-toolbar">
+        <span class="toolbar-title">KB Gaps on GitHub</span>
+        <button class="toolbar-btn" id="btnRefreshGaps">↺ Refresh</button>
+      </div>
+      <div class="gaps-list" id="gapsList">
+        <div class="empty-state">
+          <div class="empty-icon">🎉</div>
+          <p>No KB gaps yet — great coverage!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="tab-panel" id="panel-settings">
+      <div class="settings-section">
+        <div class="settings-title">Backend Connection</div>
+        <div class="field-group">
+          <label class="field-label" for="settingsUrl">API URL</label>
+          <input class="field-input" type="url" id="settingsUrl"
+                 placeholder="http://localhost:8000"
+                 value="http://localhost:8000">
+        </div>
+        <button class="btn-secondary" id="btnTestConn">Test Connection</button>
+        <div class="conn-result hidden" id="connResult"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Integrations</div>
+        <div class="integration-list">
+          <div class="integration-row">
+            <span class="int-icon">📧</span>
+            <div class="int-info">
+              <strong>Gmail</strong>
+              <span>Read support inbox</span>
+            </div>
+            <code class="int-tool">gmail.messages.list</code>
+          </div>
+          <div class="integration-row">
+            <span class="int-icon">📚</span>
+            <div class="int-info">
+              <strong>Notion KB</strong>
+              <span>Search knowledge base</span>
+            </div>
+            <code class="int-tool">notion.databases.query</code>
+          </div>
+          <div class="integration-row">
+            <span class="int-icon">🎫</span>
+            <div class="int-info">
+              <strong>Jira</strong>
+              <span>Create support tickets</span>
+            </div>
+            <code class="int-tool">jira.issue.create</code>
+          </div>
+          <div class="integration-row">
+            <span class="int-icon">🐛</span>
+            <div class="int-info">
+              <strong>GitHub</strong>
+              <span>Track KB gaps</span>
+            </div>
+            <code class="int-tool">github.issue.create</code>
+          </div>
+          <div class="integration-row">
+            <span class="int-icon">📤</span>
+            <div class="int-info">
+              <strong>Resend</strong>
+              <span>Send reply emails</span>
+            </div>
+            <code class="int-tool">resend.emails.send</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Swytchcode Features</div>
+        <div class="feature-grid">
+          <div class="feature-chip active">🔐 Managed Auth</div>
+          <div class="feature-chip active">📜 Policy Engine</div>
+          <div class="feature-chip active">🔁 Idempotency</div>
+          <div class="feature-chip active">🔄 Auto Retries</div>
+          <div class="feature-chip active">📊 Audit Logging</div>
+          <div class="feature-chip active">🛡️ Trust Boundary</div>
+        </div>
+      </div>
+
+      <div class="settings-section danger-section">
+        <div class="settings-title">Data</div>
+        <button class="btn-danger" id="btnClearData">Clear Local Storage</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Bottom Navigation ─────────────────────────────────── -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="process" id="nav-process">
+      <span class="nav-icon">🚀</span>
+      <span class="nav-label">Process</span>
     </button>
-
-    <!-- Progress Area -->
-    <div class="progress-area hidden" id="progressArea">
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-      <div class="progress-steps" id="progressSteps"></div>
-    </div>
-
-    <!-- Results Area -->
-    <div class="results-area hidden" id="resultsArea">
-      <div class="result-card">
-        <h3>🧠 Classification</h3>
-        <div class="result-grid">
-          <div class="result-item">
-            <span class="result-label">Category</span>
-            <span class="result-value badge" id="resCategory">—</span>
-          </div>
-          <div class="result-item">
-            <span class="result-label">Sentiment</span>
-            <span class="result-value badge" id="resSentiment">—</span>
-          </div>
-          <div class="result-item">
-            <span class="result-label">Priority</span>
-            <span class="result-value badge" id="resPriority">—</span>
-          </div>
-          <div class="result-item">
-            <span class="result-label">KB Match</span>
-            <span class="result-value badge" id="resKBMatch">—</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="result-card">
-        <h3>🎫 Tickets</h3>
-        <div class="ticket-row" id="ticketJira">
-          <span class="ticket-icon">🎫</span>
-          <span class="ticket-info">Jira: <strong id="resJiraId">—</strong></span>
-        </div>
-        <div class="ticket-row" id="ticketGithub">
-          <span class="ticket-icon">🐛</span>
-          <span class="ticket-info">GitHub: <strong id="resGithubId">—</strong></span>
-        </div>
-      </div>
-
-      <div class="result-card">
-        <h3>📧 Draft Reply</h3>
-        <div class="draft-reply" id="resDraftReply">—</div>
-      </div>
-
-      <div class="result-card success-card" id="successCard">
-        <span class="success-icon">✅</span>
-        <span class="success-text">Reply sent via Resend</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab: Execution Log -->
-  <div class="tab-content" id="tab-log">
-    <div class="log-container" id="logContainer">
-      <p class="log-empty">No executions yet. Process an email to see the log.</p>
-    </div>
-  </div>
-
-  <!-- Tab: Integrations -->
-  <div class="tab-content" id="tab-integrations">
-    <div class="integration-list">
-      <div class="integration-item">
-        <div class="integration-icon gmail">📧</div>
-        <div class="integration-info">
-          <strong>Gmail</strong>
-          <span>Read support emails</span>
-        </div>
-        <span class="integration-tool">gmail.messages.list</span>
-      </div>
-      <div class="integration-item">
-        <div class="integration-icon notion">📚</div>
-        <div class="integration-info">
-          <strong>Notion</strong>
-          <span>Search knowledge base</span>
-        </div>
-        <span class="integration-tool">notion.databases.query</span>
-      </div>
-      <div class="integration-item">
-        <div class="integration-icon jira">🎫</div>
-        <div class="integration-info">
-          <strong>Jira</strong>
-          <span>Create support tickets</span>
-        </div>
-        <span class="integration-tool">jira.issue.create</span>
-      </div>
-      <div class="integration-item">
-        <div class="integration-icon resend">📤</div>
-        <div class="integration-info">
-          <strong>Resend</strong>
-          <span>Send reply emails</span>
-        </div>
-        <span class="integration-tool">resend.emails.send</span>
-      </div>
-      <div class="integration-item">
-        <div class="integration-icon github">🐛</div>
-        <div class="integration-info">
-          <strong>GitHub</strong>
-          <span>Track KB gaps</span>
-        </div>
-        <span class="integration-tool">github.issue.create</span>
-      </div>
-    </div>
-
-    <div class="swytchcode-features">
-      <h3>⚡ Swytchcode Features Active</h3>
-      <div class="feature-chips">
-        <span class="chip">🔐 Managed Auth</span>
-        <span class="chip">📜 Policy Engine</span>
-        <span class="chip">🔁 Idempotency</span>
-        <span class="chip">🔄 Auto Retries</span>
-        <span class="chip">📊 Audit Logging</span>
-        <span class="chip">🛡️ Trust Boundary</span>
-      </div>
-    </div>
-  </div>
-
-  <footer class="footer">
-    <span>Built for Build with Swytchcode Hackathon</span>
-  </footer>
+    <button class="nav-btn" data-tab="history" id="nav-history">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">History</span>
+    </button>
+    <button class="nav-btn" data-tab="analytics" id="nav-analytics">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Analytics</span>
+    </button>
+    <button class="nav-btn" data-tab="gaps" id="nav-gaps">
+      <span class="nav-icon">🐛</span>
+      <span class="nav-label">KB Gaps</span>
+    </button>
+    <button class="nav-btn" data-tab="settings" id="nav-settings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Settings</span>
+    </button>
+  </nav>
 
   <script src="popup.js"></script>
 </body>
