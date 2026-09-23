@@ -60,6 +60,36 @@ def run(state: dict) -> dict:
     log.append("✍️  [Gemini] Drafting reply...")
 
     try:
+        # Build ticket info string
+        ticket_parts = []
+        if state.get("jira_ticket_id"):
+            ticket_parts.append(f"Jira Ticket: {state['jira_ticket_id']}")
+        if state.get("github_issue_url"):
+            ticket_parts.append(f"GitHub Issue: {state['github_issue_url']}")
+        ticket_info = "TICKETS CREATED:\n" + "\n".join(ticket_parts) if ticket_parts else ""
+
+        # Choose prompt based on KB results
+        if state.get("kb_match_found"):
+            kb_summary = state.get("kb_answer_summary", "")
+            if state.get("kb_results"):
+                titles = [a.get("title", "") for a in state["kb_results"] if a.get("title")]
+                kb_summary += "\nArticle titles: " + ", ".join(titles)
+
+            prompt = REPLY_PROMPT_WITH_KB.format(
+                sender=state.get("email_from", ""),
+                subject=state.get("email_subject", ""),
+                body=state.get("email_body", "")[:1500],
+                kb_summary=kb_summary,
+                ticket_info=ticket_info,
+            )
+        else:
+            prompt = REPLY_PROMPT_NO_KB.format(
+                sender=state.get("email_from", ""),
+                subject=state.get("email_subject", ""),
+                body=state.get("email_body", "")[:1500],
+                ticket_info=ticket_info,
+            )
+
         response = _client.models.generate_content(
             model=Config.LLM_MODEL,
             contents=prompt,
