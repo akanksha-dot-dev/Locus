@@ -13,12 +13,14 @@ from src.config import Config
 _client = genai.Client(api_key=Config.GOOGLE_API_KEY)
 
 CLASSIFICATION_PROMPT = """\
-You are a customer support AI classifier. Analyze the following support email and return a JSON object with these fields:
+You are a customer support AI classifier. Analyze the following support email and return a JSON object with these exact fields:
 
 1. "issue_category": one of "known" (common/documented issue), "unknown" (new/undocumented issue), or "urgent" (critical/time-sensitive)
 2. "sentiment": one of "positive", "neutral", "negative", or "frustrated"
 3. "priority": one of "low", "medium", "high", or "critical"
 4. "keywords": a list of 3-5 topic keywords extracted from the email
+5. "confidence_score": integer 0-100 representing how confident you are in the classification
+6. "reasoning": one short sentence explaining the classification
 
 IMPORTANT: Return ONLY valid JSON, no markdown, no explanation.
 
@@ -89,28 +91,41 @@ def run(state: dict) -> dict:
 
         result = json.loads(text)
 
-        # Sentiment-aware priority escalation
         category = result.get("issue_category", "unknown")
         sentiment = result.get("sentiment", "neutral")
         priority = result.get("priority", "medium")
+        confidence = int(result.get("confidence_score", 75))
+        reasoning = result.get("reasoning", "")
 
         if sentiment == "frustrated" and priority in ("low", "medium"):
             priority = "high"
-            log.append("⬆️  [Gemini] Priority escalated due to frustrated sentiment")
+            log.append("Priority escalated due to frustrated sentiment")
 
         if category == "urgent":
             priority = "critical"
 
+        # Low-confidence emails get auto-escalated
+        if confidence < 50:
+            category = "unknown"
+            log.append(f"Low confidence ({confidence}%) — auto-escalating")
+
+        # SLA deadline hours by priority
+        sla_hours = {"critical": 1, "high": 4, "medium": 24, "low": 72}.get(priority, 24)
+
         log.append(
-            f"✅ [Gemini] Classification: category={category} | "
-            f"sentiment={sentiment} | priority={priority}"
+            f"[Gemini] Classification: {category} | {sentiment} | {priority} "
+            f"| confidence={confidence}% | SLA={sla_hours}h"
         )
+        if reasoning:
+            log.append(f"[Gemini] Reasoning: {reasoning}")
 
         return {
             **state,
             "issue_category": category,
             "sentiment": sentiment,
             "priority": priority,
+            "confidence_score": confidence,
+            "sla_deadline_hours": float(sla_hours),
             "keywords": result.get("keywords", []),
             "execution_log": log,
         }

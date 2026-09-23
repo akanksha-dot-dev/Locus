@@ -2,14 +2,16 @@
   "manifest_version": 3,
   "name": "AI Support Agent",
   "version": "2.0.0",
-  "description": "Classify support emails, search your knowledge base, create Jira tickets, file GitHub issues, and send AI-drafted replies — all from your browser.",
+  "description": "AI-powered customer support: classify emails, search KB, create Jira/GitHub tickets, draft multi-tone replies — and inject AI directly into Gmail.",
   "permissions": [
     "storage",
     "contextMenus",
-    "notifications"
+    "notifications",
+    "scripting"
   ],
   "host_permissions": [
-    "http://localhost:8000/*"
+    "http://localhost:8000/*",
+    "https://mail.google.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -17,5 +19,12 @@
   },
   "background": {
     "service_worker": "service-worker.js"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_idle"
+    }
+  ]
 }
