@@ -18,62 +18,361 @@ from datetime import datetime
 # ── Page Config ────────────────────────────────────────────────
 st.set_page_config(
     page_title="AI Support Agent — Dashboard",
-    page_icon="🤖",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ── Custom CSS ─────────────────────────────────────────────────
+# ── Custom CSS — Light Professional Theme ──────────────────────
 st.markdown("""
 <style>
-    .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 12px;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    /* ── Global Overrides ─────────────────────────── */
+    html, body, [data-testid="stAppViewContainer"] {
+        font-family: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    [data-testid="stAppViewContainer"] {
+        background: #f8f9fc;
+    }
+
+    [data-testid="stSidebar"] {
+        background: #ffffff;
+        border-right: 1px solid #e2e6ef;
+    }
+
+    [data-testid="stHeader"] {
+        background: transparent;
+    }
+
+    /* Remove Streamlit branding padding */
+    .block-container {
+        padding-top: 2rem;
+    }
+
+    /* ── Hero Header ──────────────────────────────── */
+    .hero-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 40%, #7c3aed 100%);
+        padding: 2rem 2.5rem;
+        border-radius: 16px;
         color: white;
         margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.2);
     }
-    .metric-card {
-        background: #1a1a2e;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border: 1px solid #333;
-        text-align: center;
+
+    .hero-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%);
+        pointer-events: none;
     }
-    .metric-value {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #6366f1;
+
+    .hero-header h1 {
+        margin: 0;
+        font-size: 1.65rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        position: relative;
+        z-index: 1;
     }
-    .metric-label {
-        font-size: 0.9rem;
-        color: #999;
-        margin-top: 0.5rem;
+
+    .hero-header p {
+        margin: 0.5rem 0 0;
+        opacity: 0.8;
+        font-size: 0.95rem;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
     }
-    .integration-badge {
-        display: inline-block;
+
+    .hero-header .hero-version {
+        position: absolute;
+        right: 2.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,255,255,0.15);
         padding: 4px 12px;
         border-radius: 20px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        margin: 2px;
+        letter-spacing: 0.04em;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255,255,255,0.1);
     }
-    .badge-gmail { background: #EA433520; color: #EA4335; border: 1px solid #EA4335; }
-    .badge-notion { background: #00000020; color: #fff; border: 1px solid #555; }
-    .badge-jira { background: #0052CC20; color: #4C9AFF; border: 1px solid #0052CC; }
-    .badge-resend { background: #6366F120; color: #818CF8; border: 1px solid #6366F1; }
-    .badge-github { background: #33333320; color: #fff; border: 1px solid #666; }
-    .log-entry { padding: 6px 0; border-bottom: 1px solid #222; font-family: monospace; }
+
+    /* ── Metric Cards ─────────────────────────────── */
+    [data-testid="stMetric"] {
+        background: #ffffff;
+        border: 1px solid #e2e6ef;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    [data-testid="stMetricLabel"] p {
+        font-size: 0.78rem !important;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    [data-testid="stMetricValue"] {
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+        color: #4f46e5 !important;
+    }
+
+    /* ── Sidebar Styles ───────────────────────────── */
+    [data-testid="stSidebar"] h3 {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ── Integration Badges ───────────────────────── */
+    .int-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin: 3px 2px;
+        transition: transform 0.1s ease;
+    }
+    .int-badge:hover { transform: translateY(-1px); }
+
+    .badge-gmail   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .badge-notion  { background: #f1f3f8; color: #111827; border: 1px solid #e2e6ef; }
+    .badge-jira    { background: #eef2ff; color: #4f46e5; border: 1px solid rgba(79,70,229,0.2); }
+    .badge-resend  { background: #f5f3ff; color: #7c3aed; border: 1px solid rgba(124,58,237,0.2); }
+    .badge-github  { background: #f1f3f8; color: #111827; border: 1px solid #e2e6ef; }
+
+    /* ── Feature Checklist ────────────────────────── */
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 0;
+        font-size: 0.85rem;
+        color: #4b5563;
+    }
+
+    .feature-check {
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        flex-shrink: 0;
+    }
+
+    /* ── Config Items ─────────────────────────────── */
+    .config-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid #f1f3f8;
+        font-size: 0.85rem;
+    }
+    .config-item:last-child { border-bottom: none; }
+
+    .config-key { color: #9ca3af; font-weight: 500; }
+
+    .config-val {
+        font-weight: 600;
+        color: #111827;
+        background: #f1f3f8;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.82rem;
+    }
+
+    /* ── Log Entries ──────────────────────────────── */
+    .log-entry {
+        padding: 8px 12px;
+        border-left: 3px solid #e2e6ef;
+        background: #ffffff;
+        margin-bottom: 6px;
+        border-radius: 0 8px 8px 0;
+        font-family: 'SF Mono', 'Courier New', monospace;
+        font-size: 0.83rem;
+        color: #4b5563;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        transition: border-color 0.15s;
+    }
+
+    .log-entry:hover { border-left-color: #4f46e5; }
+
+    /* ── Tabs ─────────────────────────────────────── */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 4px;
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid #e2e6ef;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #9ca3af;
+        padding: 8px 16px;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: #eef2ff !important;
+        color: #4f46e5 !important;
+    }
+
+    .stTabs [data-baseweb="tab-border"] { display: none; }
+    .stTabs [data-baseweb="tab-highlight"] { display: none; }
+
+    /* ── Buttons ──────────────────────────────────── */
+    .stButton > button[kind="primary"],
+    .stButton > button[data-testid="stBaseButton-primary"] {
+        background: #4f46e5 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        padding: 0.6rem 1.5rem !important;
+        box-shadow: 0 4px 14px rgba(79,70,229,0.2) !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .stButton > button[kind="primary"]:hover,
+    .stButton > button[data-testid="stBaseButton-primary"]:hover {
+        background: #4338ca !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 20px rgba(79,70,229,0.28) !important;
+    }
+
+    /* ── Progress Bar ─────────────────────────────── */
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #4f46e5, #7c3aed) !important;
+    }
+
+    /* ── Text Input / Text Area ───────────────────── */
+    .stTextInput input,
+    .stTextArea textarea {
+        border: 1px solid #e2e6ef !important;
+        border-radius: 8px !important;
+        font-family: 'Inter', sans-serif !important;
+        transition: border-color 0.15s, box-shadow 0.15s !important;
+    }
+
+    .stTextInput input:focus,
+    .stTextArea textarea:focus {
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.08) !important;
+    }
+
+    /* ── Result JSON ──────────────────────────────── */
+    [data-testid="stJson"] {
+        background: #f8f9fc !important;
+        border: 1px solid #e2e6ef !important;
+        border-radius: 10px !important;
+    }
+
+    /* ── Architecture Diagram ─────────────────────── */
+    .arch-card {
+        background: white;
+        border: 1px solid #e2e6ef;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .arch-card pre {
+        color: #4b5563 !important;
+        font-size: 0.9rem;
+        line-height: 1.7;
+    }
+
+    /* ── Pipeline Steps ───────────────────────────── */
+    .pipeline-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        background: white;
+        border: 1px solid #e2e6ef;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        transition: border-color 0.15s;
+    }
+
+    .pipeline-step:hover { border-color: #4f46e5; }
+
+    .step-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: #eef2ff;
+        color: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+
+    .step-info h4 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .step-info p {
+        margin: 2px 0 0;
+        font-size: 0.82rem;
+        color: #9ca3af;
+    }
+
+    /* ── Responsive ────────────────────────────────── */
+    @media (max-width: 768px) {
+        .hero-header { padding: 1.5rem; }
+        .hero-header h1 { font-size: 1.3rem; }
+        .hero-header .hero-version { display: none; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ── Header ─────────────────────────────────────────────────────
 st.markdown("""
-<div class="main-header">
-    <h1 style="margin:0;">🤖 AI Customer Support Agent</h1>
-    <p style="margin:0.5rem 0 0; opacity:0.9;">
+<div class="hero-header">
+    <h1>⚡ AI Customer Support Agent</h1>
+    <p>
         Powered by <strong>Swytchcode</strong> × LangGraph × Gemini
     </p>
+    <span class="hero-version">v2.0</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -81,30 +380,44 @@ st.markdown("""
 with st.sidebar:
     st.markdown("### 🔌 Integrations")
     st.markdown("""
-    <span class="integration-badge badge-gmail">📧 Gmail</span>
-    <span class="integration-badge badge-notion">📚 Notion</span>
-    <span class="integration-badge badge-jira">🎫 Jira</span>
-    <span class="integration-badge badge-resend">📤 Resend</span>
-    <span class="integration-badge badge-github">🐛 GitHub</span>
+    <span class="int-badge badge-gmail">📧 Gmail</span>
+    <span class="int-badge badge-notion">📚 Notion</span>
+    <span class="int-badge badge-jira">🎫 Jira</span>
+    <span class="int-badge badge-resend">📤 Resend</span>
+    <span class="int-badge badge-github">🐛 GitHub</span>
     """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("### ⚡ Swytchcode Features")
-    st.markdown("""
-    - ✅ Managed Authentication
-    - ✅ Policy Engine (5 rules)
-    - ✅ Idempotency
-    - ✅ Automatic Retries
-    - ✅ Audit Logging
-    - ✅ Execution Pipeline
-    """)
+    features = [
+        "Managed Authentication",
+        "Policy Engine (5 rules)",
+        "Idempotency",
+        "Automatic Retries",
+        "Audit Logging",
+        "Execution Pipeline",
+    ]
+    for f in features:
+        st.markdown(f"""
+        <div class="feature-item">
+            <div class="feature-check">✓</div>
+            <span>{f}</span>
+        </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("### 🧠 Agent Config")
-    st.text(f"LLM: Gemini 2.0 Flash")
-    st.text(f"Framework: LangGraph")
-    st.text(f"Nodes: 7")
-    st.text(f"Integrations: 5")
+    configs = [
+        ("LLM", "Gemini Flash"),
+        ("Framework", "LangGraph"),
+        ("Nodes", "7"),
+        ("Integrations", "5"),
+    ]
+    for key, val in configs:
+        st.markdown(f"""
+        <div class="config-item">
+            <span class="config-key">{key}</span>
+            <span class="config-val">{val}</span>
+        </div>""", unsafe_allow_html=True)
 
 # ── Metrics Row ────────────────────────────────────────────────
 col1, col2, col3, col4, col5 = st.columns(5)
@@ -119,15 +432,15 @@ if "tickets_created" not in st.session_state:
     st.session_state.execution_logs = []
 
 with col1:
-    st.metric("📧 Emails Processed", st.session_state.emails_processed)
+    st.metric("Emails Processed", st.session_state.emails_processed)
 with col2:
-    st.metric("🎫 Jira Tickets", st.session_state.tickets_created)
+    st.metric("Jira Tickets", st.session_state.tickets_created)
 with col3:
-    st.metric("📚 KB Hits", st.session_state.kb_hits)
+    st.metric("KB Resolved", st.session_state.kb_hits)
 with col4:
-    st.metric("🐛 KB Gaps (GitHub)", st.session_state.kb_misses)
+    st.metric("KB Gaps", st.session_state.kb_misses)
 with col5:
-    st.metric("📤 Replies Sent", st.session_state.replies_sent)
+    st.metric("Replies Sent", st.session_state.replies_sent)
 
 # ── Main Content ───────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["🚀 Process Email", "📋 Execution Log", "📊 Architecture"])
@@ -339,48 +652,59 @@ with tab2:
 with tab3:
     st.markdown("### 🏗️ Architecture")
     st.markdown("""
-    ```
-              📧 Gmail (Incoming Email)
-                       │
-                       ▼
-              🧠 LLM Classification
-               (Gemini 2.0 Flash)
-              ┌────────┴────────┐
-              │                 │
-         Known Issue       Unknown Issue
-              │                 │
-              ▼                 ▼
-        📚 Notion KB      🐛 GitHub Issue
-          Search            (KB Gap)
-         ┌───┴───┐            │
-         │       │            ▼
-      Found  Not Found   🎫 Jira Ticket
-         │       │            │
-         │       └────────────┤
-         │                    │
-         └────────────────────┤
-                              ▼
-                    ✍️ Draft Reply
-                     (Gemini LLM)
-                         │
-                         ▼
-                   📤 Resend Email
-                         │
-                         ▼
-                   ✅ Resolution
-    ```
-    """)
+    <div class="arch-card">
+    <pre>
+          📧 Gmail (Incoming Email)
+                   │
+                   ▼
+          🧠 LLM Classification
+           (Gemini 2.0 Flash)
+          ┌────────┴────────┐
+          │                 │
+     Known Issue       Unknown Issue
+          │                 │
+          ▼                 ▼
+    📚 Notion KB      🐛 GitHub Issue
+      Search            (KB Gap)
+     ┌───┴───┐            │
+     │       │            ▼
+  Found  Not Found   🎫 Jira Ticket
+     │       │            │
+     │       └────────────┤
+     │                    │
+     └────────────────────┤
+                          ▼
+                ✍️ Draft Reply
+                 (Gemini LLM)
+                     │
+                     ▼
+               📤 Resend Email
+                     │
+                     ▼
+               ✅ Resolution
+    </pre>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("### Swytchcode Execution Pipeline")
-    st.markdown("""
-    Every tool call goes through Swytchcode's 8-step execution pipeline:
 
-    1. **Resolve Tool** → `tooling.json` whitelist check
-    2. **Validate Inputs** → Schema validation
-    3. **Evaluate Policies** → `policies.json` guard rules
-    4. **Resolve Endpoint** → `manifest.json` URL resolution
-    5. **Resolve Credentials** → Managed auth (zero code)
-    6. **Apply Execution Policy** → Retries, timeouts, idempotency
-    7. **Execute HTTP Request** → Direct API call
-    8. **Normalize Response** → Consistent output format
-    """)
+    pipeline_steps = [
+        ("Resolve Tool", "tooling.json whitelist check"),
+        ("Validate Inputs", "Schema validation"),
+        ("Evaluate Policies", "policies.json guard rules"),
+        ("Resolve Endpoint", "manifest.json URL resolution"),
+        ("Resolve Credentials", "Managed auth (zero code)"),
+        ("Apply Execution Policy", "Retries, timeouts, idempotency"),
+        ("Execute HTTP Request", "Direct API call"),
+        ("Normalize Response", "Consistent output format"),
+    ]
+
+    for i, (title, desc) in enumerate(pipeline_steps, 1):
+        st.markdown(f"""
+        <div class="pipeline-step">
+            <div class="step-num">{i}</div>
+            <div class="step-info">
+                <h4>{title}</h4>
+                <p>{desc}</p>
+            </div>
+        </div>""", unsafe_allow_html=True)
