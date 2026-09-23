@@ -95,10 +95,8 @@ def run(state: dict) -> dict:
         last_err = None
         for attempt in range(3):
             try:
-                response = _client.models.generate_content(
-                    model=Config.LLM_MODEL,
-                    contents=prompt,
-                )
+                chat = _client.chats.create(model=Config.LLM_MODEL)
+                response = chat.send_message(prompt)
                 if response and response.text:
                     break
             except Exception as e:
