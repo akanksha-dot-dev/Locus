@@ -1,0 +1,48 @@
+import { PresetScenario } from '../types';
+
+export const PRESET_SCENARIOS: PresetScenario[] = [
+  {
+    id: 'london-storm',
+    key: 'storm_warning',
+    title: 'Storm Warning in London',
+    city: 'London',
+    iconName: 'CloudLightning',
+    description: 'Severe weather advisory with rainfall and transit disruptions; advises WFH and reschedules outdoor meetings.',
+    expectedVerdict: 'wfh',
+    tag: 'Hazard Alert',
+    query: 'Severe storm warning reported in London today. I have outdoor meetings scheduled. What precautions should I take, and should I go to the office or work from home?',
+  },
+  {
+    id: 'delhi-travel',
+    key: 'travel_day',
+    title: 'Delhi Flight Travel Day',
+    city: 'Delhi',
+    iconName: 'PlaneTakeoff',
+    description: 'Early morning airport transit schedule, fog/visibility checks, and airport buffer management.',
+    expectedVerdict: 'hybrid',
+    tag: 'Airport Transit',
+    query: 'I have an early morning flight from Delhi at 6 AM and need to reach the airport by 4 AM. Will the weather affect my travel? Any fog or thunderstorms expected? Please plan my day.',
+  },
+  {
+    id: 'nyc-sprint',
+    key: 'day_planner_office',
+    title: 'Sprint Crunch in NYC',
+    city: 'New York',
+    iconName: 'CodeXml',
+    description: 'Engineering sprint backlog, critical Jira blockers, code reviews, and office focus blocks.',
+    expectedVerdict: 'office',
+    tag: 'Sprint Deadline',
+    query: 'Sprint crunch day in NYC: Check my high-priority Jira tickets and GitHub PRs to estimate my workload, check today\'s weather in New York, and decide if I should go to the office or work from home. Then plan my full day hour-by-hour.',
+  },
+  {
+    id: 'mumbai-clear',
+    key: 'clear_day',
+    title: 'Clear Friday in Mumbai',
+    city: 'Mumbai',
+    iconName: 'SunMedium',
+    description: 'Clear pleasant weather, outdoor team park picnic, and balanced engineering wrap-up.',
+    expectedVerdict: 'office',
+    tag: 'Optimal Weather',
+    query: 'Planning a clear Friday in Mumbai with team picnic at the park and afternoon sports. Check my emails and weather, and give me a full schedule and office recommendation.',
+  },
+];

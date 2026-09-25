@@ -1,25 +1,69 @@
-# Environment
+# ==============================================================================
+# SwytchAgent Day Planner v2.0 — Unified Repository .gitignore
+# Track 5: AI Real World Agent | Build with Swytchcode Hackathon 2026
+# ==============================================================================
+
+# ── Environment & Secrets ─────────────────────────────────────────────────────
 .env
 *.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
 
-# Python
+# ── Python & Virtual Environments ─────────────────────────────────────────────
 __pycache__/
-*.pyc
-*.pyo
-.venv/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
 venv/
+.venv/
+backend/venv/
+backend/.venv/
 **/venv/
 **/__pycache__/
 
-# Swytchcode managed credentials
-.swytchcode/credentials.db
-**/.swytchcode/
+# ── Node & Frontend Artifacts ─────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+**/node_modules/
+dist/
+frontend/dist/
+**/dist/
+.vite/
+frontend/.vite/
+**/coverage/
 
-# IDE & Logs
+# ── Swytchcode Credentials & Local DBs ────────────────────────────────────────
+.swytchcode/credentials.db
+**/.swytchcode/credentials.db
+backend/.swytchcode/credentials.db
+*.db
+*.sqlite3
+
+# ── Runtime State & Service Logs ──────────────────────────────────────────────
+.running_pids
+backend/.running_pids
+*.log
+*.log.*
+server.log
+dashboard.log
+server_err.log
+dashboard_err.log
+backend/*.log
+
+# ── IDE, OS & Editor Caches ───────────────────────────────────────────────────
 .vscode/
 .idea/
-*.log
-
-# OS
+*.sublime-project
+*.sublime-workspace
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# ── Reference & Internal Metadata ─────────────────────────────────────────────
+.agents/
+hackathon-playbook/
