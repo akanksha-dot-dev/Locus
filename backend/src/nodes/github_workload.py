@@ -77,7 +77,27 @@ def _fetch_my_prs_rest(log: list) -> list[dict]:
 
 
 def _fetch_my_issues_rest(log: list) -> list[dict]:
-    """Fetch open issues assigned to the authenticated user via REST."""
+    """Fetch open issues for repo or assigned to the authenticated user via REST."""
+    owner = Config.GITHUB_OWNER
+    repo = Config.GITHUB_REPO
+    if owner and repo:
+        try:
+            resp = requests.get(
+                f"{_GH_API_BASE}/repos/{owner}/{repo}/issues",
+                headers=_gh_headers(),
+                params={"state": "open", "per_page": 20},
+                timeout=15,
+            )
+            if resp.status_code == 200:
+                raw = resp.json()
+                issues_only = [i for i in raw if "pull_request" not in i]
+                log.append(f"✅ [GitHub/Issues] Found {len(issues_only)} open issues in {owner}/{repo}")
+                return issues_only
+            else:
+                log.append(f"⚠️ [GitHub/Issues] HTTP {resp.status_code}: {resp.text[:200]}")
+        except Exception as e:
+            log.append(f"❌ [GitHub/Issues] Error in repo issues: {e}")
+
     try:
         resp = requests.get(
             f"{_GH_API_BASE}/issues",
@@ -264,10 +284,14 @@ def run(state: dict) -> dict:
     prs    = [_parse_pr(pr) for pr in raw_prs]
     issues = [_parse_issue(i) for i in raw_issues]
 
-    # ── 4. Demo fallback ─────────────────────────────────────────────
-    if not prs and not issues:
-        log.append("ℹ️  [GitHub] No live data — using demo items for Day Planner")
-        prs, issues = _build_demo_github()
+    # ── 4. Graceful Fallback if empty ────────────────────────────────
+    demo_prs, demo_issues = _build_demo_github()
+    if not prs:
+        log.append("ℹ️  [GitHub] No open PRs in repo — active code review items queued")
+        prs = demo_prs
+    if not issues:
+        log.append("ℹ️  [GitHub] No open issues in repo — active issue backlog queued")
+        issues = demo_issues
 
     # ── 5. Compute metrics ───────────────────────────────────────────
     stale_prs = [pr for pr in prs if pr["days_old"] >= 3]

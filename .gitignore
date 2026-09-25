@@ -38,9 +38,9 @@ frontend/.vite/
 **/coverage/
 
 # ── Swytchcode Credentials & Local DBs ────────────────────────────────────────
-.swytchcode/credentials.db
-**/.swytchcode/credentials.db
-backend/.swytchcode/credentials.db
+.swytchcode/
+**/.swytchcode/
+backend/.swytchcode/
 *.db
 *.sqlite3
 
@@ -67,3 +67,4 @@ desktop.ini
 # ── Reference & Internal Metadata ─────────────────────────────────────────────
 .agents/
 hackathon-playbook/
+.swytchcode/workspace.json

@@ -21,6 +21,29 @@ except Exception:
     _HAS_SWYTCHCODE = False
 
 
+def _get_title_property_name(database_id: str) -> str:
+    """Detect the title property name of the Notion database dynamically."""
+    if not Config.NOTION_API_KEY or not database_id:
+        return "Name"
+    try:
+        resp = requests.get(
+            f"https://api.notion.com/v1/databases/{database_id}",
+            headers={
+                "Authorization": f"Bearer {Config.NOTION_API_KEY}",
+                "Notion-Version": "2022-06-28",
+            },
+            timeout=8,
+        )
+        if resp.status_code == 200:
+            props = resp.json().get("properties", {})
+            for k, v in props.items():
+                if v.get("type") == "title":
+                    return k
+    except Exception:
+        pass
+    return "Date & Time Recorded"
+
+
 def _build_notion_page(state: dict) -> dict:
     """Build the Notion page properties and content (full 7-integration day plan)."""
     now = datetime.now()
@@ -48,10 +71,13 @@ def _build_notion_page(state: dict) -> dict:
     }
     office_emoji = office_emojis.get(go_to_office, "❓")
 
+    db_id = Config.NOTION_KB_DATABASE_ID or Config.NOTION_LOG_DATABASE_ID
+    title_prop = _get_title_property_name(db_id)
+
     title = f"📅 Day Plan — {city} — {now.strftime('%b %d, %Y')}"
 
     properties = {
-        "Name": {"title": [{"text": {"content": title}}]}
+        title_prop: {"title": [{"text": {"content": title}}]}
     }
 
     # Weather section

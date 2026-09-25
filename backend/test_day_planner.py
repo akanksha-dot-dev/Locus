@@ -216,7 +216,7 @@ class TestIndividualNodes(unittest.TestCase):
             with patch.object(Config, "JIRA_EMAIL", "dev@example.com"):
                 with patch.object(Config, "JIRA_API_TOKEN", "api_token_abc"):
                     with patch("src.nodes.jira_workload._HAS_SWYTCHCODE", False):
-                        with patch("requests.get", return_value=mock_jira_resp):
+                        with patch("requests.post", return_value=mock_jira_resp), patch("requests.get", return_value=mock_jira_resp):
                             res = jira_workload.run(state)
 
         issues = res.get("jira_issues", [])
