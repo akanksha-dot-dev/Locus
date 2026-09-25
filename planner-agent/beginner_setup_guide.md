@@ -99,7 +99,7 @@ irm https://cli.swytchcode.com/install.ps1 | iex
 ### Step 1.5 — Install Python Dependencies for Your Project
 
 ```powershell
-cd d:\Hackathon\support-agent
+cd d:\SwytchAgent2.0\planner-agent
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -110,7 +110,7 @@ pip install -r requirements.txt
 >
 > ⚠️ Every time you open a new terminal, you need to activate it again:
 > ```powershell
-> cd d:\Hackathon\support-agent
+> cd d:\SwytchAgent2.0\planner-agent
 > .\venv\Scripts\Activate.ps1
 > ```
 
@@ -361,7 +361,7 @@ Swytchcode is the **middleware layer** that connects your Python agent code to a
 Open PowerShell and run each command **one at a time**:
 
 ```powershell
-cd d:\Hackathon\support-agent
+cd d:\SwytchAgent2.0\planner-agent
 ```
 
 ### Step 3.1 — Initialize Swytchcode
@@ -492,7 +492,7 @@ swy exec github.issue.list --params "{\"owner\": \"YOUR_GITHUB_USERNAME\", \"rep
 ## PHASE 5: Configure Your .env File (5 min)
 
 ```powershell
-cd d:\Hackathon\support-agent
+cd d:\SwytchAgent2.0\planner-agent
 copy .env.example .env
 ```
 
@@ -528,7 +528,7 @@ MAX_EMAILS_PER_RUN=5
 ### Run 1: Verify Setup
 
 ```powershell
-cd d:\Hackathon\support-agent
+cd d:\SwytchAgent2.0\planner-agent
 .\venv\Scripts\Activate.ps1
 python main.py --verify
 ```
@@ -575,7 +575,7 @@ python main.py
 ## PHASE 7: Run the Dashboard (5 min)
 
 ```powershell
-cd d:\Hackathon\support-agent
+cd d:\SwytchAgent2.0\planner-agent
 .\venv\Scripts\Activate.ps1
 streamlit run dashboard/app.py
 ```

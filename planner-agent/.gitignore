@@ -11,9 +11,10 @@ venv/
 # Swytchcode managed credentials
 .swytchcode/credentials.db
 
-# IDE
+# IDE & Logs
 .vscode/
 .idea/
+*.log
 
 # OS
 .DS_Store
