@@ -129,10 +129,19 @@ async function buildExtension() {
     : path.join(PUBLIC_DIR, 'sidepanel.html');
   copyFileSafe(sidepanelHtmlSrc, path.join(DIST_DIR, 'sidepanel.html'));
 
-  // CSS Stylesheets
-  copyFileSafe(path.join(SRC_DIR, 'styles/theme.css'), path.join(DIST_DIR, 'theme.css'));
-  copyFileSafe(path.join(SRC_DIR, 'popup/popup.css'), path.join(DIST_DIR, 'popup.css'));
-  copyFileSafe(path.join(SRC_DIR, 'sidepanel/sidepanel.css'), path.join(DIST_DIR, 'sidepanel.css'));
+  // CSS Stylesheets (Minified with esbuild)
+  const cssFiles = [
+    { src: path.join(SRC_DIR, 'styles/theme.css'), dest: path.join(DIST_DIR, 'theme.css') },
+    { src: path.join(SRC_DIR, 'popup/popup.css'), dest: path.join(DIST_DIR, 'popup.css') },
+    { src: path.join(SRC_DIR, 'sidepanel/sidepanel.css'), dest: path.join(DIST_DIR, 'sidepanel.css') },
+  ];
+  for (const { src, dest } of cssFiles) {
+    if (fs.existsSync(src)) {
+      const rawCss = fs.readFileSync(src, 'utf8');
+      const minified = esbuild.transformSync(rawCss, { loader: 'css', minify: true }).code;
+      fs.writeFileSync(dest, minified, 'utf8');
+    }
+  }
 
   // 3. Compile Bundles with esbuild
   console.log('[build] Compiling TypeScript bundles with esbuild...');

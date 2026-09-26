@@ -95,6 +95,28 @@ If the local Locus backend (`http://localhost:8000`) is offline, rebooting, or u
 
 ---
 
+## ⚡ WOW Edition Features (Next-Gen Upgrades)
+
+1. **Animated Holographic Circular HUD Gauge**:
+   - Replaced plain score text with an animated SVG circular progress meter that executes an ease-out cubic count-up from `0` to target weather score with dynamic color shifting (Emerald `#10b981` / Cyan `#06b6d4` / Amber `#f59e0b`).
+2. **Cyberpunk Pomodoro Focus Timer**:
+   - Built-in digital countdown clock (`25:00`) with Start/Pause/Reset tactile controls and pulsing aura status dot.
+   - Built-in zero-dependency **Web Audio Synthesizer** generating authentic micro-ticks on clicks and a harmonious two-tone chime upon completing focus intervals.
+3. **LangGraph Multi-Agent Swarm Visualizer**:
+   - Dedicated **Swarm** tab in the Side Panel rendering the 8 LangGraph autonomous agent nodes (`weather`, `gmail`, `jira`, `github`, `ai_advisor`, `notion`, `slack`, `resend`).
+   - Live telemetry feed capturing real-time node executions, status changes, and latency metrics.
+4. **Real-Time Glowing "Now" Laser Timeline Bar**:
+   - Live pulsating neon cyan laser bar embedded directly into the 24-hour schedule list indicating exact current time with a live seconds clock (`NOW · 13:42:15`).
+   - Auto-scrolls the active schedule block smoothly into view on load.
+5. **Interactive In-Page Co-Pilot Pill**:
+   - Injected on Jira (`*.atlassian.net`) and GitHub (`github.com`) wrapped in an isolated **Shadow DOM** (`#locus-copilot-host`) so host styles cannot break it.
+   - Provides a 1-click **"⚡ Add to Day Plan"** pill that dispatches context to the background planner with instant visual confirmation (`✓ Scheduled!`).
+6. **Chrome Omnibox Keyword Search (`locus <query>`)**:
+   - Type `locus plan wfh afternoon focus` directly into Chrome's URL address bar to trigger instant day planning and auto-open the companion side panel.
+   - Global keyboard shortcut `Alt+L` (or `Option+L` on Mac) to toggle the Action Popup HUD anytime.
+
+---
+
 ## 📦 Bundle Size & Budget Audit
 
 The extension adheres to strict bundle size budgets for instant cold-boot (<150ms) and minimal memory footprint:
@@ -103,25 +125,25 @@ The extension adheres to strict bundle size budgets for instant cold-boot (<150m
 ================== LOCUS EXTENSION DIST AUDIT ==================
 Asset                               |   Size (Bytes) |  Size (KB)
 -----------------------------------------------------------------
-background.js                       |          32757 |   31.99 KB
-sidepanel.js                        |           8316 |    8.12 KB
-sidepanel.css                       |           6749 |    6.59 KB
-popup.js                            |           6063 |    5.92 KB
-theme.css                           |           5374 |    5.25 KB
-popup.html                          |           5149 |    5.03 KB
-sidepanel.html                      |           4907 |    4.79 KB
-popup.css                           |           4672 |    4.56 KB
+background.js                       |          33388 |   32.61 KB
+sidepanel.js                        |          13713 |   13.39 KB
+theme.css                           |           8877 |    8.67 KB
+popup.js                            |           8706 |    8.50 KB
+popup.html                          |           6967 |    6.80 KB
+content.js                          |           6203 |    6.06 KB
+sidepanel.css                       |           5722 |    5.59 KB
+sidepanel.html                      |           5693 |    5.56 KB
+popup.css                           |           3906 |    3.81 KB
 icons/icon-128.png                  |           2958 |    2.89 KB
-content.js                          |           2144 |    2.09 KB
 icons/icon.svg                      |           1605 |    1.57 KB
-manifest.json                       |           1163 |    1.14 KB
+manifest.json                       |           1393 |    1.36 KB
 icons/icon-48.png                   |           1140 |    1.11 KB
 icons/icon-32.png                   |            752 |    0.73 KB
 icons/icon-16.png                   |            376 |    0.37 KB
 -----------------------------------------------------------------
-TOTAL UNCOMPRESSED DIST             |          84125 |   82.15 KB
-Hard Budget Limit: 500.00 KB (16.4% consumed)
-Target Budget:     100.00 KB (82.1% consumed)
+TOTAL UNCOMPRESSED DIST             |         101399 |   99.02 KB
+Hard Budget Limit: 500.00 KB (19.8% consumed)
+Target Budget:     100.00 KB (99.0% consumed)
 ================================================================
 ```
 
