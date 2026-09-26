@@ -102,27 +102,28 @@ export const IntegrationGrid: React.FC = () => {
   ];
 
   return (
-    <Card surface="elevated" className="p-5 space-y-4">
+    <Card surface="elevated" className="p-5 sm:p-6 space-y-4 shadow-xl relative overflow-hidden card-highlight-glow">
+      <div className="absolute inset-0 bg-grid-subtle opacity-15 pointer-events-none" />
       {/* ── Section Header ────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-hairline pb-4">
+      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-hairline pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+          <div className="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-inner">
             <Server className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2 font-mono">
               7-Channel Integration Delivery Matrix
               <Badge variant="emerald" size="sm" className="font-mono text-[10px] py-0 px-1.5" dot>
                 ALL 7 HEALTHY
               </Badge>
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 font-sans">
               Bi-directional cloud connectors powering autonomous data aggregation & multi-channel delivery
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs font-mono text-gray-400 bg-surface-card px-3 py-1.5 rounded-lg border border-hairline">
+        <div className="flex items-center gap-1.5 text-xs font-mono text-gray-400 bg-surface-card/90 px-3 py-1.5 rounded-lg border border-hairline shadow-xs">
           <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
           <span>7 / 7 Online</span>
         </div>

@@ -25,22 +25,23 @@ export const WorkloadMatrix: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* ── Top Summary Ribbon: Combined Dev Capacity ────────────── */}
-      <Card surface="elevated" className="p-4 bg-gradient-to-r from-surface-elevated via-surface-elevated to-indigo-950/20 border-hairline">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <Card surface="elevated" className="p-4 bg-gradient-to-r from-surface-elevated via-surface-elevated to-indigo-950/20 border-hairline shadow-lg relative overflow-hidden card-highlight-glow">
+        <div className="absolute inset-0 bg-grid-subtle opacity-15 pointer-events-none" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400">
+            <div className="p-2.5 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 shadow-inner">
               <Briefcase className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-white">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-white font-mono">
                   Dual Workload Command Matrix
                 </h2>
                 <Badge variant="indigo" size="sm" className="font-mono text-[10px]">
                   Sprint + Code Review
                 </Badge>
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-400 mt-0.5 font-sans">
                 Real-time engineering load balancing: Atlassian Jira Sprint vs GitHub PR review queue
               </p>
             </div>
@@ -49,7 +50,7 @@ export const WorkloadMatrix: React.FC = () => {
           {/* Aggregate Metrics Pill Cluster */}
           <div className="flex flex-wrap items-center gap-3">
             {/* Total Engineering Hours */}
-            <div className="px-3 py-1.5 rounded-lg bg-surface-card border border-hairline flex items-center gap-2">
+            <div className="px-3 py-1.5 rounded-lg bg-surface-card/90 border border-hairline flex items-center gap-2 shadow-xs">
               <Clock className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-xs text-gray-400">Total Dev Load:</span>
               <span className="text-sm font-bold font-mono text-amber-300 tabular-nums">
@@ -58,7 +59,7 @@ export const WorkloadMatrix: React.FC = () => {
             </div>
 
             {/* Jira Allocation */}
-            <div className="px-3 py-1.5 rounded-lg bg-surface-card border border-hairline flex items-center gap-2 text-xs">
+            <div className="px-3 py-1.5 rounded-lg bg-surface-card/90 border border-hairline flex items-center gap-2 text-xs shadow-xs">
               <span className="w-2 h-2 rounded-full bg-indigo-400" />
               <span className="text-gray-400">Jira:</span>
               <span className="font-mono font-semibold text-indigo-300 tabular-nums">
@@ -67,7 +68,7 @@ export const WorkloadMatrix: React.FC = () => {
             </div>
 
             {/* GitHub Allocation */}
-            <div className="px-3 py-1.5 rounded-lg bg-surface-card border border-hairline flex items-center gap-2 text-xs">
+            <div className="px-3 py-1.5 rounded-lg bg-surface-card/90 border border-hairline flex items-center gap-2 text-xs shadow-xs">
               <span className="w-2 h-2 rounded-full bg-cyan-400" />
               <span className="text-gray-400">GitHub:</span>
               <span className="font-mono font-semibold text-cyan-300 tabular-nums">

@@ -95,10 +95,10 @@ export const TimelineBlock: React.FC<TimelineBlockProps> = ({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        'group relative rounded-xl border transition-all duration-200',
+        'group relative rounded-xl border transition-all duration-200 overflow-hidden',
         block.completed
           ? 'bg-surface-card/40 border-hairline/60 opacity-65'
-          : 'bg-surface-card border-hairline hover:border-hairline-hover hover:bg-surface-elevated/70 shadow-sm'
+          : 'bg-surface-card/90 border-hairline hover:border-hairline-hover hover:bg-surface-elevated/70 shadow-xs'
       )}
     >
       <div className="p-3.5 sm:p-4">
