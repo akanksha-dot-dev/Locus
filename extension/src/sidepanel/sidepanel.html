@@ -76,6 +76,9 @@
       <button class="tab-btn" data-tab="github">
         GitHub <span id="count-github" class="tabular-nums tab-count">0</span>
       </button>
+      <button class="tab-btn" data-tab="swarm">
+        Swarm <span id="count-swarm" class="tabular-nums tab-count">8</span>
+      </button>
     </nav>
 
     <!-- Tab Panes -->
@@ -98,6 +101,21 @@
       <section id="pane-github" class="tab-pane">
         <div id="github-list" class="prs-list">
           <div class="empty-state">No open GitHub PRs</div>
+        </div>
+      </section>
+
+      <!-- 4. Swarm Pane -->
+      <section id="pane-swarm" class="tab-pane">
+        <div class="swarm-header-row">
+          <span class="section-label">MULTI-AGENT TOPOLOGY</span>
+          <span id="swarm-status-badge" class="badge badge-hybrid">ACTIVE</span>
+        </div>
+        <div id="swarm-graph-container"></div>
+        <div class="swarm-activity-log">
+          <span class="section-label">AGENT TELEMETRY FEED</span>
+          <div id="swarm-logs" class="swarm-logs-list">
+            <div class="swarm-log-entry">⚡ 8 LangGraph autonomous agents ready.</div>
+          </div>
         </div>
       </section>
     </main>

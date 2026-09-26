@@ -12,6 +12,8 @@ import {
   normalizeVerdict,
 } from '../types/index';
 import { downloadIcsFile } from '../services/icalendar';
+import { SwarmVisualizer } from '../components/swarm-graph';
+import { playSuccessChime, playTactileTick } from '../utils/audio';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Elements
@@ -22,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const countTimeline = document.getElementById('count-timeline');
   const countJira = document.getElementById('count-jira');
   const countGithub = document.getElementById('count-github');
+  const countSwarm = document.getElementById('count-swarm');
 
   const offlineBanner = document.getElementById('sidepanel-offline-banner');
   const contextBar = document.getElementById('detected-context-bar');
@@ -43,9 +46,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tabButtons = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
   const tabPanes = document.querySelectorAll<HTMLElement>('.tab-pane');
 
-  // Tab switching
+  // Swarm Visualizer Component
+  const swarmContainer = document.getElementById('swarm-graph-container');
+  const swarmVisualizer = swarmContainer ? new SwarmVisualizer(swarmContainer) : null;
+  const swarmLogs = document.getElementById('swarm-logs');
+
+  // Tab switching with tactile audio tick
   tabButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
+      playTactileTick(450);
       const target = btn.dataset.tab;
       tabButtons.forEach((b) => b.classList.remove('active'));
       tabPanes.forEach((p) => p.classList.remove('active'));
@@ -55,6 +64,49 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (pane) pane.classList.add('active');
     });
   });
+
+  // Time & Laser Bar Utilities
+  function getCurrentMinutes(): number {
+    const d = new Date();
+    return d.getHours() * 60 + d.getMinutes();
+  }
+
+  function parseBlockMinutes(timeStr?: string): { start: number; end: number } {
+    if (!timeStr) return { start: 0, end: 1440 };
+    const parts = timeStr.split('-').map((s) => s.trim());
+    const parsePart = (p?: string) => {
+      if (!p) return 0;
+      const match = p.match(/(\d{1,2}):(\d{2})/);
+      if (!match || !match[1] || !match[2]) return 0;
+      return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+    };
+    const start = parsePart(parts[0]);
+    const end = parts.length > 1 ? parsePart(parts[1]) : start + 60;
+    return { start, end };
+  }
+
+  function getLaserBarHtml(): string {
+    const d = new Date();
+    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return `
+      <div id="timeline-laser-bar" class="timeline-laser-bar">
+        <div class="laser-line"></div>
+        <div class="laser-tag">
+          <span class="laser-dot"></span>
+          <span>NOW · <span id="laser-clock">${timeStr}</span></span>
+        </div>
+        <div class="laser-line"></div>
+      </div>
+    `;
+  }
+
+  // Live laser seconds ticker
+  setInterval(() => {
+    const clockEl = document.getElementById('laser-clock');
+    if (clockEl) {
+      clockEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+  }, 1000);
 
   // Render Full State
   function render(state: Partial<StorageState>): void {
@@ -87,15 +139,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (countJira) countJira.textContent = String(jiraTickets.length);
     if (countGithub) countGithub.textContent = String(githubPrs.length);
 
-    // 4. Timeline Blocks
+    // 4. Timeline Blocks with Glowing Laser Bar
     if (timelineList) {
       if (blocks.length === 0) {
         timelineList.innerHTML = '<div class="empty-state">No schedule blocks available</div>';
       } else {
-        timelineList.innerHTML = blocks
-          .map((b) => {
-            const isDone = Boolean(b.completed);
-            return `
+        const currentMins = getCurrentMinutes();
+        let laserInserted = false;
+        let itemsHtml = '';
+
+        for (let i = 0; i < blocks.length; i++) {
+          const b = blocks[i];
+          if (!b) continue;
+          const { end } = parseBlockMinutes(b.time);
+
+          if (!laserInserted && (currentMins < end || i === blocks.length - 1)) {
+            itemsHtml += getLaserBarHtml();
+            laserInserted = true;
+          }
+
+          const isDone = Boolean(b.completed);
+          itemsHtml += `
             <div class="timeline-item ${isDone ? 'completed' : ''}" data-id="${b.id}">
               <input type="checkbox" class="timeline-check block-checkbox" data-id="${b.id}" ${isDone ? 'checked' : ''} />
               <div class="timeline-info">
@@ -107,12 +171,24 @@ document.addEventListener('DOMContentLoaded', async () => {
               </div>
             </div>
           `;
-          })
-          .join('');
+        }
 
-        // Attach checkbox change listeners
+        if (!laserInserted) {
+          itemsHtml += getLaserBarHtml();
+        }
+
+        timelineList.innerHTML = itemsHtml;
+
+        // Auto-scroll laser bar into view
+        setTimeout(() => {
+          const laser = document.getElementById('timeline-laser-bar');
+          laser?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 120);
+
+        // Attach checkbox change listeners with audio click
         timelineList.querySelectorAll<HTMLInputElement>('.timeline-check').forEach((cb) => {
           cb.addEventListener('change', () => {
+            playTactileTick(800);
             const blockId = cb.dataset.id;
             if (blockId) {
               chrome.runtime.sendMessage({
@@ -198,6 +274,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         footerSynced.textContent = '--:--';
       }
     }
+
+    // 8. Swarm Visualizer State Update
+    if (res && swarmVisualizer) {
+      swarmVisualizer.setAllCompleted();
+    }
   }
 
   // Load state on start
@@ -226,8 +307,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Pipeline Step Updates from Swarm
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === 'PIPELINE_STEP_UPDATE') {
+      const { node, status, elapsed_ms, details } = msg.payload || {};
+      if (node && swarmVisualizer) {
+        swarmVisualizer.updateNode(node, status, details, elapsed_ms);
+        if (swarmLogs) {
+          const logEntry = document.createElement('div');
+          logEntry.className = `swarm-log-entry ${status === 'running' ? 'active' : 'done'}`;
+          logEntry.textContent = `[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}] ${node.toUpperCase()}: ${status.toUpperCase()} ${elapsed_ms ? `(${elapsed_ms}ms)` : ''}`;
+          swarmLogs.appendChild(logEntry);
+          swarmLogs.scrollTop = swarmLogs.scrollHeight;
+        }
+      }
+    }
+  });
+
   // Insert Context into Prompt Bar
   btnContextPlan?.addEventListener('click', async () => {
+    playTactileTick(500);
     const items = (await chrome.storage.local.get('activeContext')) as unknown as StorageState;
     if (items.activeContext && promptInput) {
       promptInput.value = `Prioritize ${items.activeContext.id}: ${items.activeContext.title}`;
@@ -239,6 +338,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnPromptSend?.addEventListener('click', () => {
     const query = promptInput?.value.trim();
     if (!query) return;
+    playTactileTick(700);
+    swarmVisualizer?.resetAll('idle');
+    if (swarmLogs) {
+      const entry = document.createElement('div');
+      entry.className = 'swarm-log-entry active';
+      entry.textContent = `[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}] DISPATCHING PLANNER: "${query}"`;
+      swarmLogs.appendChild(entry);
+    }
     btnPromptSend?.setAttribute('disabled', 'true');
     chrome.runtime.sendMessage(
       {
@@ -248,6 +355,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       (res) => {
         btnPromptSend?.removeAttribute('disabled');
         if (res?.state) {
+          playSuccessChime();
+          swarmVisualizer?.setAllCompleted();
           render(res.state);
         }
       }
@@ -257,10 +366,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Sync button
   btnSync?.addEventListener('click', () => {
+    playTactileTick(500);
     btnSync.classList.add('rotating');
     chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true } }, (res) => {
       setTimeout(() => btnSync.classList.remove('rotating'), 600);
       if (res?.state) {
+        playSuccessChime();
         render(res.state);
       }
     });
@@ -268,6 +379,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Export .ics trigger (RFC 5545 1-click download)
   btnExportIcs?.addEventListener('click', async () => {
+    playTactileTick(600);
     try {
       const items = (await chrome.storage.local.get(null)) as unknown as StorageState;
       const blocks: ScheduleBlock[] = items.scheduleBlocks || [];
@@ -283,8 +395,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Open Notion trigger
   btnOpenNotion?.addEventListener('click', async () => {
+    playTactileTick(600);
     const items = (await chrome.storage.local.get('lastResponse')) as unknown as StorageState;
     const url = items.lastResponse?.notion_page_url || 'https://notion.so';
     chrome.tabs.create({ url });
   });
 });
+

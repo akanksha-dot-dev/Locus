@@ -10,6 +10,7 @@ import {
   normalizeVerdict,
 } from '../types/index';
 import { downloadIcsFile } from '../services/icalendar';
+import { playSuccessChime, playTactileTick } from '../utils/audio';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const startTime = performance.now();
@@ -18,7 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const offlinePill = document.getElementById('offline-pill');
   const verdictBadge = document.getElementById('verdict-badge');
   const verdictReason = document.getElementById('verdict-reason');
-  const weatherScore = document.getElementById('metric-weather-score');
+  const gaugeScoreNum = document.getElementById('gauge-score-num');
+  const gaugeProgress = document.getElementById('gauge-progress') as SVGCircleElement | null;
   const weatherDesc = document.getElementById('metric-weather-desc');
   const focusHours = document.getElementById('metric-focus-hours');
   const outfitText = document.getElementById('outfit-text');
@@ -29,7 +31,106 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnSync = document.getElementById('btn-sync');
   const btnOpenSidepanel = document.getElementById('btn-open-sidepanel');
 
+  // Pomodoro Controls
+  const pomoClock = document.getElementById('pomodoro-clock');
+  const pomoDot = document.getElementById('pomo-dot');
+  const btnPomoToggle = document.getElementById('btn-pomo-toggle');
+  const btnPomoReset = document.getElementById('btn-pomo-reset');
+  const btnSoundToggle = document.getElementById('btn-sound-toggle');
+  const soundIcon = document.getElementById('sound-icon');
+
   let currentBlockId: string | null = null;
+  let soundEnabled = true;
+  let pomoRemainingSeconds = 25 * 60;
+  let pomoInterval: any = null;
+  let isPomoRunning = false;
+
+  // Sound Toggle Listener
+  btnSoundToggle?.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    if (soundIcon) soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
+    if (soundEnabled) playTactileTick(600);
+  });
+
+  // Pomodoro UI Controller
+  function formatClock(seconds: number): string {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function updatePomodoroUI(): void {
+    if (pomoClock) pomoClock.textContent = formatClock(pomoRemainingSeconds);
+    if (btnPomoToggle) btnPomoToggle.textContent = isPomoRunning ? 'PAUSE' : 'START';
+    if (pomoDot) {
+      pomoDot.className = `pomodoro-dot ${isPomoRunning ? 'active' : 'idle'}`;
+    }
+  }
+
+  btnPomoToggle?.addEventListener('click', () => {
+    if (soundEnabled) playTactileTick(isPomoRunning ? 400 : 750);
+    isPomoRunning = !isPomoRunning;
+    if (isPomoRunning) {
+      pomoInterval = setInterval(() => {
+        if (pomoRemainingSeconds > 0) {
+          pomoRemainingSeconds--;
+          updatePomodoroUI();
+        } else {
+          clearInterval(pomoInterval);
+          isPomoRunning = false;
+          updatePomodoroUI();
+          if (soundEnabled) playSuccessChime();
+        }
+      }, 1000);
+    } else {
+      clearInterval(pomoInterval);
+    }
+    updatePomodoroUI();
+  });
+
+  btnPomoReset?.addEventListener('click', () => {
+    if (soundEnabled) playTactileTick(350);
+    clearInterval(pomoInterval);
+    isPomoRunning = false;
+    pomoRemainingSeconds = 25 * 60;
+    updatePomodoroUI();
+  });
+
+  // Smooth Count-up Circular Gauge Animation
+  function animateGauge(targetScore: number): void {
+    if (!gaugeProgress || !gaugeScoreNum) return;
+    const progressEl = gaugeProgress;
+    const scoreEl = gaugeScoreNum;
+    const circumference = 188.5;
+    const startScore = parseInt(scoreEl.textContent || '0', 10) || 0;
+    const duration = 750;
+    const animStart = performance.now();
+
+    function step(now: number) {
+      const elapsed = now - animStart;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const currentVal = Math.round(startScore + (targetScore - startScore) * ease);
+      scoreEl.textContent = String(currentVal);
+
+      const offset = circumference * (1 - Math.max(0, Math.min(100, currentVal)) / 100);
+      progressEl.style.strokeDashoffset = String(offset);
+
+      if (currentVal >= 80) {
+        progressEl.style.stroke = '#10b981';
+      } else if (currentVal >= 50) {
+        progressEl.style.stroke = '#06b6d4';
+      } else {
+        progressEl.style.stroke = '#f59e0b';
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
 
   // Hydrate UI from StorageState
   function renderState(state: Partial<StorageState>): void {
@@ -48,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const verdict: Verdict = normalizeVerdict(rawVerdict);
 
       verdictBadge.textContent = verdict.toUpperCase();
-      verdictBadge.className = 'badge';
+      verdictBadge.className = 'badge holo-badge';
 
       if (verdict === 'office') {
         verdictBadge.classList.add('badge-office', 'glow-emerald');
@@ -62,15 +163,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         res?.office_reason || 'Analyzing real-time weather and sprint workload...';
     }
 
-    // 3. Weather Metrics
-    if (weatherScore && weatherDesc) {
-      if (res) {
-        weatherScore.textContent = String(res.weather_score);
+    // 3. Weather Metrics & Gauge
+    if (res && typeof res.weather_score === 'number') {
+      animateGauge(res.weather_score);
+      if (weatherDesc) {
         weatherDesc.textContent = `${res.weather_condition}, ${Math.round(res.temperature_c)}°C in ${res.city}`;
-      } else {
-        weatherScore.textContent = '--';
-        weatherDesc.textContent = 'No data available';
       }
+    } else {
+      if (gaugeScoreNum) gaugeScoreNum.textContent = '--';
+      if (gaugeProgress) gaugeProgress.style.strokeDashoffset = '188.5';
+      if (weatherDesc) weatherDesc.textContent = 'No data available';
     }
 
     // 4. Focus Capacity
@@ -141,6 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Manual Sync Button
   btnSync?.addEventListener('click', () => {
+    if (soundEnabled) playTactileTick(500);
     btnSync.classList.add('rotating');
     chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true } }, (res) => {
       setTimeout(() => btnSync.classList.remove('rotating'), 600);
@@ -153,6 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Active Block Checkbox Toggle
   activeBlockCheck?.addEventListener('change', () => {
     if (!currentBlockId) return;
+    if (soundEnabled) playTactileTick(800);
     const completed = activeBlockCheck.checked;
     chrome.runtime.sendMessage({
       type: 'TOGGLE_BLOCK',

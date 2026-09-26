@@ -101,6 +101,39 @@
   gap: 4px;
 }
 
+.metric-gauge-card {
+  align-items: center;
+  text-align: center;
+  padding: 10px 8px;
+}
+
+.gauge-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.swarm-mini-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 3px 6px;
+  background: var(--surface-elevated);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-hairline);
+}
+
+.swarm-mini-text {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--color-cyan);
+  font-weight: 500;
+}
+
 .metric-label {
   font-size: 9px;
   font-weight: 600;

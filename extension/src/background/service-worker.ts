@@ -320,6 +320,40 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
     }
   });
 
+  // Omnibox Keyword Search Handler ("locus <query>")
+  if (chrome.omnibox) {
+    chrome.omnibox.onInputChanged?.addListener((text, suggest) => {
+      suggest([
+        {
+          content: `plan ${text}`,
+          description: `Locus: Plan day prioritizing "${text}"`,
+        },
+        {
+          content: `wfh ${text}`,
+          description: `Locus: Evaluate WFH disposition with "${text}"`,
+        },
+      ]);
+    });
+
+    chrome.omnibox.onInputEntered?.addListener(async (text) => {
+      console.log(`[Locus SW] Omnibox input received: "${text}"`);
+      const query = text.replace(/^(plan|wfh)\s+/i, '').trim() || text;
+      await executeSync({
+        force: true,
+        userRequest: query,
+        reason: 'omnibox_input',
+      });
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab?.id && chrome.sidePanel?.open) {
+          await chrome.sidePanel.open({ tabId: tab.id });
+        }
+      } catch {
+        // Ignore if sidepanel is already open or tab not eligible
+      }
+    });
+  }
+
   // ── 5. Runtime Message Bus Router ────────────────────────────────────────────
 
   chrome.runtime.onMessage.addListener(
