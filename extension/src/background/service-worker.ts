@@ -24,6 +24,7 @@ import { wsClient } from '../services/websocket';
 // ── 1. Constants & Configuration ─────────────────────────────────────────────
 
 export const ALARM_SYNC_NAME = 'locus-periodic-sync';
+export const ALARM_POMODORO_NAME = 'locus-pomodoro-finish';
 export const SYNC_INTERVAL_MINUTES = 5;
 export const STALENESS_THRESHOLD_MS = 4 * 60 * 60 * 1000; // 4 hours
 
@@ -114,113 +115,138 @@ export interface SyncOptions {
 
 /**
  * Fetches latest state from backend or falls back smoothly to cache / simulation.
+ * Dynamically responds to any city change, probes backend liveness, and guarantees reactivity.
  */
 export async function executeSync(options: SyncOptions = {}): Promise<StorageState> {
   console.log(`[Locus SW] Executing sync (reason: ${options.reason || 'manual'})...`);
 
   // Hydrate current storage to preserve user task completions
   const prevState = await storageService.getState();
-  const city = options.city || prevState.settings.defaultCity || prevState.lastResponse?.city || 'Mumbai';
+  const requestedCity = options.city ? options.city.trim() : null;
+  const currentCity = prevState.settings.defaultCity || prevState.lastResponse?.city || 'Mumbai';
+  const city = requestedCity || currentCity;
+  const isCityChanging = Boolean(requestedCity && requestedCity.toLowerCase() !== currentCity.toLowerCase());
 
-  try {
-    let freshResponse: AgentResponse | null = null;
-
-    if (options.userRequest) {
-      freshResponse = await apiService.runPipeline({
-        user_request: options.userRequest,
-        city,
-      });
-    } else {
-      // Check history first for immediate warm response
-      try {
-        const historyData = await apiService.getHistory(5);
-        if (historyData.items && historyData.items.length > 0) {
-          // If runs exist, invoke demo scenario or refresh
-          freshResponse = await apiService.runDemo('day_planner_office', city);
-        }
-      } catch {
-        // Fallback to direct demo run
-      }
-
-      if (!freshResponse) {
-        freshResponse = await apiService.runDemo('day_planner_office', city);
-      }
-    }
-
-    if (freshResponse) {
-      // Normalize timeline and merge completed states
-      const rawTimeline = freshResponse.day_plan_timeline || [];
-      const normalizedBlocks = normalizeTimeline(rawTimeline);
-
-      // Preserve completed flags from existing stored blocks
-      const existingDoneMap = new Map<string, boolean>();
-      for (const block of prevState.scheduleBlocks) {
-        existingDoneMap.set(block.title, block.completed);
-        existingDoneMap.set(block.time + ':' + block.title, block.completed);
-      }
-
-      const mergedBlocks: ScheduleBlock[] = normalizedBlocks.map((b) => ({
-        ...b,
-        completed: existingDoneMap.get(b.time + ':' + b.title) ?? existingDoneMap.get(b.title) ?? b.completed,
-      }));
-
-      await storageService.setCachedSnapshot(freshResponse, 'none');
-      await storageService.setScheduleBlocks(mergedBlocks);
-      await storageService.setOfflineStatus(false, 'none', null);
-
-      const newState = await storageService.getState();
-      updateBadge(freshResponse.go_to_office, false);
-
-      // Broadcast update to open popup / sidepanel
-      if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-        chrome.runtime.sendMessage({ type: 'STATE_UPDATED', payload: newState }).catch(() => {});
-      }
-      return newState;
-    }
-
-    throw new Error('Backend returned empty or invalid response');
-  } catch (err) {
-    console.warn('[Locus SW] Sync failed or timed out. Entering offline resilience mode:', err);
-
-    let fallbackState: StorageState;
-
-    if (prevState.lastResponse && prevState.scheduleBlocks.length > 0 && !isCacheStale(prevState.lastSyncedAt)) {
-      // Strategy A: Gracefully serve recent cached snapshot with offline badge
-      await storageService.setOfflineStatus(true, 'cached', 'Backend offline: Displaying cached snapshot');
-      fallbackState = await storageService.getState();
-      updateBadge(fallbackState.lastResponse?.go_to_office, true);
-    } else {
-      // Strategy B: Cold boot with zero cache or stale cache -> generate deterministic simulation
-      const simulated = generateOfflineSimulation({
-        city,
-        userRequest: options.userRequest,
-      });
-
-      // Preserve completed checks if matching
-      const existingDoneMap = new Map<string, boolean>();
-      for (const block of prevState.scheduleBlocks) {
-        existingDoneMap.set(block.title, block.completed);
-        existingDoneMap.set(block.time + ':' + block.title, block.completed);
-      }
-
-      const mergedSimBlocks: ScheduleBlock[] = simulated.scheduleBlocks.map((b) => ({
-        ...b,
-        completed: existingDoneMap.get(b.time + ':' + b.title) ?? existingDoneMap.get(b.title) ?? b.completed,
-      }));
-
-      await storageService.setCachedSnapshot(simulated.response, 'simulated');
-      await storageService.setScheduleBlocks(mergedSimBlocks);
-      await storageService.setOfflineStatus(true, 'simulated', 'Backend offline: Active deterministic simulation mode');
-
-      fallbackState = await storageService.getState();
-      updateBadge(simulated.response.go_to_office, true);
-    }
-
-    if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-      chrome.runtime.sendMessage({ type: 'STATE_UPDATED', payload: fallbackState }).catch(() => {});
-    }
-    return fallbackState;
+  // If a city is explicitly requested, persist as default immediately
+  if (requestedCity) {
+    await storageService.setSettings({ defaultCity: requestedCity });
   }
+
+  // 1. Probe backend liveness
+  let isBackendOnline = false;
+  try {
+    const health = await apiService.checkHealth(1500);
+    isBackendOnline = Boolean(health && health.status === 'ok');
+  } catch {
+    isBackendOnline = false;
+  }
+
+  // 2. If backend is alive, attempt live query
+  if (isBackendOnline) {
+    try {
+      let freshResponse: AgentResponse | null = null;
+
+      if (options.userRequest) {
+        freshResponse = await apiService.runPipeline(
+          { user_request: options.userRequest, city },
+          15000
+        );
+      } else {
+        // Fast path: fetch live real weather directly from backend OpenWeather service
+        try {
+          const liveWeather = await apiService.getWeather(city, 3000);
+          if (liveWeather) {
+            // Seed deterministic simulation with real live weather metrics from backend
+            const simulated = generateOfflineSimulation({
+              city: liveWeather.city || city,
+              userRequest: options.userRequest,
+            });
+            simulated.response.temperature_c = liveWeather.temperature_c;
+            simulated.response.feels_like_c = liveWeather.feels_like_c;
+            simulated.response.humidity = liveWeather.humidity;
+            simulated.response.wind_speed = liveWeather.wind_speed;
+            simulated.response.weather_condition = liveWeather.condition;
+            simulated.response.weather_summary = `${liveWeather.condition}, ${Math.round(liveWeather.temperature_c)}°C in ${liveWeather.city}`;
+            simulated.response.weather_icon = liveWeather.icon_url;
+            freshResponse = simulated.response;
+          }
+        } catch {
+          // Fallback to demo run
+          freshResponse = await apiService.runDemo('day_planner_office', city, undefined, 8000);
+        }
+      }
+
+      if (freshResponse) {
+        const rawTimeline = freshResponse.day_plan_timeline || [];
+        const normalizedBlocks = normalizeTimeline(rawTimeline);
+
+        const existingDoneMap = new Map<string, boolean>();
+        for (const block of prevState.scheduleBlocks) {
+          existingDoneMap.set(block.title, block.completed);
+          existingDoneMap.set(block.time + ':' + block.title, block.completed);
+        }
+
+        const mergedBlocks: ScheduleBlock[] = normalizedBlocks.map((b) => ({
+          ...b,
+          completed: existingDoneMap.get(b.time + ':' + b.title) ?? existingDoneMap.get(b.title) ?? b.completed,
+        }));
+
+        await storageService.setCachedSnapshot(freshResponse, 'none');
+        await storageService.setScheduleBlocks(mergedBlocks);
+        await storageService.setOfflineStatus(false, 'none', null);
+
+        const newState = await storageService.getState();
+        updateBadge(freshResponse.go_to_office, false);
+
+        if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+          chrome.runtime.sendMessage({ type: 'STATE_UPDATED', payload: newState }).catch(() => {});
+        }
+        return newState;
+      }
+    } catch (backendErr) {
+      console.warn('[Locus SW] Live backend call timed out or failed; falling back to simulation:', backendErr);
+    }
+  }
+
+  // 3. Offline / Simulation Fallback
+  console.log(`[Locus SW] Serving simulation for ${city} (isCityChanging: ${isCityChanging})...`);
+  let fallbackState: StorageState;
+
+  if (!isCityChanging && !options.force && prevState.lastResponse && prevState.scheduleBlocks.length > 0 && !isCacheStale(prevState.lastSyncedAt)) {
+    // Strategy A: Gracefully serve recent cached snapshot if same city and not forced
+    await storageService.setOfflineStatus(true, 'cached', 'Backend offline: Displaying cached snapshot');
+    fallbackState = await storageService.getState();
+    updateBadge(fallbackState.lastResponse?.go_to_office, true);
+  } else {
+    // Strategy B: Generate fresh simulation for the requested city
+    const simulated = generateOfflineSimulation({
+      city,
+      userRequest: options.userRequest,
+    });
+
+    const existingDoneMap = new Map<string, boolean>();
+    for (const block of prevState.scheduleBlocks) {
+      existingDoneMap.set(block.title, block.completed);
+      existingDoneMap.set(block.time + ':' + block.title, block.completed);
+    }
+
+    const mergedSimBlocks: ScheduleBlock[] = simulated.scheduleBlocks.map((b) => ({
+      ...b,
+      completed: existingDoneMap.get(b.time + ':' + b.title) ?? existingDoneMap.get(b.title) ?? b.completed,
+    }));
+
+    await storageService.setCachedSnapshot(simulated.response, 'simulated');
+    await storageService.setScheduleBlocks(mergedSimBlocks);
+    await storageService.setOfflineStatus(true, 'simulated', 'Active deterministic simulation mode');
+
+    fallbackState = await storageService.getState();
+    updateBadge(simulated.response.go_to_office, true);
+  }
+
+  if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+    chrome.runtime.sendMessage({ type: 'STATE_UPDATED', payload: fallbackState }).catch(() => {});
+  }
+  return fallbackState;
 }
 
 // ── 4. MV3 Lifecycle & Startup Handlers ───────────────────────────────────────
@@ -318,8 +344,22 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
         console.warn('[Locus SW] Could not open side panel via shortcut:', err);
       }
     } else if (command === 'toggle_pomodoro') {
-      if (chrome.runtime?.sendMessage) {
-        chrome.runtime.sendMessage({ type: 'TOGGLE_POMODORO' }).catch(() => {});
+      const pomo = await storageService.getPomodoro();
+      if (pomo.isRunning) {
+        const remaining = pomo.targetEndTime
+          ? Math.max(0, Math.round((pomo.targetEndTime - Date.now()) / 1000))
+          : pomo.remainingSeconds;
+        const updated = { ...pomo, isRunning: false, targetEndTime: null, remainingSeconds: remaining };
+        await storageService.setPomodoro(updated);
+        chrome.alarms?.clear(ALARM_POMODORO_NAME);
+        chrome.runtime?.sendMessage?.({ type: 'POMODORO_UPDATED', payload: updated }).catch(() => {});
+      } else {
+        const duration = pomo.remainingSeconds > 0 ? pomo.remainingSeconds : pomo.durationSeconds;
+        const target = Date.now() + duration * 1000;
+        const updated = { ...pomo, isRunning: true, targetEndTime: target, remainingSeconds: duration };
+        await storageService.setPomodoro(updated);
+        chrome.alarms?.create(ALARM_POMODORO_NAME, { when: target });
+        chrome.runtime?.sendMessage?.({ type: 'POMODORO_UPDATED', payload: updated }).catch(() => {});
       }
     }
   });
@@ -349,11 +389,35 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
     }
   });
 
-  // Periodic Alarm Listener (every 5 minutes)
+  // Periodic & Pomodoro Alarm Listener
   chrome.alarms?.onAlarm.addListener(async (alarm) => {
     if (alarm.name === ALARM_SYNC_NAME) {
       console.log('[Locus SW] 5-minute alarm triggered. Syncing background state...');
       await executeSync({ force: false, reason: 'alarm' });
+    } else if (alarm.name === ALARM_POMODORO_NAME) {
+      console.log('[Locus SW] Pomodoro finish alarm triggered!');
+      const pomo = await storageService.getPomodoro();
+      const updated = {
+        ...pomo,
+        isRunning: false,
+        targetEndTime: null,
+        remainingSeconds: pomo.durationSeconds,
+        completedSessions: (pomo.completedSessions || 0) + 1,
+      };
+      await storageService.setPomodoro(updated);
+
+      if (chrome.notifications) {
+        chrome.notifications.create({
+          type: 'basic',
+          iconUrl: 'icons/icon-128.png',
+          title: '🎯 Focus Interval Complete!',
+          message: 'Outstanding focus block! Time for a refreshing 5-minute break.',
+        });
+      }
+
+      if (chrome.runtime?.sendMessage) {
+        chrome.runtime.sendMessage({ type: 'POMODORO_COMPLETE', payload: updated }).catch(() => {});
+      }
     }
   });
 
@@ -561,6 +625,85 @@ async function handleMessageAsync(
 
     case 'EXPORT_ICS': {
       return { success: true };
+    }
+
+    case 'START_POMODORO': {
+      const payload = (message as any).payload || {};
+      const durationSeconds = payload.durationSeconds || 1500;
+      const preset = payload.preset || 'focus_25';
+      const targetEndTime = Date.now() + durationSeconds * 1000;
+      const currentPomo = await storageService.getPomodoro();
+      const updatedPomo = {
+        ...currentPomo,
+        preset,
+        durationSeconds,
+        remainingSeconds: durationSeconds,
+        isRunning: true,
+        targetEndTime,
+      };
+      await storageService.setPomodoro(updatedPomo);
+      if (chrome.alarms) {
+        chrome.alarms.create(ALARM_POMODORO_NAME, { when: targetEndTime });
+      }
+      return { success: true, pomodoro: updatedPomo };
+    }
+
+    case 'PAUSE_POMODORO': {
+      const currentPomo = await storageService.getPomodoro();
+      const remaining = currentPomo.targetEndTime
+        ? Math.max(0, Math.round((currentPomo.targetEndTime - Date.now()) / 1000))
+        : currentPomo.remainingSeconds;
+      const updatedPomo = {
+        ...currentPomo,
+        isRunning: false,
+        targetEndTime: null,
+        remainingSeconds: remaining,
+      };
+      await storageService.setPomodoro(updatedPomo);
+      if (chrome.alarms) {
+        chrome.alarms.clear(ALARM_POMODORO_NAME);
+      }
+      return { success: true, pomodoro: updatedPomo };
+    }
+
+    case 'RESET_POMODORO': {
+      const currentPomo = await storageService.getPomodoro();
+      const updatedPomo = {
+        ...currentPomo,
+        isRunning: false,
+        targetEndTime: null,
+        remainingSeconds: currentPomo.durationSeconds,
+      };
+      await storageService.setPomodoro(updatedPomo);
+      if (chrome.alarms) {
+        chrome.alarms.clear(ALARM_POMODORO_NAME);
+      }
+      return { success: true, pomodoro: updatedPomo };
+    }
+
+    case 'SET_POMODORO_PRESET': {
+      const payload = (message as any).payload || {};
+      const durationSeconds = payload.durationSeconds || 1500;
+      const preset = payload.preset || 'focus_25';
+      const currentPomo = await storageService.getPomodoro();
+      const updatedPomo = {
+        ...currentPomo,
+        preset,
+        durationSeconds,
+        remainingSeconds: durationSeconds,
+        isRunning: false,
+        targetEndTime: null,
+      };
+      await storageService.setPomodoro(updatedPomo);
+      if (chrome.alarms) {
+        chrome.alarms.clear(ALARM_POMODORO_NAME);
+      }
+      return { success: true, pomodoro: updatedPomo };
+    }
+
+    case 'GET_POMODORO': {
+      const pomo = await storageService.getPomodoro();
+      return { success: true, pomodoro: pomo };
     }
 
     default:

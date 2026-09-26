@@ -62,16 +62,88 @@ interface CityPreset {
 }
 
 const CITY_PRESETS: Record<string, CityPreset> = {
+  // India
   mumbai: { temp: 29.5, feelsLike: 33.0, humidity: 78, windSpeed: 4.5, condition: 'Clouds', description: 'scattered clouds', icon: '03d' },
   bengaluru: { temp: 24.0, feelsLike: 24.5, humidity: 65, windSpeed: 3.5, condition: 'Clouds', description: 'broken clouds', icon: '04d' },
   bangalore: { temp: 24.0, feelsLike: 24.5, humidity: 65, windSpeed: 3.5, condition: 'Clouds', description: 'broken clouds', icon: '04d' },
   delhi: { temp: 32.0, feelsLike: 35.0, humidity: 55, windSpeed: 3.8, condition: 'Clear', description: 'clear sky', icon: '01d' },
-  london: { temp: 16.0, feelsLike: 15.2, humidity: 68, windSpeed: 5.1, condition: 'Rain', description: 'light rain', icon: '10d' },
-  'new york': { temp: 21.0, feelsLike: 20.5, humidity: 60, windSpeed: 4.2, condition: 'Clear', description: 'clear sky', icon: '01d' },
-  tokyo: { temp: 22.0, feelsLike: 21.8, humidity: 62, windSpeed: 3.2, condition: 'Clear', description: 'clear sky', icon: '01d' },
-  paris: { temp: 18.5, feelsLike: 18.0, humidity: 64, windSpeed: 4.0, condition: 'Clouds', description: 'few clouds', icon: '02d' },
+  hyderabad: { temp: 28.5, feelsLike: 30.0, humidity: 60, windSpeed: 3.6, condition: 'Clear', description: 'sunny & warm', icon: '01d' },
+  pune: { temp: 26.0, feelsLike: 26.5, humidity: 62, windSpeed: 3.9, condition: 'Clouds', description: 'pleasant broken clouds', icon: '03d' },
+  chennai: { temp: 31.0, feelsLike: 36.0, humidity: 80, windSpeed: 4.2, condition: 'Clouds', description: 'warm coastal haze', icon: '04d' },
+  kolkata: { temp: 30.0, feelsLike: 34.5, humidity: 75, windSpeed: 3.0, condition: 'Clouds', description: 'humid & partly cloudy', icon: '03d' },
+  gurgaon: { temp: 31.5, feelsLike: 34.0, humidity: 56, windSpeed: 3.7, condition: 'Clear', description: 'clear sky', icon: '01d' },
+  noida: { temp: 31.5, feelsLike: 34.0, humidity: 56, windSpeed: 3.7, condition: 'Clear', description: 'clear sky', icon: '01d' },
+  ahmedabad: { temp: 33.0, feelsLike: 36.0, humidity: 50, windSpeed: 4.0, condition: 'Clear', description: 'hot & sunny', icon: '01d' },
+
+  // Americas
   'san francisco': { temp: 17.0, feelsLike: 16.5, humidity: 72, windSpeed: 4.8, condition: 'Clouds', description: 'coastal fog & clouds', icon: '50d' },
+  'new york': { temp: 21.0, feelsLike: 20.5, humidity: 60, windSpeed: 4.2, condition: 'Clear', description: 'clear sky', icon: '01d' },
+  seattle: { temp: 15.0, feelsLike: 14.5, humidity: 78, windSpeed: 4.5, condition: 'Drizzle', description: 'light mist & drizzle', icon: '09d' },
+  austin: { temp: 29.0, feelsLike: 31.0, humidity: 58, windSpeed: 3.8, condition: 'Clear', description: 'bright sunshine', icon: '01d' },
+  boston: { temp: 19.5, feelsLike: 19.0, humidity: 62, windSpeed: 4.9, condition: 'Clouds', description: 'few passing clouds', icon: '02d' },
+  'los angeles': { temp: 25.0, feelsLike: 25.0, humidity: 52, windSpeed: 3.2, condition: 'Clear', description: 'sunny coastal skies', icon: '01d' },
+  chicago: { temp: 18.0, feelsLike: 17.5, humidity: 64, windSpeed: 6.2, condition: 'Clouds', description: 'breezy & overcast', icon: '04d' },
+  toronto: { temp: 18.5, feelsLike: 18.0, humidity: 60, windSpeed: 4.4, condition: 'Clear', description: 'crisp clear air', icon: '01d' },
+  vancouver: { temp: 16.0, feelsLike: 15.5, humidity: 74, windSpeed: 3.9, condition: 'Rain', description: 'light pacific rain', icon: '10d' },
+
+  // Europe
+  london: { temp: 16.0, feelsLike: 15.2, humidity: 68, windSpeed: 5.1, condition: 'Rain', description: 'light rain', icon: '10d' },
+  berlin: { temp: 17.5, feelsLike: 17.0, humidity: 62, windSpeed: 4.1, condition: 'Clouds', description: 'scattered clouds', icon: '03d' },
+  paris: { temp: 18.5, feelsLike: 18.0, humidity: 64, windSpeed: 4.0, condition: 'Clouds', description: 'few clouds', icon: '02d' },
+  amsterdam: { temp: 16.5, feelsLike: 15.8, humidity: 72, windSpeed: 5.5, condition: 'Clouds', description: 'canal breeze & clouds', icon: '03d' },
+  dublin: { temp: 14.5, feelsLike: 13.8, humidity: 76, windSpeed: 5.2, condition: 'Drizzle', description: 'intermittent drizzle', icon: '09d' },
+  zurich: { temp: 17.0, feelsLike: 16.5, humidity: 65, windSpeed: 3.1, condition: 'Clear', description: 'clear alpine view', icon: '01d' },
+  stockholm: { temp: 14.0, feelsLike: 13.0, humidity: 66, windSpeed: 4.3, condition: 'Clouds', description: 'cool Nordic breeze', icon: '03d' },
+  warsaw: { temp: 16.0, feelsLike: 15.5, humidity: 63, windSpeed: 3.7, condition: 'Clouds', description: 'partly cloudy', icon: '03d' },
+
+  // Asia-Pacific & Middle East
+  tokyo: { temp: 22.0, feelsLike: 21.8, humidity: 62, windSpeed: 3.2, condition: 'Clear', description: 'clear sky', icon: '01d' },
+  singapore: { temp: 31.0, feelsLike: 36.5, humidity: 82, windSpeed: 3.0, condition: 'Rain', description: 'tropical afternoon shower', icon: '10d' },
+  sydney: { temp: 22.5, feelsLike: 22.0, humidity: 60, windSpeed: 4.5, condition: 'Clear', description: 'sunny harbor skies', icon: '01d' },
+  melbourne: { temp: 18.0, feelsLike: 17.2, humidity: 65, windSpeed: 5.2, condition: 'Clouds', description: 'dynamic clouds', icon: '03d' },
+  seoul: { temp: 20.5, feelsLike: 20.0, humidity: 58, windSpeed: 3.4, condition: 'Clear', description: 'clear autumn skies', icon: '01d' },
+  dubai: { temp: 36.0, feelsLike: 39.0, humidity: 45, windSpeed: 3.5, condition: 'Clear', description: 'hot & sunny', icon: '01d' },
+  'tel aviv': { temp: 27.5, feelsLike: 28.5, humidity: 65, windSpeed: 3.8, condition: 'Clear', description: 'sunny mediterranean sky', icon: '01d' },
 };
+
+/**
+ * Resolves climatological preset or deterministically synthesizes realistic weather for ANY city worldwide.
+ */
+export function getClimatologyForCity(city: string, rng: () => number): CityPreset {
+  const cityKey = city.toLowerCase().trim();
+  if (CITY_PRESETS[cityKey]) {
+    return CITY_PRESETS[cityKey];
+  }
+  // Deterministic procedural generation for ANY arbitrary world city
+  const archetypes: CityPreset[] = [
+    { temp: 22.0, feelsLike: 22.5, humidity: 55, windSpeed: 3.4, condition: 'Clear', description: 'clear sunny sky', icon: '01d' },
+    { temp: 19.5, feelsLike: 19.0, humidity: 64, windSpeed: 4.2, condition: 'Clouds', description: 'scattered clouds', icon: '03d' },
+    { temp: 16.5, feelsLike: 15.5, humidity: 78, windSpeed: 5.0, condition: 'Rain', description: 'light passing rain', icon: '10d' },
+    { temp: 27.0, feelsLike: 29.0, humidity: 70, windSpeed: 3.8, condition: 'Clouds', description: 'warm & broken clouds', icon: '04d' },
+    { temp: 25.5, feelsLike: 26.0, humidity: 48, windSpeed: 4.0, condition: 'Clear', description: 'bright pleasant sky', icon: '01d' },
+    { temp: 14.0, feelsLike: 13.0, humidity: 80, windSpeed: 4.6, condition: 'Drizzle', description: 'overcast drizzle', icon: '09d' },
+  ];
+  const idx = Math.floor(rng() * archetypes.length);
+  const base: CityPreset = archetypes[idx] ?? {
+    temp: 22.0,
+    feelsLike: 22.5,
+    humidity: 55,
+    windSpeed: 3.4,
+    condition: 'Clear',
+    description: 'clear sunny sky',
+    icon: '01d',
+  };
+  const delta = Math.round((rng() - 0.5) * 6);
+  return {
+    temp: base.temp + delta,
+    feelsLike: base.feelsLike + delta,
+    humidity: base.humidity,
+    windSpeed: base.windSpeed,
+    condition: base.condition,
+    description: base.description,
+    icon: base.icon,
+  };
+}
 
 // ── 3. Heuristic Calculators ─────────────────────────────────────────────────
 
@@ -150,16 +222,8 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
       : `${dateStr}:${cityKey}:${userRequest}`;
     const _prng = createMulberry32(stringToSeed(seedInput));
 
-    // Base climatology
-    const preset = CITY_PRESETS[cityKey] || {
-      temp: 25.0,
-      feelsLike: 26.0,
-      humidity: 65,
-      windSpeed: 4.0,
-      condition: 'Clouds',
-      description: 'partly cloudy',
-      icon: '04d',
-    };
+    // Base climatology — uses preset if known, or dynamically synthesizes realistic weather for ANY city
+    const preset = getClimatologyForCity(city, _prng);
 
     let temp = preset.temp;
     let feelsLike = preset.feelsLike;
@@ -288,7 +352,7 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
         activity: item.title,
         category: item.category,
         completed,
-        location: verdict === 'office' ? 'Office HQ' : 'Home Office',
+        location: verdict === 'office' ? `${city} Tech Park / Office` : `${city} Remote Desk`,
         context: item.context,
       };
     });
@@ -296,7 +360,7 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
     const recommendations = [
       '⚡ Prioritize High-priority Jira bug PROJ-101 during the morning focus window.',
       '🐙 Allocate uninterrupted afternoon time to review GitHub PR #42.',
-      isBadWeather ? '🌂 Rainy conditions expected — keep umbrella handy for transit.' : '☀️ Clear weather — take a 15-minute midday outdoor walk.',
+      isBadWeather ? `🌂 Rainy/adverse weather in ${city} — keep umbrella handy and plan transit carefully.` : `☀️ Clear atmospheric conditions in ${city} — take a 15-minute outdoor walk.`,
       '📝 Log day plan milestones in Notion before end-of-day wrap-up.',
     ];
 

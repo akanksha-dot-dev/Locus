@@ -577,25 +577,32 @@ body {
   box-shadow: 0 0 6px var(--color-amber);
 }
 
-/* City Select Pill */
+/* City Select Pill & Smart Input */
 .city-select-wrapper {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
 
+.city-select-pin {
+  position: absolute;
+  left: 6px;
+  font-size: 10px;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
 .city-select-pill {
-  appearance: none;
-  -webkit-appearance: none;
   background: var(--surface-elevated);
   border: 1px solid var(--border-hairline);
   color: var(--text-primary);
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 20px 2px 8px;
+  padding: 3px 8px 3px 20px;
   border-radius: var(--radius-full);
-  cursor: pointer;
   outline: none;
+  width: 108px;
+  transition: all var(--transition-fast);
 }
 
 .city-select-pill:hover {
@@ -603,12 +610,11 @@ body {
   background: var(--surface-active);
 }
 
-.city-select-arrow {
-  position: absolute;
-  right: 6px;
-  pointer-events: none;
-  font-size: 8px;
-  color: var(--text-muted);
+.city-select-pill:focus {
+  width: 130px;
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.25);
+  background: var(--surface-active);
 }
 
 /* Pomodoro Preset Buttons */

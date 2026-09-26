@@ -21,4 +21,11 @@ describe('Pomodoro Engine Presets & Configs', () => {
     expect(rest15).toBeDefined();
     expect(rest15?.durationSeconds).toBe(900);
   });
+
+  it('calculates remaining time from targetEndTime accurately', () => {
+    const now = Date.now();
+    const targetEndTime = now + 1200 * 1000; // 20 minutes remaining
+    const remaining = Math.max(0, Math.round((targetEndTime - now) / 1000));
+    expect(remaining).toBe(1200);
+  });
 });

@@ -341,6 +341,7 @@ export interface StorageState {
   lastSyncedAt: number | null; // Epoch timestamp (ms) or null
   offlineSource?: OfflineSource;
   offlineReason?: string | null;
+  pomodoro?: PomodoroState;
   error?: string | null;
 }
 
@@ -599,19 +600,62 @@ export interface PomodoroState {
   preset: PomodoroPreset;
   remainingSeconds: number;
   isRunning: boolean;
+  targetEndTime: number | null; // Epoch timestamp (ms) or null
+  durationSeconds: number;
   completedSessions: number;
 }
 
-export const CITY_PRESETS = [
+export const DEFAULT_POMODORO_STATE: PomodoroState = {
+  preset: 'focus_25',
+  remainingSeconds: 25 * 60,
+  isRunning: false,
+  targetEndTime: null,
+  durationSeconds: 25 * 60,
+  completedSessions: 0,
+};
+
+export const GLOBAL_CITY_SUGGESTIONS = [
+  // India
   'Mumbai',
   'Bengaluru',
-  'London',
-  'New York',
+  'Delhi',
+  'Hyderabad',
+  'Pune',
+  'Chennai',
+  'Kolkata',
+  'Gurgaon',
+  'Noida',
+  // Americas
   'San Francisco',
+  'New York',
+  'Seattle',
+  'Austin',
+  'Boston',
+  'Los Angeles',
+  'Chicago',
+  'Toronto',
+  'Vancouver',
+  // Europe
+  'London',
+  'Berlin',
+  'Paris',
+  'Amsterdam',
+  'Dublin',
+  'Zurich',
+  'Stockholm',
+  'Warsaw',
+  // Asia-Pacific & Middle East
   'Tokyo',
+  'Singapore',
+  'Sydney',
+  'Melbourne',
+  'Seoul',
+  'Dubai',
+  'Tel Aviv',
 ] as const;
 
-export type CityPreset = typeof CITY_PRESETS[number];
+export const CITY_PRESETS = GLOBAL_CITY_SUGGESTIONS;
+export type CityPreset = string;
 
 export interface DayAnalytics {
   totalBlocks: number;

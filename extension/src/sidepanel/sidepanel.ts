@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const footerSynced = document.getElementById('footer-synced');
 
   const btnSync = document.getElementById('btn-sidepanel-sync');
+  const sidepanelCitySelector = document.getElementById('sidepanel-city-selector') as HTMLInputElement | null;
   const btnExportIcs = document.getElementById('btn-export-ics');
   const btnOpenNotion = document.getElementById('btn-open-notion');
 
@@ -70,6 +71,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const swarmContainer = document.getElementById('swarm-graph-container');
   const swarmVisualizer = swarmContainer ? new SwarmVisualizer(swarmContainer) : null;
   const swarmLogs = document.getElementById('swarm-logs');
+  if (swarmVisualizer) {
+    swarmVisualizer.onNodeClick = () => {
+      playTactileTick(550);
+    };
+  }
 
   let activeBlocksCache: ScheduleBlock[] = [];
   let cachedStorageState: StorageState | null = null;
@@ -299,6 +305,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
+    if (sidepanelCitySelector && document.activeElement !== sidepanelCitySelector) {
+      sidepanelCitySelector.value = res?.city || state.settings?.defaultCity || 'Mumbai';
+    }
+
     if (footerSynced) {
       if (state.lastSyncedAt) {
         const d = new Date(state.lastSyncedAt);
@@ -440,7 +450,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.runtime.sendMessage(
       {
         type: 'SYNC_REQUEST',
-        payload: { userRequest: query },
+        payload: {
+          userRequest: query,
+          city: sidepanelCitySelector?.value || cachedStorageState?.lastResponse?.city,
+        },
       },
       (res) => {
         btnPromptSend?.removeAttribute('disabled');
@@ -454,11 +467,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (promptInput) promptInput.value = '';
   });
 
+  // City Selector Change & Enter Key Handler
+  function triggerSidepanelCitySync() {
+    const rawVal = sidepanelCitySelector?.value.trim();
+    if (!rawVal) return;
+    const newCity = rawVal;
+    if (newCity.toLowerCase() === (cachedStorageState?.lastResponse?.city || '').toLowerCase()) {
+      return;
+    }
+    playTactileTick(600);
+    btnSync?.classList.add('rotating');
+    chrome.runtime.sendMessage(
+      { type: 'SYNC_REQUEST', payload: { force: true, city: newCity } },
+      (res) => {
+        btnSync?.classList.remove('rotating');
+        if (res?.state) {
+          playSuccessChime();
+          render(res.state);
+        }
+      }
+    );
+  }
+
+  sidepanelCitySelector?.addEventListener('change', triggerSidepanelCitySync);
+  sidepanelCitySelector?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      sidepanelCitySelector.blur();
+      triggerSidepanelCitySync();
+    }
+  });
+
   // Sync button
   btnSync?.addEventListener('click', () => {
     playTactileTick(500);
     btnSync.classList.add('rotating');
-    chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true } }, (res) => {
+    const city = sidepanelCitySelector?.value || cachedStorageState?.lastResponse?.city;
+    chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true, city } }, (res) => {
       setTimeout(() => btnSync.classList.remove('rotating'), 600);
       if (res?.state) {
         playSuccessChime();

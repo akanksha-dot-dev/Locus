@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Elements
   const connectionBeacon = document.getElementById('connection-beacon');
-  const citySelector = document.getElementById('city-selector') as HTMLSelectElement | null;
+  const citySelector = document.getElementById('city-selector') as HTMLInputElement | null;
   const verdictBadge = document.getElementById('verdict-badge');
   const verdictConfidence = document.getElementById('verdict-confidence');
   const verdictReason = document.getElementById('verdict-reason');
@@ -67,10 +67,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let currentBlockId: string | null = null;
   let soundEnabled = true;
-  let pomoRemainingSeconds = 25 * 60;
-  let pomoInterval: any = null;
-  let isPomoRunning = false;
   let cachedState: StorageState | null = null;
+
+  // Background-Persistent Pomodoro State
+  let pomoState = {
+    preset: 'focus_25',
+    remainingSeconds: 25 * 60,
+    isRunning: false,
+    targetEndTime: null as number | null,
+    durationSeconds: 25 * 60,
+    completedSessions: 0,
+  };
 
   // Sound Toggle Listener
   btnSoundToggle?.addEventListener('click', () => {
@@ -86,13 +93,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `${m}:${s}`;
   }
 
-  function updatePomodoroUI(): void {
-    if (pomoClock) pomoClock.textContent = formatClock(pomoRemainingSeconds);
-    if (btnPomoToggle) btnPomoToggle.textContent = isPomoRunning ? 'PAUSE' : 'START';
+  function renderPomodoroDisplay(): void {
+    if (pomoState.isRunning && pomoState.targetEndTime) {
+      const now = Date.now();
+      const rem = Math.max(0, Math.round((pomoState.targetEndTime - now) / 1000));
+      pomoState.remainingSeconds = rem;
+      if (rem === 0) {
+        pomoState.isRunning = false;
+        pomoState.targetEndTime = null;
+        if (soundEnabled) playPomodoroGong();
+      }
+    }
+
+    if (pomoClock) pomoClock.textContent = formatClock(pomoState.remainingSeconds);
+    if (btnPomoToggle) btnPomoToggle.textContent = pomoState.isRunning ? 'PAUSE' : 'START';
     if (pomoDot) {
-      pomoDot.className = `pomodoro-dot ${isPomoRunning ? 'active' : 'idle'}`;
+      pomoDot.className = `pomodoro-dot ${pomoState.isRunning ? 'active' : 'idle'}`;
     }
   }
+
+  // Live 500ms ticker for smooth second transitions
+  setInterval(renderPomodoroDisplay, 500);
 
   // Preset switching
   presetButtons.forEach((btn) => {
@@ -101,42 +122,56 @@ document.addEventListener('DOMContentLoaded', async () => {
       presetButtons.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
 
+      const presetId = btn.dataset.preset || 'focus_25';
       const sec = parseInt(btn.dataset.sec || '1500', 10);
-      clearInterval(pomoInterval);
-      isPomoRunning = false;
-      pomoRemainingSeconds = sec;
-      updatePomodoroUI();
+      chrome.runtime.sendMessage(
+        { type: 'SET_POMODORO_PRESET', payload: { preset: presetId, durationSeconds: sec } },
+        (res) => {
+          if (res?.pomodoro) {
+            pomoState = res.pomodoro;
+            renderPomodoroDisplay();
+          }
+        }
+      );
     });
   });
 
   btnPomoToggle?.addEventListener('click', () => {
-    if (soundEnabled) playTactileTick(isPomoRunning ? 400 : 750);
-    isPomoRunning = !isPomoRunning;
-    if (isPomoRunning) {
-      pomoInterval = setInterval(() => {
-        if (pomoRemainingSeconds > 0) {
-          pomoRemainingSeconds--;
-          updatePomodoroUI();
-        } else {
-          clearInterval(pomoInterval);
-          isPomoRunning = false;
-          updatePomodoroUI();
-          if (soundEnabled) playPomodoroGong();
+    if (soundEnabled) playTactileTick(pomoState.isRunning ? 400 : 750);
+    if (pomoState.isRunning) {
+      chrome.runtime.sendMessage({ type: 'PAUSE_POMODORO' }, (res) => {
+        if (res?.pomodoro) {
+          pomoState = res.pomodoro;
+          renderPomodoroDisplay();
         }
-      }, 1000);
+      });
     } else {
-      clearInterval(pomoInterval);
+      const activePresetBtn = document.querySelector<HTMLButtonElement>('.btn-preset.active');
+      const presetId = activePresetBtn?.dataset.preset || 'focus_25';
+      const duration = pomoState.remainingSeconds > 0
+        ? pomoState.remainingSeconds
+        : parseInt(activePresetBtn?.dataset.sec || '1500', 10);
+
+      chrome.runtime.sendMessage(
+        { type: 'START_POMODORO', payload: { preset: presetId, durationSeconds: duration } },
+        (res) => {
+          if (res?.pomodoro) {
+            pomoState = res.pomodoro;
+            renderPomodoroDisplay();
+          }
+        }
+      );
     }
-    updatePomodoroUI();
   });
 
   btnPomoReset?.addEventListener('click', () => {
     if (soundEnabled) playTactileTick(350);
-    clearInterval(pomoInterval);
-    isPomoRunning = false;
-    const activePreset = document.querySelector<HTMLButtonElement>('.btn-preset.active');
-    pomoRemainingSeconds = parseInt(activePreset?.dataset.sec || '1500', 10);
-    updatePomodoroUI();
+    chrome.runtime.sendMessage({ type: 'RESET_POMODORO' }, (res) => {
+      if (res?.pomodoro) {
+        pomoState = res.pomodoro;
+        renderPomodoroDisplay();
+      }
+    });
   });
 
   // Smooth Dual-Ring Count-up Circular Gauge Animation
@@ -201,9 +236,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 2. City Selector
-    if (citySelector) {
+    if (citySelector && document.activeElement !== citySelector) {
       const currentCity = res?.city || state.settings?.defaultCity || 'Mumbai';
       citySelector.value = currentCity;
+    }
+
+    // 2b. Pomodoro State Sync
+    if (state.pomodoro) {
+      pomoState = { ...pomoState, ...state.pomodoro };
+      presetButtons.forEach((b) => {
+        b.classList.toggle('active', b.dataset.preset === pomoState.preset);
+      });
+      renderPomodoroDisplay();
     }
 
     // 3. Verdict & Confidence
@@ -296,18 +340,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // City Selector Change Handler
-  citySelector?.addEventListener('change', () => {
-    const newCity = citySelector.value;
+  // City Selector Change & Enter Key Handler
+  function triggerCitySync() {
+    const rawVal = citySelector?.value.trim();
+    if (!rawVal) return;
+    const newCity = rawVal;
+    if (newCity.toLowerCase() === (cachedState?.lastResponse?.city || '').toLowerCase()) {
+      return;
+    }
     if (soundEnabled) playTactileTick(600);
     btnSync?.classList.add('rotating');
+    if (weatherDesc) weatherDesc.textContent = `Analyzing atmospheric data for ${newCity}...`;
     chrome.runtime.sendMessage(
       { type: 'SYNC_REQUEST', payload: { force: true, city: newCity } },
       (res) => {
         btnSync?.classList.remove('rotating');
-        if (res?.state) renderState(res.state);
+        if (res?.state) {
+          playSuccessChime();
+          renderState(res.state);
+        }
       }
     );
+  }
+
+  citySelector?.addEventListener('change', triggerCitySync);
+  citySelector?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      citySelector.blur();
+      triggerCitySync();
+    }
+  });
+
+  // Runtime message listener for Pomodoro sync across surfaces
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === 'POMODORO_COMPLETE') {
+      if (soundEnabled) playPomodoroGong();
+      if (msg.payload) {
+        pomoState = msg.payload;
+        renderPomodoroDisplay();
+      }
+    } else if (msg.type === 'POMODORO_UPDATED') {
+      if (msg.payload) {
+        pomoState = msg.payload;
+        renderPomodoroDisplay();
+      }
+    }
   });
 
   // Load state from local storage immediately (<150ms cold boot)

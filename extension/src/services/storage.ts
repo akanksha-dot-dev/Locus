@@ -12,11 +12,13 @@
 
 import {
   AgentResponse,
+  DEFAULT_POMODORO_STATE,
   DEFAULT_SETTINGS,
   DEFAULT_STORAGE_STATE,
   DetectedContext,
   ExtensionSettings,
   OfflineSource,
+  PomodoroState,
   ScheduleBlock,
   StorageState,
   normalizeTimeline,
@@ -169,6 +171,7 @@ export class StorageService {
       lastSyncedAt: typeof raw.lastSyncedAt === 'number' ? raw.lastSyncedAt : DEFAULT_STORAGE_STATE.lastSyncedAt,
       offlineSource: raw.offlineSource || DEFAULT_STORAGE_STATE.offlineSource,
       offlineReason: raw.offlineReason !== undefined ? raw.offlineReason : DEFAULT_STORAGE_STATE.offlineReason,
+      pomodoro: raw.pomodoro || DEFAULT_POMODORO_STATE,
       error: raw.error !== undefined ? raw.error : DEFAULT_STORAGE_STATE.error,
     };
   }
@@ -279,6 +282,28 @@ export class StorageService {
     };
     await this.adapter.setRaw({ settings: updated });
     return updated;
+  }
+
+  /**
+   * Alias for updateSettings.
+   */
+  async setSettings(partial: Partial<ExtensionSettings>): Promise<ExtensionSettings> {
+    return this.updateSettings(partial);
+  }
+
+  /**
+   * Retrieves persistent Pomodoro state.
+   */
+  async getPomodoro(): Promise<PomodoroState> {
+    const raw = await this.adapter.getRaw('pomodoro');
+    return raw.pomodoro || DEFAULT_POMODORO_STATE;
+  }
+
+  /**
+   * Persists Pomodoro state.
+   */
+  async setPomodoro(pomodoro: PomodoroState): Promise<void> {
+    await this.adapter.setRaw({ pomodoro });
   }
 
   /**

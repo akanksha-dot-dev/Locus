@@ -96,4 +96,22 @@ describe('Deterministic Offline Simulator', () => {
     expect(stringToSeed('hello')).toBe(stringToSeed('hello'));
     expect(stringToSeed('Mumbai')).not.toBe(stringToSeed('London'));
   });
+
+  it('produces distinct climatology and schedule locations for different world cities', () => {
+    const london = generateOfflineSimulation({ city: 'London' });
+    const dubai = generateOfflineSimulation({ city: 'Dubai' });
+    const custom = generateOfflineSimulation({ city: 'Reykjavik' });
+
+    expect(london.response.city).toBe('London');
+    expect(dubai.response.city).toBe('Dubai');
+    expect(custom.response.city).toBe('Reykjavik');
+
+    // Temperatures should differ (Dubai hot vs London cool)
+    expect(dubai.response.temperature_c).toBeGreaterThan(london.response.temperature_c);
+
+    // Block locations reflect respective cities
+    expect(london.scheduleBlocks[0]?.location).toContain('London');
+    expect(dubai.scheduleBlocks[0]?.location).toContain('Dubai');
+    expect(custom.scheduleBlocks[0]?.location).toContain('Reykjavik');
+  });
 });
