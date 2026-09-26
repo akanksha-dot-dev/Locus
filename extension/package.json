@@ -1,0 +1,25 @@
+{
+  "name": "locus-chrome-extension",
+  "version": "1.0.0",
+  "description": "Locus Day Planner Chrome Extension Companion (Manifest V3)",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/chrome": "^0.3.0",
+    "@types/node": "^22.13.0",
+    "esbuild": "^0.25.0",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.0"
+  }
+}
