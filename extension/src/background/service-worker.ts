@@ -244,6 +244,24 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
       });
     }
 
+    // Initialize Context Menus
+    if (chrome.contextMenus) {
+      try {
+        chrome.contextMenus.create({
+          id: 'locus-add-focus-task',
+          title: '⚡ Schedule "%s" as Locus Focus Task',
+          contexts: ['selection'],
+        });
+        chrome.contextMenus.create({
+          id: 'locus-ask-advisor',
+          title: '🧠 Ask Locus AI Advisor about "%s"',
+          contexts: ['selection'],
+        });
+      } catch (err) {
+        // Ignored if already created
+      }
+    }
+
     // Default initial badge
     updateBadge('wfh', false);
 
@@ -252,6 +270,58 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
 
     // Run initial state synchronization
     await executeSync({ force: false, reason: 'installed' });
+  });
+
+  // Handle Context Menu item clicks
+  chrome.contextMenus?.onClicked.addListener(async (info, tab) => {
+    if (!info.selectionText) return;
+
+    if (info.menuItemId === 'locus-add-focus-task') {
+      const state = await storageService.getState();
+      const newBlock: ScheduleBlock = {
+        id: `block-ctx-${Date.now()}`,
+        time: 'Focus Slot',
+        title: info.selectionText.slice(0, 100),
+        activity: info.selectionText.slice(0, 100),
+        category: 'deep_work',
+        completed: false,
+      };
+      const updated = [...state.scheduleBlocks, newBlock];
+      await storageService.setScheduleBlocks(updated);
+
+      if (chrome.notifications) {
+        chrome.notifications.create({
+          type: 'basic',
+          iconUrl: 'icons/icon-48.png',
+          title: 'Locus Day Planner',
+          message: `Added focus task: "${info.selectionText.slice(0, 45)}..."`,
+        });
+      }
+    } else if (info.menuItemId === 'locus-ask-advisor') {
+      await executeSync({ force: true, userRequest: info.selectionText, reason: 'context_menu' });
+      if (tab?.id && chrome.sidePanel?.open) {
+        await chrome.sidePanel.open({ tabId: tab.id });
+      }
+    }
+  });
+
+  // Global Keyboard Shortcut Command Listeners
+  chrome.commands?.onCommand.addListener(async (command) => {
+    console.log(`[Locus SW] Command received: ${command}`);
+    if (command === 'toggle_sidepanel') {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab?.id && chrome.sidePanel?.open) {
+          await chrome.sidePanel.open({ tabId: tab.id });
+        }
+      } catch (err) {
+        console.warn('[Locus SW] Could not open side panel via shortcut:', err);
+      }
+    } else if (command === 'toggle_pomodoro') {
+      if (chrome.runtime?.sendMessage) {
+        chrome.runtime.sendMessage({ type: 'TOGGLE_POMODORO' }).catch(() => {});
+      }
+    }
   });
 
   // Handle Browser Startup
@@ -322,22 +392,43 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
 
   // Omnibox Keyword Search Handler ("locus <query>")
   if (chrome.omnibox) {
-    chrome.omnibox.onInputChanged?.addListener((text, suggest) => {
+    chrome.omnibox.onInputChanged?.addListener(async (text, suggest) => {
+      const state = await storageService.getState();
+      const verdict = state.lastResponse ? normalizeVerdict(state.lastResponse.go_to_office).toUpperCase() : 'WFH';
+      const activeTask = state.scheduleBlocks.find((b) => !b.completed)?.title || 'Sprint tasks';
+
       suggest([
+        {
+          content: `now`,
+          description: `Locus Focus: "${activeTask}"`,
+        },
+        {
+          content: `office`,
+          description: `Locus Verdict: ${verdict} (${state.lastResponse?.city || 'Mumbai'})`,
+        },
         {
           content: `plan ${text}`,
           description: `Locus: Plan day prioritizing "${text}"`,
-        },
-        {
-          content: `wfh ${text}`,
-          description: `Locus: Evaluate WFH disposition with "${text}"`,
         },
       ]);
     });
 
     chrome.omnibox.onInputEntered?.addListener(async (text) => {
       console.log(`[Locus SW] Omnibox input received: "${text}"`);
-      const query = text.replace(/^(plan|wfh)\s+/i, '').trim() || text;
+      const trimmed = text.trim();
+      if (trimmed === 'office' || trimmed === 'now') {
+        try {
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          if (tab?.id && chrome.sidePanel?.open) {
+            await chrome.sidePanel.open({ tabId: tab.id });
+          }
+        } catch {
+          // Ignored
+        }
+        return;
+      }
+
+      const query = trimmed.replace(/^(plan|wfh)\s+/i, '').trim() || trimmed;
       await executeSync({
         force: true,
         userRequest: query,

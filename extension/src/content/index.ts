@@ -1,17 +1,18 @@
 /**
- * Locus Content Script — Jira & GitHub Context Extractor
+ * Locus Content Script — Jira, GitHub & Calendar Context Extractor & In-Page Co-Pilot
  * Bundled strictly as an IIFE (isolated, no external module imports).
- * Detects Jira ticket or GitHub PR in active tab and transmits to background worker.
+ * Detects Jira tickets, GitHub PRs/Issues, and Calendar events, and provides
+ * a non-intrusive, Shadow-DOM encapsulated floating co-pilot.
  */
 
 (function () {
   let lastDetectedUrl = '';
 
   function extractJiraContext(): { id: string; title: string } | null {
-    // 1. Extract Key from URL or DOM
     let key = '';
-    const urlMatch = window.location.pathname.match(/\/browse\/([A-Z0-9]+-\d+)/i) ||
-                     window.location.search.match(/selectedIssue=([A-Z0-9]+-\d+)/i);
+    const urlMatch =
+      window.location.pathname.match(/\/browse\/([A-Z0-9]+-\d+)/i) ||
+      window.location.search.match(/selectedIssue=([A-Z0-9]+-\d+)/i);
     if (urlMatch && urlMatch[1]) {
       key = urlMatch[1];
     } else {
@@ -26,7 +27,6 @@
 
     if (!key) return null;
 
-    // 2. Extract Summary/Title
     let title = '';
     const titleEl =
       document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]') ||
@@ -44,26 +44,42 @@
   }
 
   function extractGitHubContext(): { id: string; title: string } | null {
-    // Check if on a Pull Request page
+    // 1. Check Pull Request
     const prMatch = window.location.pathname.match(/\/pull\/(\d+)/i);
-    if (!prMatch || !prMatch[1]) return null;
-
-    const prNumber = `#${prMatch[1]}`;
-
-    // Extract PR title
-    let title = '';
-    const titleEl =
-      document.querySelector('.gh-header-title .js-issue-title') ||
-      document.querySelector('bdi.js-issue-title') ||
-      document.querySelector('h1.gh-header-title');
-
-    if (titleEl && titleEl.textContent) {
-      title = titleEl.textContent.trim();
-    } else {
-      title = document.title.replace(/by \w+ · Pull Request #\d+.*$/i, '').trim();
+    if (prMatch && prMatch[1]) {
+      const prNumber = `#${prMatch[1]}`;
+      const titleEl =
+        document.querySelector('.gh-header-title .js-issue-title') ||
+        document.querySelector('bdi.js-issue-title') ||
+        document.querySelector('h1.gh-header-title');
+      const title = titleEl?.textContent?.trim() || document.title.replace(/by \w+ · Pull Request #\d+.*$/i, '').trim();
+      return { id: prNumber, title: title || `PR ${prNumber}` };
     }
 
-    return { id: prNumber, title: title || `PR ${prNumber}` };
+    // 2. Check Issue
+    const issueMatch = window.location.pathname.match(/\/issues\/(\d+)/i);
+    if (issueMatch && issueMatch[1]) {
+      const issueNumber = `#${issueMatch[1]}`;
+      const titleEl =
+        document.querySelector('.gh-header-title .js-issue-title') ||
+        document.querySelector('bdi.js-issue-title') ||
+        document.querySelector('h1.gh-header-title');
+      const title = titleEl?.textContent?.trim() || document.title.replace(/· Issue #\d+.*$/i, '').trim();
+      return { id: issueNumber, title: title || `Issue ${issueNumber}` };
+    }
+
+    return null;
+  }
+
+  function extractGoogleCalendarContext(): { id: string; title: string } | null {
+    const dialog = document.querySelector('div[role="dialog"]');
+    if (dialog) {
+      const titleEl = dialog.querySelector('span[role="heading"]') || dialog.querySelector('h2');
+      if (titleEl && titleEl.textContent) {
+        return { id: 'GCAL', title: titleEl.textContent.trim() };
+      }
+    }
+    return null;
   }
 
   function inspectPage(): void {
@@ -90,6 +106,16 @@
           source: 'github',
           id: ghCtx.id,
           title: ghCtx.title,
+          url: currentUrl,
+        };
+      }
+    } else if (hostname.includes('calendar.google.com')) {
+      const gcalCtx = extractGoogleCalendarContext();
+      if (gcalCtx) {
+        detected = {
+          source: 'jira',
+          id: gcalCtx.id,
+          title: gcalCtx.title,
           url: currentUrl,
         };
       }
@@ -126,6 +152,8 @@
       shadow = hostEl.attachShadow({ mode: 'open' });
     }
 
+    let isMinimized = false;
+
     shadow.innerHTML = `
       <style>
         :host {
@@ -151,6 +179,14 @@
           animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           transition: transform 0.2s ease, opacity 0.2s ease;
         }
+        .pill-container.minimized {
+          padding: 8px;
+          border-radius: 50%;
+          cursor: pointer;
+        }
+        .pill-container.minimized .content-wrapper {
+          display: none;
+        }
         @keyframes slide-in {
           from { transform: translateY(20px) scale(0.95); opacity: 0; }
           to { transform: translateY(0) scale(1); opacity: 1; }
@@ -161,6 +197,12 @@
           border-radius: 50%;
           background: #06b6d4;
           box-shadow: 0 0 8px #06b6d4;
+          flex-shrink: 0;
+        }
+        .content-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
         .brand-title {
           font-size: 11px;
@@ -181,7 +223,7 @@
         .title-text {
           font-size: 11px;
           font-weight: 500;
-          max-width: 180px;
+          max-width: 170px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -205,7 +247,7 @@
           background: #22d3ee;
           box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
         }
-        .btn-close {
+        .btn-minimize {
           background: transparent;
           border: none;
           color: #9ca3af;
@@ -214,21 +256,25 @@
           padding: 2px 4px;
           line-height: 1;
         }
-        .btn-close:hover {
+        .btn-minimize:hover {
           color: #f3f4f6;
         }
       </style>
-      <div class="pill-container" id="locus-pill">
+      <div class="pill-container" id="locus-pill" title="Locus Day Planner Co-Pilot">
         <div class="brand-dot"></div>
-        <span class="brand-title">LOCUS</span>
-        <span class="context-tag">${detected.id}</span>
-        <span class="title-text" title="${detected.title}">${detected.title}</span>
-        <button class="btn-add" id="btn-insert-plan">⚡ Add to Day Plan</button>
-        <button class="btn-close" id="btn-dismiss" title="Dismiss">✕</button>
+        <div class="content-wrapper">
+          <span class="brand-title">LOCUS</span>
+          <span class="context-tag">${detected.id}</span>
+          <span class="title-text" title="${detected.title}">${detected.title}</span>
+          <button class="btn-add" id="btn-insert-plan">⚡ Add to Day Plan</button>
+          <button class="btn-minimize" id="btn-minimize" title="Minimize">─</button>
+          <button class="btn-minimize" id="btn-dismiss" title="Dismiss">✕</button>
+        </div>
       </div>
     `;
 
     const btnAdd = shadow.getElementById('btn-insert-plan');
+    const btnMinimize = shadow.getElementById('btn-minimize');
     const btnClose = shadow.getElementById('btn-dismiss');
     const pill = shadow.getElementById('locus-pill');
 
@@ -247,7 +293,27 @@
       }, 1600);
     });
 
-    btnClose?.addEventListener('click', () => {
+    btnMinimize?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isMinimized = !isMinimized;
+      if (pill) {
+        if (isMinimized) {
+          pill.classList.add('minimized');
+        } else {
+          pill.classList.remove('minimized');
+        }
+      }
+    });
+
+    pill?.addEventListener('click', () => {
+      if (isMinimized) {
+        isMinimized = false;
+        pill.classList.remove('minimized');
+      }
+    });
+
+    btnClose?.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (pill) pill.style.opacity = '0';
       setTimeout(() => hostEl?.remove(), 250);
     });
