@@ -7,6 +7,7 @@ import {
   Loader2,
   Globe,
   CornerDownLeft,
+  ArrowRight,
 } from 'lucide-react';
 import { Button } from '../common/Button';
 
@@ -27,7 +28,6 @@ const GLOBAL_POPULAR_CITIES = [
   'Tokyo',
   'Paris',
   'Berlin',
-  'Singapore',
   'Sydney',
 ];
 
@@ -75,24 +75,28 @@ export const PromptBar: React.FC<PromptBarProps> = ({
     }
   };
 
-  // Dynamic suggestions based on currently selected or typed city
+  // Dynamic sample scenarios tailored to the typed/selected city
   const activeCityName = city.trim() || 'your city';
   const dynamicSuggestions = [
     {
-      label: `⛈️ Storm in ${activeCityName}`,
+      icon: '⛈️',
+      title: `Storm in ${activeCityName}`,
       prompt: `Severe storm warning in ${activeCityName}. Review commute delays, evaluate transit risk, and prioritize deep code reviews with my Jira tickets.`,
     },
     {
-      label: `☀️ Clear Day in ${activeCityName}`,
+      icon: '☀️',
+      title: `Clear Day in ${activeCityName}`,
       prompt: `Favorable clear weather in ${activeCityName}. Plan an in-person office day with collaborative sprint planning and team architecture reviews.`,
     },
     {
-      label: `✈️ Transit & Travel in ${activeCityName}`,
+      icon: '✈️',
+      title: `Airport Transit in ${activeCityName}`,
       prompt: `Airport departure and early commute in ${activeCityName}. Check flight delays, triage urgent GitHub PRs, and format an executive day schedule.`,
     },
     {
-      label: `🚨 Production Fire`,
-      prompt: `Urgent incident response and sprint crunch. Schedule uninterrupted focus blocks, prioritize critical blockers, and notify team via Slack.`,
+      icon: '🚨',
+      title: `Production Crunch in ${activeCityName}`,
+      prompt: `Critical sprint blockers and urgent review in ${activeCityName}. Schedule 6h deep focus blocks, triage high-priority PRs, and alert team via Slack.`,
     },
   ];
 
@@ -100,76 +104,77 @@ export const PromptBar: React.FC<PromptBarProps> = ({
     <div
       className={`rounded-3xl bg-surface-card border border-hairline-strong p-4 sm:p-5 shadow-2xl transition-all card-highlight-glow ${className}`}
     >
-      {/* ── 1. Top Header: Title & Direct City Input ────────────── */}
-      <div className="space-y-3 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex-shrink-0">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white font-mono">
-              Autonomous Command Prompt
-            </h3>
-            <p className="text-[11px] text-slate-500 dark:text-gray-400">
-              Natural language constraint engine for weather, transit, meetings & sprint workload
-            </p>
-          </div>
+      {/* ── 1. Header: Title & Subtitle ──────────────────────────── */}
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className="p-2 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 flex-shrink-0">
+          <Sparkles className="w-4 h-4" />
+        </div>
+        <div>
+          <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white font-mono">
+            Autonomous Command Prompt
+          </h3>
+          <p className="text-[11px] text-slate-500 dark:text-gray-400">
+            Natural language constraint engine for weather, transit, meetings & sprint workload
+          </p>
+        </div>
+      </div>
+
+      {/* ── 2. Target City Section (Completely Uncramped, Direct Input) ── */}
+      <div className="p-3 rounded-2xl bg-surface-elevated/70 border border-hairline space-y-2 mb-3">
+        <div className="flex items-center justify-between">
+          <label className="text-[11px] font-mono text-slate-500 dark:text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-cyan-500" />
+            <span>Target City</span>
+          </label>
+          <span className="text-[10px] text-slate-400 dark:text-gray-500 font-mono">
+            Type any city worldwide
+          </span>
         </div>
 
-        {/* ── 2. Direct Editable Target City Input ─────────────────── */}
-        <div className="p-3 rounded-2xl bg-surface-elevated/70 border border-hairline space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <label className="text-[11px] font-mono text-slate-500 dark:text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-cyan-500" />
-              <span>Target City</span>
-              <span className="text-[10px] text-slate-400 lowercase font-normal">(type any city name)</span>
-            </label>
-
-            {/* Quick city presets */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
-              <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500 mr-1 hidden md:inline">
-                Presets:
-              </span>
-              {GLOBAL_POPULAR_CITIES.slice(0, 7).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCity(c)}
-                  className={`px-2 py-0.5 rounded-md text-[10px] font-mono transition-all cursor-pointer whitespace-nowrap ${
-                    city.toLowerCase() === c.toLowerCase()
-                      ? 'bg-indigo-600 text-white font-bold shadow-xs'
-                      : 'bg-surface-card hover:bg-surface-active text-slate-600 dark:text-gray-300 border border-hairline'
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+        {/* City Input with Globe Icon & Clear Action */}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
           </div>
+          <input
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            disabled={isLoading}
+            placeholder="Enter any city worldwide (e.g. London, Paris, Tokyo, Mumbai, Trivandrum...)"
+            className="w-full pl-9 pr-8 py-2 rounded-xl bg-surface-card border border-hairline text-xs sm:text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all shadow-inner disabled:opacity-50"
+          />
+          {city && !isLoading && (
+            <button
+              type="button"
+              onClick={() => setCity('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+              title="Clear city"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
 
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
-            </div>
-            <input
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              disabled={isLoading}
-              placeholder="Enter any city worldwide (e.g. London, Paris, Tokyo, Mumbai, Berlin, Sydney, Singapore...)"
-              className="w-full pl-9 pr-8 py-2 rounded-xl bg-surface-card border border-hairline text-xs sm:text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all shadow-inner disabled:opacity-50"
-            />
-            {city && !isLoading && (
-              <button
-                type="button"
-                onClick={() => setCity('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
-                title="Clear city"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+        {/* Quick popular city presets (wrapped cleanly, no scrollbar) */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500 mr-1">
+            Presets:
+          </span>
+          {GLOBAL_POPULAR_CITIES.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCity(c)}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-mono transition-all cursor-pointer whitespace-nowrap ${
+                city.toLowerCase() === c.toLowerCase()
+                  ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                  : 'bg-surface-card hover:bg-surface-active text-slate-600 dark:text-gray-300 border border-hairline hover:border-indigo-500/30'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -199,45 +204,67 @@ export const PromptBar: React.FC<PromptBarProps> = ({
           )}
         </div>
 
-        {/* ── 4. Suggestion Chips & Run Action Bar ───────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
-          {/* Quick Scenario Preset Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        {/* ── 4. Dedicated Sample Scenarios Section (100% VISIBLE, NO CLIPPING) ── */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between px-0.5">
+            <span className="text-[11px] font-mono text-slate-500 dark:text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Sample Scenarios (Click to Load)</span>
+            </span>
+            <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500">
+              4 Scenarios Ready
+            </span>
+          </div>
+
+          {/* 2x2 Clean Responsive Grid — ALL 4 SCENARIOS FULLY VISIBLE */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {dynamicSuggestions.map((item) => (
               <button
-                key={item.label}
+                key={item.title}
                 type="button"
                 onClick={() => setPrompt(item.prompt)}
-                className="px-2.5 py-1 rounded-lg bg-surface-elevated hover:bg-surface-active border border-hairline text-[11px] font-mono text-slate-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-white transition-all whitespace-nowrap cursor-pointer hover:border-indigo-500/30"
+                className="p-2.5 rounded-xl bg-surface-elevated/80 hover:bg-surface-active border border-hairline hover:border-indigo-500/40 text-left transition-all cursor-pointer group shadow-xs hover:shadow-md"
               >
-                {item.label}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono font-bold text-slate-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex items-center gap-1.5">
+                    <span>{item.icon}</span>
+                    <span className="truncate">{item.title}</span>
+                  </span>
+                  <ArrowRight className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-gray-400 mt-1 line-clamp-1 leading-snug">
+                  {item.prompt}
+                </p>
               </button>
             ))}
           </div>
+        </div>
 
-          {/* Submit Action Button */}
-          <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
-            <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500 hidden sm:inline">
-              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated border border-hairline">⌘+Enter</kbd>
-            </span>
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              disabled={isLoading || !prompt.trim()}
-              icon={
-                isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-white" />
-                ) : (
-                  <Zap className="w-4 h-4 text-white" />
-                )
-              }
-              className="px-5 font-mono text-xs shadow-md glow-indigo cursor-pointer font-bold tracking-wide"
-            >
-              {isLoading ? 'Synthesizing Plan...' : 'Run Autonomous Plan'}
-            </Button>
+        {/* ── 5. Bottom Execution Bar (Dedicated & Uncramped) ──────── */}
+        <div className="flex items-center justify-between pt-2 border-t border-hairline/60">
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 dark:text-gray-500">
+            <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated border border-hairline text-[10px]">
+              ⌘+Enter
+            </kbd>
+            <span className="hidden sm:inline">to execute</span>
           </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            disabled={isLoading || !prompt.trim()}
+            icon={
+              isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <Zap className="w-4 h-4 text-white" />
+              )
+            }
+            className="px-6 py-2 font-mono text-xs shadow-lg glow-indigo cursor-pointer font-bold tracking-wide"
+          >
+            {isLoading ? 'Synthesizing Plan...' : 'Run Autonomous Plan'}
+          </Button>
         </div>
       </form>
     </div>
