@@ -108,16 +108,19 @@ if (fs.existsSync(appTsxPath)) {
 console.log('');
 
 // ── TEST SUITE 3: Design Tokens & Surface Ladder ───────────────────────
-console.log('▶ Test Suite 3: Dark Aesthetic Surface Ladder & Design Tokens');
+console.log('▶ Test Suite 3: Dual-Theme Surface Ladder & Design Tokens');
 const tailwindConfigPath = path.join(frontendDir, 'tailwind.config.js');
+const indexCssPath = path.join(frontendDir, 'src', 'index.css');
 assert(fs.existsSync(tailwindConfigPath), 'tailwind.config.js exists');
+assert(fs.existsSync(indexCssPath), 'src/index.css exists');
 
-if (fs.existsSync(tailwindConfigPath)) {
+if (fs.existsSync(tailwindConfigPath) && fs.existsSync(indexCssPath)) {
   const twContent = fs.readFileSync(tailwindConfigPath, 'utf8');
-  assert(twContent.includes('#08090a'), 'Surface base tier #08090a defined');
-  assert(twContent.includes('#0f1011'), 'Surface card tier #0f1011 defined');
-  assert(twContent.includes('#141516'), 'Surface elevated tier #141516 defined');
-  assert(twContent.includes('#1c1d20'), 'Surface active tier #1c1d20 defined');
+  const cssContent = fs.readFileSync(indexCssPath, 'utf8');
+  assert(twContent.includes('--bg-base') && (cssContent.includes('#090a0f') || cssContent.includes('9 10 15')), 'Surface base tier defined (with dark #090a0f)');
+  assert(twContent.includes('--surface-card') && (cssContent.includes('#11131a') || cssContent.includes('17 19 26')), 'Surface card tier defined (with dark #11131a)');
+  assert(twContent.includes('--surface-elevated') && (cssContent.includes('#171923') || cssContent.includes('23 25 35')), 'Surface elevated tier defined (with dark #171923)');
+  assert(twContent.includes('--surface-active') && (cssContent.includes('#1e2230') || cssContent.includes('30 34 48')), 'Surface active tier defined (with dark #1e2230)');
   assert(twContent.includes('hairline'), 'Hairline 1px border tokens defined');
 }
 console.log('');

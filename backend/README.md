@@ -1,140 +1,200 @@
-# 📅 Locus Day Planner
+# ⚙️ Locus Backend & LangGraph Agent Runtime
 
-> **Track 5 — AI Real World Agent | Build with Swytchcode Hackathon 2026**
-
-An intelligent, context-aware AI agent that understands real-world situations by synthesizing **live weather forecasts**, **personal calendar commitments from Gmail**, and **workload metrics from Jira and GitHub** to deliver automated Office vs. WFH recommendations, hour-by-hour schedules, and executive briefings across **Notion**, **Slack**, and **Resend**.
-
----
-
-## 🎯 Problem Statement
-
-> *Build an AI agent that can understand real-world situations using external information and take useful actions for users.*
-
-**Locus Day Planner** solves this by:
-1. Fetching **real-time weather and 24h forecasts** via OpenWeather
-2. Understanding scheduled meetings and travel commitments from **Gmail**
-3. Inspecting assigned tickets, priorities, and estimated hours from **Jira**
-4. Reviewing open Pull Requests, code review queue, and issues from **GitHub**
-5. **Reasoning** with Google Gemini to decide whether to go to the office or work from home
-6. **Formulating** a personalized, conflict-free hour-by-hour day plan timeline
-7. **Executing** coordinated follow-up actions:
-   - Creating a structured Day Plan page in **Notion**
-   - Broadcasting a schedule summary to team channels on **Slack**
-   - Delivering a responsive HTML daily briefing email via **Resend**
+> **Track 5 — AI Real World Agent | Build with Swytchcode Hackathon 2026**  
+> High-performance FastAPI server and 8-node LangGraph autonomous state machine orchestrating 7 real-world Swytchcode tools, Gemini 2.5 Flash reasoning, WebSocket live telemetry streaming, and enterprise audit logging.
 
 ---
 
-## 🤖 8-Node LangGraph Architecture
+## 🎯 Overview
+
+The **Locus Backend** is an autonomous intelligence service that synthesizes atmospheric conditions, inbox commitments, sprint backlogs, and code review queues into an actionable day plan. It exposes:
+- **FastAPI REST API**: High-throughput endpoints for prompt execution, scenario benchmarks, weather curves, and audit queries.
+- **WebSocket Feed (`/ws`)**: Sub-second streaming of LangGraph node state transitions, latencies, and tool execution logs.
+- **8-Node LangGraph Pipeline**: A deterministic DAG state machine with state schema validation and graceful fallback.
+- **Swytchcode Tool Integration Layer**: Managed authentication, policy-based guardrails (`policies.json`), retries, and audit logging.
+
+---
+
+## 🤖 8-Node LangGraph State Machine Architecture
 
 ```
-User Natural Language Request
-        │
-        ▼
-┌───────────────────┐
-│  [1] OPENWEATHER  │ → Current conditions, 24h forecast, temperature, humidity & alerts
-│  weather_fetcher  │   api.openweathermap.org
-└────────┬──────────┘
-         │ weather_data, forecast, alerts, score
-         ▼
-┌───────────────────┐
-│  [2] GMAIL        │ → Analyzes inbox for meetings, flights, appointments & travel
-│  gmail_reader     │   Swytchcode: gmail.messages.list + gmail.messages.get
-└────────┬──────────┘
-         │ gmail_events, has_outdoor_plans, has_travel_plans
-         ▼
-┌───────────────────┐
-│  [3] JIRA         │ → Scans assigned tickets, priority levels, and estimates hours
-│  jira_workload    │   Swytchcode: jira.issues.list + REST API
-└────────┬──────────┘
-         │ jira_tickets, jira_estimated_hours
-         ▼
-┌───────────────────┐
-│  [4] GITHUB       │ → Inspects assigned pull requests & code review commitments
-│  github_workload  │   Swytchcode: github.pullRequests.list + REST API
-└────────┬──────────┘
-         │ github_prs, github_issues, github_estimated_hours
-         ▼
-┌───────────────────┐
-│  [5] GEMINI AI    │ → Multi-source reasoning: Office vs WFH decision + hourly timeline
-│  ai_advisor       │   Google Gemini LLM synthesis
-└────────┬──────────┘
-         │ go_to_office, day_plan_timeline, recommendations, outfit, should_alert
-         ▼
-┌───────────────────┐
-│  [6] NOTION       │ → Creates an executive Day Plan page with timeline & metrics
-│  notion_logger    │   Swytchcode: notion.pages.create
-└────────┬──────────┘
-         │ notion_page_url
-         ▼
-┌───────────────────┐
-│  [7] SLACK        │ → Delivers rich Block Kit briefing & weather alerts to channel
-│  slack_notifier   │   Swytchcode: slack.messages.send
-└────────┬──────────┘
-         │ slack_message_sent
-         ▼
-┌───────────────────┐
-│  [8] RESEND       │ → Sends a responsive HTML Day Plan email digest
-│  email_sender     │   Swytchcode: resend.email.create
-└───────────────────┘
-         │
-         ▼
-    Final Response (REST JSON + Streamlit Dashboard)
+                      User Natural Language Request
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ [1] weather_fetcher (OpenWeather)                                      │
+│     api.openweathermap.org → Current conditions, 24h forecast, scores  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ weather_data, forecast, alerts, score
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ [2] gmail_reader (Google Gmail)                                        │
+│     Swytchcode: gmail.messages.list + gmail.messages.get               │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ gmail_events, has_travel_plans
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ [3] jira_workload (Atlassian Jira)                                     │
+│     Swytchcode: jira.issues.list + REST API                            │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ jira_tickets, jira_estimated_hours
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ [4] github_workload (GitHub)                                           │
+│     Swytchcode: github.pullRequests.list + REST API                    │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ github_prs, github_issues, github_hours
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ [5] ai_advisor (Google Gemini 2.5 Flash)                               │
+│     Autonomous Multi-Source Synthesis: Office vs WFH + Hourly Plan     │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ go_to_office, day_plan_timeline, outfit
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ [6] notion_logger (Notion)                                             │
+│     Swytchcode: notion.pages.create → Executive Briefing Page          │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ notion_page_url
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ [7] slack_notifier (Slack)                                             │
+│     Swytchcode: slack.messages.send → Block Kit Alerts & Briefing      │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ slack_message_sent
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ [8] email_sender (Resend)                                              │
+│     Swytchcode: resend.email.create → Responsive HTML Digest Email     │
+└────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+       Streaming Output via WebSocket (/ws) & REST Response (/run)
 ```
 
 ---
 
-## 🔗 7 Real-World Integrations
+## 🔗 7 Real-World Tool Bindings (Swytchcode)
 
-| API | Integration Method | Primary Function |
-|---|---|---|
-| **OpenWeather** | Direct REST / Swytchcode | Real-time weather, forecast & severe alerts |
-| **Gmail** | `gmail.messages.list` | Meeting detection & calendar commitments |
-| **Jira** | `jira.issues.list` | Workload estimation & sprint ticket tracking |
-| **GitHub** | `github.pullRequests.list` | PR reviews, issue priorities & code commits |
-| **Notion** | `notion.pages.create` | Executive Day Plan log with timeline |
-| **Slack** | `slack.messages.send` | Block Kit schedule alerts & warnings |
-| **Resend** | `resend.email.create` | Responsive HTML daily briefing email |
+| Tool / Provider | Method / Endpoint | Primary Function |
+|:---|:---|:---|
+| **OpenWeather** | Direct REST / Swytchcode | Real-time weather, 24h hourly forecast, diurnal temp curves & alerts |
+| **Google Gmail** | `gmail.messages.list` | Meeting detection, flight & travel commitments, calendar parsing |
+| **Atlassian Jira** | `jira.issues.list` | Sprint ticket tracking, priority weights, estimated engineering hours |
+| **GitHub** | `github.pullRequests.list` | PR reviews, issue priorities, stale PR detection (>2 days) |
+| **Google Gemini** | `gemini-2.5-flash` | Multi-source reasoning, WFH vs. Office verdict, hourly schedule generation |
+| **Notion** | `notion.pages.create` | Executive Day Plan log with timeline & metrics |
+| **Slack** | `slack.messages.send` | Block Kit schedule alerts & warnings to team channels |
+| **Resend** | `resend.email.create` | Responsive HTML daily briefing email delivery |
 
 ---
 
-## 🚀 Quick Start
+## 📡 API Endpoint Reference
 
-### 1. Configure Environment
-Create `.env` inside `backend/` (or copy from `.env.example`):
-```bash
+The backend runs on `http://localhost:8000`. Interactive OpenAPI documentation is available at `http://localhost:8000/docs`.
+
+### Core Execution Endpoints
+- **`POST /run`**: Execute the full LangGraph state machine from a natural language prompt or city override.
+  ```json
+  // Request
+  {
+    "city": "London",
+    "prompt": "Severe rain expected. Should I commute to the office?",
+    "force_refresh": false
+  }
+  ```
+- **`GET /demo?scenario={id}`**: Run pre-configured, verified benchmark scenarios (`storm`, `flight`, `crunch`, `optimal`) with sub-second response times.
+- **`GET /weather?city={name}`**: Retrieve 24-hour hourly temperatures, atmospheric viability scores, and transit condition ratings.
+- **`GET /history`**: Retrieve the chronological ledger of past agent runs, verdicts, and generated schedules.
+- **`WS /ws`**: Bidirectional WebSocket connection broadcasting real-time agent execution events (`step_start`, `step_complete`, `agent_complete`).
+
+### Enterprise Governance & Audit Endpoints
+- **`GET /api/audit/logs`**: Swytchcode tool execution audit trail with timestamps, latency, and status.
+- **`GET /api/audit/compliance-by-vertical`**: Vertical-level compliance metrics across external integrations.
+- **`GET /api/policies`**: Active security guardrails defined in `policies.json`.
+
+---
+
+## 🚀 Setup & Execution
+
+### 1. Environment Configuration
+Create or update `backend/.env` (refer to `.env.example`):
+```ini
+# LLM Provider
 GOOGLE_API_KEY=your_gemini_api_key
+
+# Weather
 OPENWEATHER_API_KEY=your_openweather_key
 DEFAULT_CITY=Mumbai
+
+# Team Notifications
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 RESEND_API_KEY=your_resend_api_key
 RESEND_TO_EMAIL=your_email@example.com
+
+# Workspace Documentation
 NOTION_API_KEY=your_notion_key
 NOTION_KB_DATABASE_ID=your_notion_db_id
 ```
 
-### 2. Verify Setup
+### 2. Verify Swytchcode Tool Bindings
 ```powershell
 cd backend
 .\venv\Scripts\python.exe main.py --verify
 ```
 
-### 3. Run Demo Scenarios via CLI
+### 3. Run Benchmark Scenarios via CLI
 ```powershell
 cd backend
 .\venv\Scripts\python.exe main.py --demo
 .\venv\Scripts\python.exe main.py --demo --city London
 ```
 
-### 4. Run the Full Stack (Backend + Dashboard)
+### 4. Start the FastAPI Server Standalone
 ```powershell
 cd backend
-.\venv\Scripts\python.exe start_services.py
+.\venv\Scripts\python.exe -m uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 ```
-- **Streamlit Web UI:** `http://localhost:8501`
-- **FastAPI Backend:** `http://localhost:8000`
-- **Swagger Documentation:** `http://localhost:8000/docs`
 
-To stop background services:
+### 5. Automated Test Suite
+Run the comprehensive test suite validating all 8 LangGraph nodes, fallbacks, and schema integrity:
 ```powershell
-.\venv\Scripts\python.exe stop_services.py
+cd backend
+.\venv\Scripts\python.exe -m pytest test_day_planner.py test_audit.py -v
+```
+
+---
+
+## 🏛️ Project Structure
+
+```
+backend/
+├── main.py                  # CLI interface & LangGraph graph builder
+├── server.py                # FastAPI REST & WebSocket server
+├── policies.json            # Swytchcode policy guardrails & security constraints
+├── requirements.txt         # Pinned Python dependencies
+├── test_day_planner.py      # Core unit & integration test suite (27 tests)
+├── test_audit.py            # Swytchcode policy & audit test suite
+├── start_services.py        # Background process launcher
+├── stop_services.py         # Graceful shutdown script
+├── dashboard/               # Optional legacy Streamlit dashboard
+│   └── app.py
+└── src/
+    ├── tools/               # Swytchcode & REST tool implementations
+    │   ├── weather.py
+    │   ├── gmail.py
+    │   ├── jira.py
+    │   ├── github.py
+    │   ├── notion.py
+    │   ├── slack.py
+    │   └── resend.py
+    └── nodes/               # LangGraph state machine node handlers
+        ├── weather_node.py
+        ├── gmail_node.py
+        ├── jira_node.py
+        ├── github_node.py
+        ├── advisor_node.py
+        ├── notion_node.py
+        ├── slack_node.py
+        └── email_node.py
 ```

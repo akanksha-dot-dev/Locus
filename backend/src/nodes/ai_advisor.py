@@ -108,10 +108,10 @@ RETURN ONLY VALID JSON.
 
 
 def _call_gemini_with_retry(prompt: str, log: list) -> dict:
-    """Call Gemini with exponential backoff retry logic."""
+    """Call Gemini with fail-fast retry logic, immediately engaging heuristic fallback on rate limit."""
     client = _get_client()
     last_err = None
-    for attempt in range(4):
+    for attempt in range(2):
         try:
             chat = client.chats.create(model=Config.LLM_MODEL)
             response = chat.send_message(prompt)
@@ -120,17 +120,11 @@ def _call_gemini_with_retry(prompt: str, log: list) -> dict:
         except Exception as e:
             last_err = e
             err_str = str(e)
-            retry_after = None
             if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                m = re.search(r"retryDelay['\"]?\s*[:\s]+['\"]?(\d+(?:\.\d+)?)s", err_str)
-                if m:
-                    retry_after = min(float(m.group(1)) + 2, 90)
-
-            if retry_after and attempt < 3:
-                log.append(f"⏳ [Gemini] Rate limited — waiting {int(retry_after)}s...")
-                time.sleep(retry_after)
-            elif attempt < 3:
-                time.sleep(2 ** attempt)
+                log.append("⚠️ [Gemini] Rate limited — engaging heuristic fallback immediately")
+                raise last_err
+            if attempt < 1:
+                time.sleep(1)
 
     raise last_err or Exception("Gemini returned empty response")
 

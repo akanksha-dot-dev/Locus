@@ -10,32 +10,34 @@
 ```
 YOU (beginner) will set up:
 
-  ┌─────────────────────────────────────────────────────────────────┐
-  │                     YOUR COMPUTER                               │
-  │                                                                 │
-  │  ┌───────────────┐    ┌──────────────┐    ┌─────────────────┐  │
-  │  │ Python 3.11+  │    │ Node.js 18+  │    │ Swytchcode CLI  │  │
-  │  │ (runs agent)  │    │ (installs    │    │ (connects to    │  │
-  │  │               │    │  swy CLI)    │    │  all 5 APIs)    │  │
-  │  └───────┬───────┘    └──────┬───────┘    └────────┬────────┘  │
-  │          │                   │                     │            │
-  │          └───────────────────┴─────────────────────┘            │
-  │                              │                                  │
-  │                    ┌─────────▼──────────┐                       │
-  │                    │   YOUR AGENT CODE  │                       │
-  │                    │   (main.py)        │                       │
-  │                    └─────────┬──────────┘                       │
-  └──────────────────────────────┼──────────────────────────────────┘
-                                 │
-                    ┌────────────▼────────────────┐
-                    │      SWYTCHCODE LAYER       │
-                    │  (handles auth, retries,    │
-                    │   policies, idempotency)    │
-                    └────────────┬────────────────┘
-                                 │
-          ┌──────────┬───────────┼───────────┬──────────┐
-          ▼          ▼           ▼           ▼          ▼
-       📧 Gmail  📚 Notion  🎫 Jira   📤 Resend  🐛 GitHub
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │                              YOUR WORKSTATION                          │
+  │                                                                        │
+  │  ┌────────────────┐     ┌──────────────┐     ┌──────────────────────┐  │
+  │  │ Python 3.11+   │     │ Node.js 18+  │     │ Swytchcode CLI (swy) │  │
+  │  │ (FastAPI &     │     │ (React 19    │     │ (Connects to all 7   │  │
+  │  │  LangGraph)    │     │  Vite UI)    │     │  external tools)     │  │
+  │  └───────┬────────┘     └──────┬───────┘     └──────────┬───────────┘  │
+  │          │                     │                        │              │
+  │          └─────────────────────┴────────────────────────┘              │
+  │                                │                                       │
+  │                     ┌──────────▼──────────┐                            │
+  │                     │   LOCUS ECOSYSTEM   │                            │
+  │                     │  • FastAPI Backend  │                            │
+  │                     │  • React 19 UI (5173│                            │
+  │                     │  • Chrome Extension │                            │
+  │                     └──────────┬──────────┘                            │
+  └────────────────────────────────┼───────────────────────────────────────┘
+                                   │
+                      ┌────────────▼────────────────┐
+                      │      SWYTCHCODE LAYER       │
+                      │  (Managed Auth, Guardrails, │
+                      │   Policies, Audit Ledger)   │
+                      └────────────┬────────────────┘
+                                   │
+      ┌───────────┬────────────┬───┴────────┬────────────┬───────────┐
+      ▼           ▼            ▼            ▼            ▼           ▼
+  🌦️ Weather   📧 Gmail    🎫 Jira     🐛 GitHub    📚 Notion   💬 Slack / Resend
 ```
 
 ---
@@ -496,36 +498,45 @@ cd backend
 copy .env.example .env
 ```
 
-Now open `.env` in your editor and fill in ALL the values you saved earlier:
+Now open `backend/.env` in your editor and fill in the values:
 
 ```ini
-# --- LLM Provider (Google Gemini) ---
-GOOGLE_API_KEY=AIzaSy...paste-your-gemini-key...
+# ── 1. LLM & Autonomous Reasoning Engine (Google Gemini) ─────────────────────
+GOOGLE_API_KEY=AIzaSy...your-gemini-key...
+LLM_MODEL=gemini-2.0-flash
 
-# --- Notion ---
-NOTION_KB_DATABASE_ID=a1b2c3d4...paste-your-database-id...
+# ── 2. Weather & Atmospheric Conditions (OpenWeather API) ────────────────────
+OPENWEATHER_API_KEY=your_openweather_key
+DEFAULT_CITY=Mumbai
 
-# --- Jira ---
-JIRA_PROJECT_KEY=SUP
-JIRA_DOMAIN=yourname.atlassian.net
+# ── 3. Engineering Workload & Sprint Tracking (Jira Cloud) ───────────────────
+JIRA_DOMAIN=yourcompany.atlassian.net
+JIRA_EMAIL=dev@example.com
+JIRA_API_TOKEN=your_jira_token
+JIRA_PROJECT_KEY=CCS
 
-# --- GitHub ---
-GITHUB_OWNER=your-github-username
-GITHUB_REPO=support-kb-gaps
+# ── 4. Code Review & Pull Request Backlog (GitHub REST API) ──────────────────
+GITHUB_OWNER=your_github_username
+GITHUB_REPO=your_repository_name
+GITHUB_TOKEN=ghp_your_token
 
-# --- Resend ---
-RESEND_FROM_EMAIL=onboarding@resend.dev
+# ── 5. Executive Knowledge Base & Page Logging (Notion API) ──────────────────
+NOTION_API_KEY=ntn_your_notion_key
+NOTION_KB_DATABASE_ID=your_database_id
 
-# --- Agent Settings ---
-SUPPORT_LABEL=support
-MAX_EMAILS_PER_RUN=5
+# ── 6. Team Alerts & Incident Notifications (Slack) ──────────────────────────
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+
+# ── 7. Email Dispatch (Resend API) ───────────────────────────────────────────
+RESEND_API_KEY=re_your_resend_key
+RESEND_TO_EMAIL=your_email@example.com
 ```
 
 ---
 
-## PHASE 6: Run the Agent! (5 min)
+## PHASE 6: Run the Agent CLI! (5 min)
 
-### Run 1: Verify Setup
+### Run 1: Verify Swytchcode Tool Bindings
 
 ```powershell
 cd backend
@@ -533,143 +544,112 @@ cd backend
 python main.py --verify
 ```
 
-**Expected:** `✅ Loaded X Swytchcode tools from 5 integrations`
+**Expected Output:** `✅ Loaded Swytchcode tools from 7 integrations`
 
-### Run 2: Demo Mode (Uses Simulated Email — No Live APIs except Gemini)
+### Run 2: Benchmark Scenario Demo Mode
+
+Run simulated benchmark scenarios without needing live API tokens:
 
 ```powershell
+# Default scenario (Mumbai)
 python main.py --demo
+
+# Adverse Weather Scenario (London Storm)
+python main.py --demo --city London
 ```
 
 **What happens:**
-1. Agent uses a **fake email** (Jane can't reset her password)
-2. Gemini classifies it (category, sentiment, priority)
-3. Creates a GitHub issue (KB gap)
-4. Creates a Jira ticket
-5. Drafts a reply using Gemini
-6. Sends via Resend
-
-**After it finishes, verify:**
-- ✅ Go to **GitHub** → `support-kb-gaps` repo → **Issues** tab → you should see a new issue titled "KB Gap: ..."
-- ✅ Go to **Jira** → `SUP` project → you should see a new ticket `SUP-1`
-- ✅ Go to **Resend Dashboard** → **Emails** → you should see a sent email
-- ✅ Check your inbox → you should receive the reply email
-
-### Run 3: Live Mode (Reads Real Gmail)
-
-Make sure your test emails are in Gmail with the `support` label and are **unread**.
-
-```powershell
-python main.py
-```
-
-**What happens:**
-1. Agent reads the **first unread email** with the `support` label from Gmail
-2. Gemini classifies it
-3. If the email is about "password reset" → Notion KB will find a match → agent drafts a reply using KB content
-4. If the email is about "500 errors" → No KB match → agent creates GitHub issue + Jira ticket → drafts an acknowledgment reply
-5. Reply is sent via Resend
+1. The 8-node LangGraph state machine initializes.
+2. Ingests atmospheric data, calendar events, Jira sprint tickets, and GitHub pull requests.
+3. Gemini synthesizes multi-factor constraints to formulate an **Office vs. WFH verdict**.
+4. Builds an hour-by-hour conflict-free schedule.
+5. Emits executive payloads for Notion, Slack, and Resend.
 
 ---
 
-## PHASE 7: Run the Dashboard (5 min)
+## PHASE 7: Launch the Full Incident Command Center (1-Click)
 
-```powershell
-cd backend
-.\venv\Scripts\Activate.ps1
-streamlit run dashboard/app.py
+Launch both the **FastAPI Backend (`http://localhost:8000`)** and **React 19 Frontend (`http://localhost:5173`)** with one click:
+
+```cmd
+START_APP.bat
 ```
 
-**What happens:**
-1. Your browser opens at `http://localhost:8501`
-2. You see the beautiful dashboard with metrics, integration badges, and feature list
-3. Check **"Use demo email"** checkbox (pre-filled with a test email)
-4. Click the big **🚀 Process Email** button
-5. Watch the progress bar step through each node
-6. See the classification, tickets, and draft reply in real-time
-7. Click **"Execution Log"** tab to see every step
-8. Click **"Architecture"** tab to see the system diagram
+**What this automated launcher does:**
+1. Automatically terminates any zombie processes occupying ports `8000` or `5173`.
+2. Validates backend Python dependencies and virtual environment.
+3. Validates frontend Node.js dependencies.
+4. Starts the FastAPI server with WebSocket live streaming at `http://localhost:8000`.
+5. Launches Vite frontend dev server at `http://localhost:5173`.
+6. Launches your default web browser directly into the Incident Command Center.
 
-> [!TIP]
-> **For your hackathon demo video:** Screen-record the dashboard while clicking "Process Email". It's the most visually impressive way to show the full workflow.
+### Loading the Chrome Extension Companion (`extension/`)
+1. Open Google Chrome and navigate to `chrome://extensions/`.
+2. Toggle on **Developer mode** in the upper-right corner.
+3. Click **Load unpacked** and select the `extension/` folder in your cloned repository.
+4. The Locus icon appears in your toolbar with live badge verdicts (`OFF`, `WFH`, `HYB`)!
+5. Use keyboard shortcut `Alt+L` (or click the icon) to trigger the glanceable HUD or Side Panel.
 
 ---
 
 ## PHASE 8: Verify Everything Worked (Final Checklist)
 
-Go to each platform and verify the agent created the right data:
+Review each integration surface to verify full autonomy:
 
-### ✅ Gmail
-Open **https://mail.google.com** (your test account)
-- [ ] The test emails are still there (agent reads, doesn't delete)
-- [ ] Agent correctly identified the sender, subject, and body
+### ✅ React 19 Command Center (`http://localhost:5173`)
+- [ ] Atmospheric telemetry and 24h temperature curve rendered
+- [ ] 8-node LangGraph Swarm Topology visualizer shows live node transitions
+- [ ] Interactive 24h schedule timeline supports inline editing and task completion
+- [ ] Workload HUD displays active Jira sprint tickets and GitHub PR review load
+- [ ] Dark Mode (`#090a0f`) and Light Mode (`#f8fafc`) switch smoothly
+
+### ✅ Chrome Extension Companion
+- [ ] Toolbar badge displays live verdict (`OFF`, `WFH`, or `HYB`)
+- [ ] Popup HUD opens in <150ms with current focus block and outfit recommendation
+- [ ] Side Panel displays docked 24-hour timeline and active task list
+- [ ] Context scraper detects active Jira tickets and GitHub pull requests
 
 ### ✅ Notion
-Open your **Support Knowledge Base** in Notion
-- [ ] Database is unchanged (agent only reads, doesn't write)
-- [ ] For "password reset" emails, the agent found the KB article
-- [ ] For "500 error" emails, the agent found no match (triggers escalation)
+- [ ] Executive Day Plan page auto-created with structured timeline blocks and metrics
 
-### ✅ GitHub
-Open **https://github.com/YOUR_USERNAME/support-kb-gaps/issues**
-- [ ] New issues appear titled "KB Gap: ..."
-- [ ] Each issue has a detailed body with category, priority, sentiment
-- [ ] Labels are applied (kb-gap, auto-generated, etc.)
-
-### ✅ Jira
-Open **https://yourname.atlassian.net** → SUP project
-- [ ] New tickets appear with `[Support]` prefix in the summary
-- [ ] Description contains customer info, sentiment, and KB results
-- [ ] Priority matches the classification (frustrated = High)
+### ✅ Slack
+- [ ] Rich Block Kit summary card with verdict badge delivered to team channel
 
 ### ✅ Resend
-Open **https://resend.com/emails** (your dashboard)
-- [ ] Sent emails appear in the list
-- [ ] Subject starts with "Re: ..."
-- [ ] HTML formatting looks clean (header, body, ticket badge)
+- [ ] Responsive HTML executive briefing digest delivered to inbox
 
-### ✅ Swytchcode Audit
+### ✅ Swytchcode Audit Ledger
 ```powershell
 swy audit
+# Or via REST API
+curl -s http://localhost:8000/api/audit/logs
 ```
-- [ ] Shows all tool executions with timestamps
-- [ ] All 5 integrations appear in the log
-- [ ] All exit codes are 0 (success)
+- [ ] Shows complete chronological tool execution ledger with timestamps and latencies
+- [ ] All exit codes are 0 (Success)
 
 ---
 
-## 🎬 How to Record Your Demo Video
+## 🎬 How to Record Your Hackathon Presentation
 
-1. Open the **Streamlit dashboard** (`streamlit run dashboard/app.py`)
-2. Start screen recording (Windows: `Win + G` → Record)
-3. Click **"Process Email"** with a demo email
-4. Show each step completing in the progress bar
-5. Show the classification result, Jira ticket, and draft reply
-6. Switch tabs to show Execution Log
-7. Open GitHub issues in browser to show the created issue
-8. Open Jira to show the created ticket
-9. Open Resend dashboard to show the sent email
-10. Run `swy audit` in terminal to show the Swytchcode audit trail
-11. Stop recording — upload to your hackathon submission
+1. Run `START_APP.bat` to launch the React 19 Command Center.
+2. Start screen recording (Windows: `Win + G` → Record).
+3. Walk through the 3-minute pitch outlined in [SHOWCASE_MANUAL.md](../SHOWCASE_MANUAL.md):
+   - **0:00 - 0:45**: Problem Statement & Autonomous Decision Card (WFH vs. Office)
+   - **0:45 - 1:30**: 8-Node Swarm Topology & 7 Swytchcode Tool Bindings
+   - **1:30 - 2:15**: Workload Command Matrix & Chrome Extension Companion
+   - **2:15 - 3:00**: Dual-Theme Engine, 1-Click Calendar Exports, & Enterprise Governance
+4. Highlight Swytchcode features: `policies.json` guardrails, managed auth, and audit telemetry.
+5. Stop recording and upload to your submission!
 
 ---
 
-## ❓ Common Questions
+## ❓ Frequently Asked Questions
 
-**Q: Do I need to pay for anything?**
-A: No! Everything uses free tiers: Gmail (free), Notion (free), Jira (free for ≤10 users), Resend (100 emails/day free), GitHub (free), Gemini (free tier), Swytchcode (free for hackathon).
+**Q: Do I need to pay for any API keys?**  
+A: No. All services utilize free tiers: Google Gemini (free tier), OpenWeather (free), Gmail (free personal account), Jira Cloud (free up to 10 users), GitHub (free), Notion (free), Slack (free), Resend (100 emails/day free).
 
-**Q: What if I can't install `swy` via npm?**
-A: Try the direct Windows install: `irm https://cli.swytchcode.com/install.ps1 | iex`
+**Q: What if I don't have all 7 API keys yet?**  
+A: Locus includes built-in high-fidelity synthetic fallback fixtures for every tool. You can run all benchmark scenarios with zero external API keys!
 
-**Q: What if Notion says "Could not find database"?**
-A: You forgot to **share the database** with your Notion integration. Go to the database page → Share → Invite → select your integration.
-
-**Q: What if the agent says "No unread support emails"?**
-A: Make sure your test emails (1) have the `support` label, and (2) are marked as **unread**.
-
-**Q: Can I change the LLM from Gemini to OpenAI/Claude?**
-A: Yes! Just change the `issue_classifier.py` and `reply_drafter.py` to use a different LLM SDK. But Gemini is free, so it's best for hackathons.
-
-**Q: What makes my submission stand out to judges?**
-A: Show the **Swytchcode features**: policies.json (guardrails), idempotency (no duplicates), managed auth (zero credential code), audit logging (`swy audit`). These are what the judges from Swytchcode specifically look for.
+**Q: What makes this submission stand out to hackathon judges?**  
+A: Locus implements all 7 Swytchcode tool bindings across Track 5, an 8-node LangGraph autonomous DAG state machine, a pixel-perfect React 19 dual-theme interface, a Manifest V3 Chrome Extension companion, and enterprise policy enforcement with 110 automated tests.

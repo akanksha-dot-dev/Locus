@@ -19,19 +19,44 @@ The **Locus Frontend** is a cyber-aesthetic, high-assurance Incident Command Cen
 
 ---
 
-## 2. Design System & Surface Ladder
+## 2. Design System & Dual-Theme Engine
 
-The interface adheres to an **Incident Command Center Dark Aesthetic**:
+The interface features an **Adaptive Dual-Theme System** engineered specifically for high-stress operational visibility across all lighting conditions:
 
-| Surface Tier | Token | Hex Color | Usage |
-| :--- | :--- | :--- | :--- |
-| **Tier 1 (Base Canvas)** | `bg-surface-base` | `#08090a` | Deepest root canvas, body background |
-| **Tier 2 (Card Surface)** | `bg-surface-card` | `#0f1011` | Standard content containers, timeline blocks, HUD cards |
-| **Tier 3 (Elevated Panel)**| `bg-surface-elevated`| `#141516` | Modals, drawers, header navigation bar, popovers |
-| **Tier 4 (Active / Hover)**| `bg-surface-active` | `#1c1d20` | Hover states, active buttons, focused elements |
+### 2.1 Surface Ladder Tokens
 
-### Precision Borders & Typography
-- **Hairline Borders**: `1px solid rgba(255, 255, 255, 0.08)` (`border-hairline`) and `1px solid rgba(255, 255, 255, 0.15)` (`border-hairline-strong`)
+| Surface Tier | Token | Dark Theme (`#090a0f`) | Light Theme (`#f8fafc`) | Usage |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tier 1 (Base Canvas)** | `bg-surface-base` | `#090a0f` | `#f8fafc` | Deepest root canvas, document body |
+| **Tier 2 (Card Surface)** | `bg-surface-card` | `#11131a` | `#ffffff` | Standard cards, timeline blocks, HUD containers |
+| **Tier 3 (Elevated Panel)**| `bg-surface-elevated`| `#171923` | `#f1f5f9` | Modals, drawers, header navigation bar, popovers |
+| **Tier 4 (Active / Hover)**| `bg-surface-active` | `#1e2230` | `#e2e8f0` | Hover states, active buttons, focused elements |
+
+### 2.2 RGB Channel Variables & Opacity Modifiers
+To support Tailwind's opacity modifiers (e.g., `bg-surface-card/80` and `bg-surface-elevated/90`), tokens are defined as space-separated RGB triplets in `src/index.css`:
+```css
+:root {
+  --bg-base-rgb: 248 250 252;          /* #f8fafc Clean Slate */
+  --surface-card-rgb: 255 255 255;     /* #ffffff Pure White */
+  --surface-elevated-rgb: 241 245 249; /* #f1f5f9 */
+  --surface-active-rgb: 226 232 240;   /* #e2e8f0 */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-hairline: rgba(15, 23, 42, 0.08);
+}
+.dark {
+  --bg-base-rgb: 9 10 15;              /* #090a0f Deep Obsidian */
+  --surface-card-rgb: 17 19 26;        /* #11131a Card Surface */
+  --surface-elevated-rgb: 23 25 35;    /* #171923 Elevated */
+  --surface-active-rgb: 30 34 48;      /* #1e2230 Active */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-hairline: rgba(255, 255, 255, 0.08);
+}
+```
+
+### 2.3 Semantic Color Accents & Precision Typography
+- **Hairline Borders**: `1px solid var(--border-hairline)` (`border-hairline`) and `1px solid var(--border-hairline-strong)`
 - **Semantic Color Palette**:
   - 🟢 **Emerald** (`#10b981` / `#34d399`): Optimal conditions, confirmed verdict, completed tasks
   - 🟣 **Indigo** (`#6366f1` / `#818cf8`): Primary actions, AI synthesis engine, active pipeline nodes
@@ -45,6 +70,7 @@ The interface adheres to an **Incident Command Center Dark Aesthetic**:
 ## 3. Core Feature Catalog
 
 ### 3.1 Header Navigation Bar
+- **Theme Switcher**: Instant one-click toggle between Dark Obsidian (`#090a0f`) and Clean Slate (`#f8fafc`) with persistence in `localStorage`.
 - **Live Status Indicator**: Visual indicator badge switching between `🟢 CONNECTED`, `🟡 RECONNECTING`, and `🔴 OFFLINE / STANDALONE`.
 - **UTC Digital Clock**: Synchronized monospace UTC clock with `tabular-nums`.
 - **Audio Mute Switch**: Native Web Audio mute toggle with persistent localStorage state.
@@ -55,6 +81,7 @@ The interface adheres to an **Incident Command Center Dark Aesthetic**:
   - High-impact neon verdict badges: `WORK FROM HOME`, `WORK FROM OFFICE`, `HYBRID`.
   - Embedded **Generative Weather Canvas (`WeatherCanvas`)**: 60fps HTML5 canvas particle simulation supporting rain streaks, snow flakes, cloud haze, and star dust.
   - Embedded **24-Hour Diurnal Temperature Curve (`TemperatureCurve`)**: Smooth SVG cubic bezier curve plotting hourly forecasts with min/max apex callouts and interactive hover tooltips.
+  - Embedded **Atmospheric Score Gauge (`ScoreGauge`)**: Animated SVG stroke gauge indicating composite day viability (0-100).
   - AI Commute Disruption & Workload Rationale callout.
   - 4-metric telemetry HUD: Temperature & Feels-Like, Weather Score, Focus Hours, Total Workload.
 - **Benchmark Preset Showcase (`PresetShowcase`)**: 4 one-click scenario benchmarks:
@@ -181,14 +208,16 @@ frontend/
     │   ├── websocket.ts
     │   ├── export.ts
     │   └── audio.ts
+    ├── lib/
+    │   └── utils.ts
     ├── context/
-    │   └── AgentContext.tsx
+    │   ├── AgentContext.tsx
+    │   └── ThemeContext.tsx
     └── components/
         ├── common/
         │   ├── Badge.tsx
         │   ├── Button.tsx
-        │   ├── Card.tsx
-        │   └── Modal.tsx
+        │   └── Card.tsx
         ├── hero/
         │   ├── WeatherCanvas.tsx
         │   ├── TemperatureCurve.tsx

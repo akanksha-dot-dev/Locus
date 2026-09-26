@@ -66,5 +66,8 @@ desktop.ini
 
 # ── Reference & Internal Metadata ─────────────────────────────────────────────
 .agents/
+.claude/
+skills-lock.json
 hackathon-playbook/
 .swytchcode/workspace.json
+
