@@ -79,6 +79,17 @@ if not exist "%ROOT_DIR%frontend\node_modules" (
     echo    [OK] Frontend dependencies detected.
 )
 
+:: ── Step 3b: Validate Environment Configuration (.env) ───────────────────
+echo  [Step 3b/5] Validating environment configuration...
+if not exist "%ROOT_DIR%backend\.env" if not exist "%ROOT_DIR%.env" (
+    echo    [WARN] No .env file detected! Initializing backend\.env from template...
+    copy "%ROOT_DIR%backend\.env.example" "%ROOT_DIR%backend\.env" >nul
+    echo    [NOTICE] A template .env was created at backend\.env.
+    echo    SwytchAgent will start in resilient demo mode. Add your API keys to backend\.env for live services.
+) else (
+    echo    [OK] Environment configuration file detected.
+)
+
 :: ── Step 4: Launch FastAPI Backend (Port 8000) ─────────────────────────
 echo  [Step 4/5] Launching FastAPI Backend on port 8000...
 start "SwytchAgent-FastAPI-Backend" cmd /k "title SwytchAgent Backend (FastAPI :8000) && cd /d "%ROOT_DIR%backend" && "%PYTHON_EXE%" server.py"

@@ -5,6 +5,17 @@ Loads environment variables and provides typed access to all settings.
 import os
 from dotenv import load_dotenv
 
+# Search order for .env:
+# 1. backend/.env (standard project structure)
+# 2. ./.env (root working directory)
+_backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+_backend_env = os.path.join(_backend_dir, ".env")
+_root_env = os.path.join(os.path.abspath(os.path.join(_backend_dir, "..")), ".env")
+
+if os.path.exists(_backend_env):
+    load_dotenv(_backend_env)
+if os.path.exists(_root_env):
+    load_dotenv(_root_env)
 load_dotenv()
 
 
