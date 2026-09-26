@@ -35,9 +35,11 @@ import {
   ChevronDown,
   ChevronUp,
   LayoutGrid,
-  Eye,
-  Sliders,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
   Sparkles,
+  Download,
 } from 'lucide-react';
 
 // Framer Motion spring transition variants
@@ -67,6 +69,10 @@ function CommandCenterDashboard() {
     resetSchedule,
     runCustomQuery,
     runScenario,
+    scheduleBlocks,
+    completedCount,
+    totalBlocksCount,
+    progressPercentage,
   } = useAgent();
 
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -76,7 +82,7 @@ function CommandCenterDashboard() {
   const [showTrack5Modal, setShowTrack5Modal] = useState<boolean>(false);
   const [showTempCurve, setShowTempCurve] = useState<boolean>(true);
 
-  // Collapsible Section State (users can minimize/maximize individual cards)
+  // Collapsible Section State (users can minimize/maximize individual cards in 'all' view)
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     hero: false,
     pipeline: false,
@@ -105,6 +111,8 @@ function CommandCenterDashboard() {
     { id: 'artifacts', label: 'Artifacts & Dispatch', icon: <FileText className="w-3.5 h-3.5" /> },
     { id: 'all', label: 'All Sections', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
   ];
+
+  const nextPendingSlot = scheduleBlocks.find((b) => !b.completed);
 
   return (
     <div className="min-h-screen bg-surface-base text-content-primary flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-600 dark:selection:text-indigo-200 antialiased transition-colors duration-200">
@@ -284,46 +292,17 @@ function CommandCenterDashboard() {
           </div>
         )}
 
-        {/* ── SECTION 1: HERO COMMAND CENTER & DECISION ENGINE ─────── */}
-        <div className={activeTab === 'overview' || activeTab === 'all' ? 'block' : 'hidden'}>
-          <motion.section
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-            aria-label="Hero Command Center and Autonomous Decision Engine"
-            className="space-y-4"
-          >
-            {/* Section Header Controls */}
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
-                  Autonomous Decision Engine & Input Surface
-                </h2>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleSectionCollapse('hero')}
-                  className="flex items-center gap-1 text-[11px] font-mono text-slate-400 hover:text-slate-200 cursor-pointer"
-                  title="Minimize / Maximize Hero Surface"
-                >
-                  {collapsedSections.hero ? (
-                    <>
-                      <ChevronDown className="w-3.5 h-3.5" />
-                      <span>Expand Surface</span>
-                    </>
-                  ) : (
-                    <>
-                      <ChevronUp className="w-3.5 h-3.5" />
-                      <span>Minimize</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {!collapsedSections.hero && (
+        {/* ── VIEW 1: COMMAND CENTER (HERO COCKPIT + EXECUTIVE OVERVIEW) ── */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            {/* Hero Section */}
+            <motion.section
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              aria-label="Hero Command Center and Autonomous Decision Engine"
+              className="space-y-4"
+            >
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Left 7 Columns: Autonomous Decision Verdict Card */}
                 <div className="lg:col-span-7 flex flex-col space-y-4">
@@ -363,7 +342,7 @@ function CommandCenterDashboard() {
 
                 {/* Right 5 Columns: Natural Language Spotlight Prompt + Focus Capacity + Presets */}
                 <div className="lg:col-span-5 flex flex-col space-y-4">
-                  {/* Spotlight Natural Language Prompt Bar with City Autocomplete */}
+                  {/* Spotlight Natural Language Prompt Bar with Direct Editable City */}
                   <PromptBar
                     onSubmit={(query, city) => runCustomQuery(query, city)}
                     isLoading={isRunning}
@@ -386,37 +365,356 @@ function CommandCenterDashboard() {
                   </div>
                 </div>
               </div>
-            )}
-          </motion.section>
-        </div>
+            </motion.section>
 
-        {/* ── SECTION 2: 4-PHASE LANGGRAPH SWARM PIPELINE ───────────── */}
-        <div className={activeTab === 'pipeline' || activeTab === 'all' || activeTab === 'overview' ? 'block' : 'hidden'}>
-          <motion.section
+            {/* Executive Cockpit Overview: Quick Jump Cards */}
+            <section className="space-y-3 pt-2">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-gray-400 font-semibold flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                  Operational Intelligence Quick Jump
+                </span>
+                <span className="text-[11px] font-mono text-slate-400 dark:text-gray-500">
+                  Select a card to navigate to dedicated view
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. Swarm Pipeline Quick Card */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('pipeline')}
+                  className="p-4 rounded-2xl bg-surface-card border border-hairline hover:border-indigo-500/50 hover:bg-surface-elevated transition-all text-left group cursor-pointer shadow-md card-highlight-glow relative overflow-hidden"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                      <Workflow className="w-4 h-4" />
+                    </div>
+                    <Badge variant="indigo" size="sm" className="font-mono text-[10px]">
+                      8 Nodes
+                    </Badge>
+                  </div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900 dark:text-white group-hover:text-indigo-500 transition-colors">
+                    Swarm Pipeline
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1 line-clamp-2">
+                    4-phase neural DAG: Sensory Ingestion, Workload Engine, Reasoning Core & Dispatch.
+                  </p>
+                  <div className="mt-3 flex items-center gap-1 text-[11px] font-mono text-indigo-600 dark:text-indigo-400 font-medium">
+                    <span>Inspect Pipeline</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+
+                {/* 2. Day Schedule Quick Card */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('schedule')}
+                  className="p-4 rounded-2xl bg-surface-card border border-hairline hover:border-emerald-500/50 hover:bg-surface-elevated transition-all text-left group cursor-pointer shadow-md card-highlight-glow relative overflow-hidden"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      <CalendarDays className="w-4 h-4" />
+                    </div>
+                    <Badge variant="emerald" size="sm" className="font-mono text-[10px]">
+                      {completedCount}/{totalBlocksCount} Done
+                    </Badge>
+                  </div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
+                    Day Schedule
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1 line-clamp-2">
+                    {nextPendingSlot
+                      ? `Next: ${nextPendingSlot.activity} (${nextPendingSlot.time})`
+                      : 'All planned blocks completed.'}
+                  </p>
+                  <div className="mt-3 flex items-center gap-1 text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+                    <span>Open 24h Timeline</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+
+                {/* 3. Workload Radar Quick Card */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('workload')}
+                  className="p-4 rounded-2xl bg-surface-card border border-hairline hover:border-amber-500/50 hover:bg-surface-elevated transition-all text-left group cursor-pointer shadow-md card-highlight-glow relative overflow-hidden"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                      <Briefcase className="w-4 h-4" />
+                    </div>
+                    <Badge variant="amber" size="sm" className="font-mono text-[10px]">
+                      ~{totalWorkloadHours.toFixed(1)}h Dev
+                    </Badge>
+                  </div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors">
+                    Workload Radar
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1 line-clamp-2">
+                    {activeAgentResponse.jira_tickets?.length || 0} Jira sprint tickets • {activeAgentResponse.github_prs?.length || 0} GitHub PRs to review.
+                  </p>
+                  <div className="mt-3 flex items-center gap-1 text-[11px] font-mono text-amber-600 dark:text-amber-400 font-medium">
+                    <span>Manage Workload</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+
+                {/* 4. Artifacts & Dispatch Quick Card */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('artifacts')}
+                  className="p-4 rounded-2xl bg-surface-card border border-hairline hover:border-purple-500/50 hover:bg-surface-elevated transition-all text-left group cursor-pointer shadow-md card-highlight-glow relative overflow-hidden"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <Badge variant="indigo" size="sm" className="font-mono text-[10px]">
+                      7 Channels
+                    </Badge>
+                  </div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900 dark:text-white group-hover:text-purple-500 transition-colors">
+                    Artifacts & Dispatch
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1 line-clamp-2">
+                    RFC 5545 iCal, Markdown briefing, Notion sync, Slack alerts & Resend digest.
+                  </p>
+                  <div className="mt-3 flex items-center gap-1 text-[11px] font-mono text-purple-600 dark:text-purple-400 font-medium">
+                    <span>View Dispatch Matrix</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* ── VIEW 2: SWARM PIPELINE (DEDICATED FULL VIEW) ─────────── */}
+        {activeTab === 'pipeline' && (
+          <motion.div
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
-            aria-label="4-Phase LangGraph Swarm Pipeline Visualizer"
-            className="space-y-3"
+            className="space-y-4"
           >
             <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
-                  Swarm Execution Pipeline & Node Telemetry
+              <div>
+                <h2 className="text-base font-bold font-mono tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <Workflow className="w-4 h-4 text-indigo-500" />
+                  4-Phase Neural LangGraph Swarm Pipeline
                 </h2>
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                  Real-time execution DAG with sub-second step latency telemetry and live node inspector.
+                </p>
               </div>
-              <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveTab('overview')}
+                className="text-xs font-mono text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                ← Back to Command Center
+              </button>
+            </div>
+            <SwarmTopology />
+          </motion.div>
+        )}
+
+        {/* ── VIEW 3: DAY SCHEDULE (DEDICATED FULL VIEW) ────────────── */}
+        {activeTab === 'schedule' && (
+          <motion.div
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between px-1">
+              <div>
+                <h2 className="text-base font-bold font-mono tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-emerald-500" />
+                  24-Hour Visual Schedule Timeline
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                  Context-aware daily agenda synthesized by Gemini 2.5 Flash from weather and sprint constraints.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('overview')}
+                className="text-xs font-mono text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                ← Back to Command Center
+              </button>
+            </div>
+            <ScheduleTimeline />
+          </motion.div>
+        )}
+
+        {/* ── VIEW 4: WORKLOAD RADAR (DEDICATED FULL VIEW) ──────────── */}
+        {activeTab === 'workload' && (
+          <motion.div
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between px-1">
+              <div>
+                <h2 className="text-base font-bold font-mono tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-amber-500" />
+                  Dual Workload Command Matrix
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                  Real-time engineering load balancing: Jira Sprint Backlog vs GitHub Pull Request Queue.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('overview')}
+                className="text-xs font-mono text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                ← Back to Command Center
+              </button>
+            </div>
+            <WorkloadMatrix />
+          </motion.div>
+        )}
+
+        {/* ── VIEW 5: ARTIFACTS & DISPATCH (DEDICATED FULL VIEW) ────── */}
+        {activeTab === 'artifacts' && (
+          <motion.div
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
+            <div className="flex items-center justify-between px-1">
+              <div>
+                <h2 className="text-base font-bold font-mono tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-purple-500" />
+                  Artifact Exports & Multi-Channel Dispatch
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                  Download RFC 5545 iCalendar files, executive markdown briefings, and monitor 7-channel integration delivery health.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('overview')}
+                className="text-xs font-mono text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                ← Back to Command Center
+              </button>
+            </div>
+            <ArtifactExportBar />
+            <IntegrationGrid />
+          </motion.div>
+        )}
+
+        {/* ── VIEW 6: ALL SECTIONS (CONTINUOUS STREAM WITH COLLAPSE TOGGLES) ── */}
+        {activeTab === 'all' && (
+          <div className="space-y-8">
+            {/* Section 1: Hero */}
+            <motion.section
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              aria-label="Hero Command Center and Autonomous Decision Engine"
+              className="space-y-4"
+            >
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
+                    Autonomous Decision Engine & Input Surface
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleSectionCollapse('hero')}
+                  className="flex items-center gap-1 text-[11px] font-mono text-slate-400 hover:text-slate-200 cursor-pointer"
+                >
+                  {collapsedSections.hero ? (
+                    <>
+                      <ChevronDown className="w-3.5 h-3.5" />
+                      <span>Expand</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronUp className="w-3.5 h-3.5" />
+                      <span>Minimize</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {!collapsedSections.hero && (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className="lg:col-span-7 flex flex-col space-y-4">
+                    <DecisionCard
+                      decision={activeAgentResponse.go_to_office}
+                      riskLevel={activeAgentResponse.risk_level}
+                      officeReason={activeAgentResponse.office_reason}
+                      aiSummary={activeAgentResponse.ai_summary}
+                      city={activeAgentResponse.city}
+                      temperature={activeAgentResponse.temperature_c}
+                      feelsLike={activeAgentResponse.feels_like_c}
+                      weatherScore={activeAgentResponse.weather_score}
+                      weatherCondition={activeAgentResponse.weather_condition}
+                      windSpeed={activeAgentResponse.wind_speed}
+                      humidity={activeAgentResponse.humidity}
+                      productiveHours={activeAgentResponse.estimated_productive_hours}
+                      workloadHours={totalWorkloadHours}
+                      showTemperatureCurve={showTempCurve}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="lg:col-span-5 flex flex-col space-y-4">
+                    <PromptBar
+                      onSubmit={(query, city) => runCustomQuery(query, city)}
+                      isLoading={isRunning}
+                      defaultCity={activeAgentResponse.city}
+                    />
+                    <ProductiveHoursMeter
+                      productiveHours={activeAgentResponse.estimated_productive_hours}
+                      totalDayHours={8.0}
+                    />
+                    <div className="rounded-2xl bg-surface-card border border-hairline p-4 sm:p-5 shadow-lg flex-1 flex flex-col justify-between card-highlight-glow">
+                      <PresetShowcase
+                        onSelectScenario={(scenarioKey, city) => runScenario(scenarioKey, city)}
+                        isRunning={isRunning}
+                        activeCity={activeAgentResponse.city}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.section>
+
+            {/* Section 2: Swarm Pipeline */}
+            <motion.section
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              aria-label="4-Phase LangGraph Swarm Pipeline Visualizer"
+              className="space-y-3"
+            >
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                  <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
+                    Swarm Execution Pipeline & Node Telemetry
+                  </h2>
+                </div>
                 <button
                   type="button"
                   onClick={() => toggleSectionCollapse('pipeline')}
                   className="flex items-center gap-1 text-[11px] font-mono text-slate-400 hover:text-slate-200 cursor-pointer"
-                  title="Minimize / Maximize Swarm Pipeline"
                 >
                   {collapsedSections.pipeline ? (
                     <>
                       <ChevronDown className="w-3.5 h-3.5" />
-                      <span>Expand Pipeline</span>
+                      <span>Expand</span>
                     </>
                   ) : (
                     <>
@@ -426,39 +724,33 @@ function CommandCenterDashboard() {
                   )}
                 </button>
               </div>
-            </div>
+              {!collapsedSections.pipeline && <SwarmTopology />}
+            </motion.section>
 
-            {!collapsedSections.pipeline && <SwarmTopology />}
-          </motion.section>
-        </div>
-
-        {/* ── SECTION 3: 24-HOUR VISUAL SCHEDULE TIMELINE ──────────── */}
-        <div className={activeTab === 'schedule' || activeTab === 'all' || activeTab === 'overview' ? 'block' : 'hidden'}>
-          <motion.section
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-            aria-label="24-Hour Visual Schedule Timeline"
-            className="space-y-3"
-          >
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
-                  Adaptive Day Timeline & Slot Allocation
-                </h2>
-              </div>
-              <div className="flex items-center gap-3">
+            {/* Section 3: Schedule Timeline */}
+            <motion.section
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              aria-label="24-Hour Visual Schedule Timeline"
+              className="space-y-3"
+            >
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
+                    Adaptive Day Timeline & Slot Allocation
+                  </h2>
+                </div>
                 <button
                   type="button"
                   onClick={() => toggleSectionCollapse('schedule')}
                   className="flex items-center gap-1 text-[11px] font-mono text-slate-400 hover:text-slate-200 cursor-pointer"
-                  title="Minimize / Maximize Schedule Timeline"
                 >
                   {collapsedSections.schedule ? (
                     <>
                       <ChevronDown className="w-3.5 h-3.5" />
-                      <span>Expand Timeline</span>
+                      <span>Expand</span>
                     </>
                   ) : (
                     <>
@@ -468,39 +760,33 @@ function CommandCenterDashboard() {
                   )}
                 </button>
               </div>
-            </div>
+              {!collapsedSections.schedule && <ScheduleTimeline />}
+            </motion.section>
 
-            {!collapsedSections.schedule && <ScheduleTimeline />}
-          </motion.section>
-        </div>
-
-        {/* ── SECTION 4: DUAL WORKLOAD COMMAND MATRIX ──────────────── */}
-        <div className={activeTab === 'workload' || activeTab === 'all' || activeTab === 'overview' ? 'block' : 'hidden'}>
-          <motion.section
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-            aria-label="Dual Workload Command Matrix: Jira Sprint and GitHub Reviews"
-            className="space-y-3"
-          >
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
-                <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
-                  Engineering Workload Matrix (Jira & GitHub)
-                </h2>
-              </div>
-              <div className="flex items-center gap-3">
+            {/* Section 4: Workload Matrix */}
+            <motion.section
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              aria-label="Dual Workload Command Matrix: Jira Sprint and GitHub Reviews"
+              className="space-y-3"
+            >
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
+                    Engineering Workload Matrix (Jira & GitHub)
+                  </h2>
+                </div>
                 <button
                   type="button"
                   onClick={() => toggleSectionCollapse('workload')}
                   className="flex items-center gap-1 text-[11px] font-mono text-slate-400 hover:text-slate-200 cursor-pointer"
-                  title="Minimize / Maximize Workload Matrix"
                 >
                   {collapsedSections.workload ? (
                     <>
                       <ChevronDown className="w-3.5 h-3.5" />
-                      <span>Expand Matrix</span>
+                      <span>Expand</span>
                     </>
                   ) : (
                     <>
@@ -510,39 +796,33 @@ function CommandCenterDashboard() {
                   )}
                 </button>
               </div>
-            </div>
+              {!collapsedSections.workload && <WorkloadMatrix />}
+            </motion.section>
 
-            {!collapsedSections.workload && <WorkloadMatrix />}
-          </motion.section>
-        </div>
-
-        {/* ── SECTION 5: ARTIFACT GENERATOR & INTEGRATION GRID ──────── */}
-        <div className={activeTab === 'artifacts' || activeTab === 'all' || activeTab === 'overview' ? 'block' : 'hidden'}>
-          <motion.section
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-            aria-label="Artifact Exports and 7-Channel Integration Matrix"
-            className="space-y-4"
-          >
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-purple-400" />
-                <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
-                  Multi-Channel Dispatch & Export Ledger
-                </h2>
-              </div>
-              <div className="flex items-center gap-3">
+            {/* Section 5: Artifacts & Integration Grid */}
+            <motion.section
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              aria-label="Artifact Exports and 7-Channel Integration Matrix"
+              className="space-y-4"
+            >
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-purple-400" />
+                  <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-500 dark:text-gray-400">
+                    Multi-Channel Dispatch & Export Ledger
+                  </h2>
+                </div>
                 <button
                   type="button"
                   onClick={() => toggleSectionCollapse('artifacts')}
                   className="flex items-center gap-1 text-[11px] font-mono text-slate-400 hover:text-slate-200 cursor-pointer"
-                  title="Minimize / Maximize Artifact Exports"
                 >
                   {collapsedSections.artifacts ? (
                     <>
                       <ChevronDown className="w-3.5 h-3.5" />
-                      <span>Expand Dispatch</span>
+                      <span>Expand</span>
                     </>
                   ) : (
                     <>
@@ -552,19 +832,15 @@ function CommandCenterDashboard() {
                   )}
                 </button>
               </div>
-            </div>
-
-            {!collapsedSections.artifacts && (
-              <div className="space-y-6">
-                {/* 1-Click Multi-Channel Artifact Export Bar */}
-                <ArtifactExportBar />
-
-                {/* 7-Channel Delivery Health Grid */}
-                <IntegrationGrid />
-              </div>
-            )}
-          </motion.section>
-        </div>
+              {!collapsedSections.artifacts && (
+                <div className="space-y-6">
+                  <ArtifactExportBar />
+                  <IntegrationGrid />
+                </div>
+              )}
+            </motion.section>
+          </div>
+        )}
       </main>
 
       {/* ── 3. Streaming Telemetry Inspector Slide-Over Drawer ────── */}
