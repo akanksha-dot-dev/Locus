@@ -28,7 +28,7 @@ class Config:
 
     # --- OpenWeather ---
     OPENWEATHER_API_KEY: str = os.getenv("OPENWEATHER_API_KEY", "")
-    DEFAULT_CITY: str = os.getenv("DEFAULT_CITY", "Mumbai")
+    DEFAULT_CITY: str = os.getenv("DEFAULT_CITY", "Gurugram")
 
     # --- Gmail (via Swytchcode) ---
     GMAIL_USER: str = os.getenv("GMAIL_USER", "me")

@@ -100,6 +100,9 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed && parsed.city && parsed.go_to_office) {
+          if (parsed.city === 'London' || parsed.city === 'Mumbai') {
+            return DEFAULT_MOCK_RESPONSE;
+          }
           return parsed;
         }
       }

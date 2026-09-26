@@ -46,7 +46,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
 function findBestMockScenario(query: string, city?: string): AgentResponse {
   const q = (query || '').toLowerCase();
   const c = (city || '').toLowerCase();
-  const chosenCity = city?.trim() || 'London';
+  const chosenCity = city?.trim() || 'Gurugram';
 
   let base: AgentResponse;
 
@@ -178,7 +178,7 @@ export const apiService = {
         ],
         history_count: 4,
         live_connections: 1,
-        default_city: 'Mumbai',
+        default_city: 'Gurugram',
       };
     }
   },

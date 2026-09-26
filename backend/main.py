@@ -204,7 +204,7 @@ def run_demo(city: str = None, email: str = None):
     """Run the agent with a sample day-planning request in demo mode."""
     console.print("[bold yellow]🧪 Running in DEMO mode...[/bold yellow]")
 
-    city = city or Config.DEFAULT_CITY or "Mumbai"
+    city = city or Config.DEFAULT_CITY or "Gurugram"
     user_email = email or Config.JIRA_EMAIL or "demo@example.com"
 
     demo_request = (

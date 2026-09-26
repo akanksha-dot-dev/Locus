@@ -23,9 +23,10 @@ export interface PromptBarProps {
 }
 
 const GLOBAL_POPULAR_CITIES = [
-  'Mumbai',
+  'Gurugram',
   'Bengaluru',
   'Delhi',
+  'Mumbai',
   'London',
   'New York',
   'San Francisco',
@@ -40,7 +41,7 @@ const GLOBAL_POPULAR_CITIES = [
 export const PromptBar: React.FC<PromptBarProps> = ({
   onSubmit,
   isLoading,
-  defaultCity = 'Mumbai',
+  defaultCity = 'Gurugram',
   defaultMinimized = false,
   className = '',
 }) => {
@@ -250,7 +251,7 @@ export const PromptBar: React.FC<PromptBarProps> = ({
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   disabled={isLoading}
-                  placeholder="Type any city worldwide (e.g. Trivandrum, London, Paris, Tokyo, Mumbai, Berlin, Seattle...)"
+                  placeholder="Type any city worldwide (e.g. Gurugram, Bengaluru, London, Paris, Tokyo, Mumbai, Berlin, Seattle...)"
                   className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-surface-card border border-hairline text-xs sm:text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner disabled:opacity-50"
                 />
                 {city && !isLoading && (

@@ -471,7 +471,7 @@ async def run_demo(request: DemoScenario):
         request.scenario,
         DEMO_SCENARIOS.get("day_planner_office", DEMO_SCENARIOS["outdoor_picnic"])
     )
-    city = request.city or Config.DEFAULT_CITY or "Mumbai"
+    city = request.city or Config.DEFAULT_CITY or "Gurugram"
 
     agent_req = AgentRequest(
         user_request=scenario_text,
@@ -485,6 +485,8 @@ def _mock_weather_for_city(city: str) -> dict:
     """Generate realistic mock weather data for offline/test environments."""
     city_lower = (city or "").lower().strip()
     mock_db = {
+        "gurugram": {"temp": 24.5, "feels_like": 24.0, "humidity": 52, "wind": 3.2, "cond": "Clear", "desc": "clear sky", "icon": "01d"},
+        "gurgaon": {"temp": 24.5, "feels_like": 24.0, "humidity": 52, "wind": 3.2, "cond": "Clear", "desc": "clear sky", "icon": "01d"},
         "mumbai": {"temp": 29.5, "feels_like": 33.0, "humidity": 78, "wind": 4.5, "cond": "Clouds", "desc": "scattered clouds", "icon": "03d"},
         "london": {"temp": 16.0, "feels_like": 15.2, "humidity": 68, "wind": 5.1, "cond": "Rain", "desc": "light rain", "icon": "10d"},
         "delhi": {"temp": 32.0, "feels_like": 35.0, "humidity": 55, "wind": 3.8, "cond": "Clear", "desc": "clear sky", "icon": "01d"},
