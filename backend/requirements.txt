@@ -1,5 +1,5 @@
 # ================================================================
-# WeatherWise AI Life Agent — Python Dependencies
+# Locus — Autonomous Incident Command Center & Day Planner
 # Track 5: AI Real World Agent | Build with Swytchcode
 # ================================================================
 

@@ -136,7 +136,7 @@ export const apiService = {
       return {
         status: 'ok',
         timestamp: new Date().toISOString(),
-        agent: 'SwytchAgent Day Planner (WeatherWise v2.0 - Standalone Mode)',
+        agent: 'Locus Day Planner (v2.0 - Standalone Mode)',
         version: '2.0.0',
         track: 'Track 5 — AI Real World Agent',
         framework: 'LangGraph + Google Gemini',

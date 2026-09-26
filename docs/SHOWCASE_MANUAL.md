@@ -1,4 +1,9 @@
-# 🏆 SwytchAgent Day Planner v2.0 — Live Integration & Judge Showcase Master Guide
+<p align="center">
+  <img src="./assets/locus_logo.png" alt="Locus Logo" width="220" />
+</p>
+
+# 🏆 Locus — Autonomous Incident Command Center & Day Planner v2.0
+### Live Integration & Judge Showcase Master Guide
 
 > **Track 5: AI Real World Agent | Build with Swytchcode Hackathon 2026**  
 > An autonomous, context-aware AI agent synthesizing real-world physical conditions (**OpenWeather**) with engineering workload (**Jira Cloud**, **GitHub**) and personal schedule (**Gmail**) into an intelligent Day Plan, autonomously dispatching executive briefings to **Notion**, **Slack**, and **Resend**.
@@ -63,7 +68,7 @@ To showcase the system looking like a busy production developer environment, fol
      - **Summary**: `CCS-16: Optimize OpenWeather forecast cache eviction`
      - **Priority**: Low
      - **Status**: To Do
-- **How SwytchAgent showcases this**:
+- **How Locus showcases this**:
   - The **Jira Sprint HUD** displays the exact ticket count, priority-weighted workload hours (Highest/High = 3–4h, Medium = 2h, Low = 1h), and status badges.
   - Judges can click the **High / Medium / Low** priority filter pills or search tickets directly in the UI!
 
@@ -84,11 +89,11 @@ To showcase the system looking like a busy production developer environment, fol
   2. **Open a Live Pull Request (Guaranteed WOW Factor)**:
      - Go to `https://github.com/iakankshaa/support-kb-gaps`
      - Click on `README.md` and click the **Pencil (Edit)** icon.
-     - Add a single comment line: `<!-- SwytchAgent Day Planner v2.0 Live Integration -->`
+     - Add a single comment line: `<!-- Locus Day Planner v2.0 Live Integration -->`
      - Select **"Create a new branch for this commit and start a pull request"** (e.g. branch name `feature/briefing-engine`).
      - Click **Propose changes**, then click **Create pull request**.
      - Title: `feat(agent): Multi-source developer workload synthesizer`
-- **How SwytchAgent showcases this**:
+- **How Locus showcases this**:
   - The **GitHub Review HUD** has two tabs:
     - **Pull Requests Tab**: Shows open PRs, author avatar `@iakankshaa`, review estimate (`~1.5h`), and stale review warnings (>2 days old).
     - **Assigned Issues Tab**: Shows open repository issues with status, issue age, and assigned author.
@@ -129,7 +134,7 @@ flowchart LR
 ```
 
 ### 1. The Hook (0:00 – 0:30)
-> *"Judges, modern software engineers waste 30 to 45 minutes every morning context switching between Jira boards, GitHub pull requests, weather apps for commutes, and calendar invites. We built **SwytchAgent Day Planner** — a real-world autonomous agent built with Swytchcode and LangGraph. It ingests physical atmosphere from OpenWeather, sprint workload from Jira Cloud, code reviews from GitHub, and calendar anchors from Gmail, uses Google Gemini to make an autonomous Office vs. WFH decision, generates an hour-by-hour schedule, and syncs everything to Notion, Slack, and Resend."*
+> *"Judges, modern software engineers waste 30 to 45 minutes every morning context switching between Jira boards, GitHub pull requests, weather apps for commutes, and calendar invites. We built **Locus Day Planner** — a real-world autonomous agent built with Swytchcode and LangGraph. It ingests physical atmosphere from OpenWeather, sprint workload from Jira Cloud, code reviews from GitHub, and calendar anchors from Gmail, uses Google Gemini to make an autonomous Office vs. WFH decision, generates an hour-by-hour schedule, and syncs everything to Notion, Slack, and Resend."*
 
 ### 2. The Live Trigger & Swarm Topology (0:30 – 1:15)
 - Open browser to `http://localhost:5173`.
@@ -159,7 +164,7 @@ flowchart LR
 - **Open Slack**: Show the real-time Slack Block Kit notification posted to your channel with the verdict and Notion link button.
 - **Open Email**: Show the responsive HTML digest received via Resend.
 - **1-Click Export**: Click **Export .ICS** in the top bar to download an RFC-5545 calendar file, or **Export Markdown**.
-- **Final Closing**: *"That is SwytchAgent — from physical weather and developer workloads to multi-channel execution, fully automated."*
+- **Final Closing**: *"That is Locus — from physical weather and developer workloads to multi-channel execution, fully automated."*
 
 ---
 
@@ -170,20 +175,20 @@ flowchart LR
    - Frontend UI: `http://localhost:5173`.
 2. **If Backend Needs Restart**:
    ```powershell
-   cd d:\SwytchAgent2.0\backend
+   cd backend
    .\venv\Scripts\python.exe server.py
    ```
 3. **If Frontend Needs Restart**:
    ```powershell
-   cd d:\SwytchAgent2.0\frontend
+   cd frontend
    npm run dev -- --host
    ```
 4. **Instant Terminal Demo (CLI Mode)**:
    ```powershell
-   cd d:\SwytchAgent2.0\backend
+   cd backend
    .\venv\Scripts\python.exe main.py --demo
    ```
    Runs the full 8-node pipeline with colored ANSI badges and ASCII schedule tables directly in PowerShell.
 
 ---
-*SwytchAgent Day Planner v2.0 is 100% verified, production-hardened, and ready to win.*
+*Locus Day Planner v2.0 is 100% verified, production-hardened, and ready to win.*

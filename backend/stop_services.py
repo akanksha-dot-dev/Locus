@@ -1,4 +1,4 @@
-"""Stop SwytchAgent Day Planner services using saved PIDs."""
+"""Stop Locus Day Planner services using saved PIDs."""
 import os
 import signal
 import sys

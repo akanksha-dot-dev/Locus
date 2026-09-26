@@ -1,4 +1,4 @@
-# SwytchAgent Day Planner (v2.0) — Frontend Command Center
+# Locus (v2.0) — Frontend Command Center
 
 > **Track 5 — AI Real World Agent | Build with Swytchcode**  
 > Incident Command Center & Autonomous Day Planner Frontend
@@ -7,7 +7,7 @@
 
 ## 1. Overview & Architecture
 
-The **SwytchAgent Day Planner Frontend** is a cyber-aesthetic, high-assurance Incident Command Center built with modern web technologies:
+The **Locus Frontend** is a cyber-aesthetic, high-assurance Incident Command Center built with modern web technologies:
 
 - **Core Framework**: React 19.0.0 + TypeScript 5.7 (strict mode) + Vite 6.4.3
 - **Styling & Design Tokens**: Tailwind CSS 3.4.17 + PostCSS + Autoprefixer

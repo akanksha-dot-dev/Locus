@@ -16,8 +16,8 @@ import { DEFAULT_MOCK_RESPONSE, INITIAL_TOPOLOGY_NODES, MOCK_RESPONSES } from '.
 import { apiService } from '../services/api';
 import { wsClient } from '../services/websocket';
 
-const STORAGE_KEY_SNAPSHOT = 'swytchagent_latest_snapshot';
-const STORAGE_KEY_MUTED = 'swytchagent_audio_muted';
+const STORAGE_KEY_SNAPSHOT = 'locus_latest_snapshot';
+const STORAGE_KEY_MUTED = 'locus_audio_muted';
 
 export interface AgentContextType {
   activeAgentResponse: AgentResponse;
@@ -199,7 +199,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Initial Health Check
     apiService.getHealth().then((health) => {
-      addLog('info', 'System', `SwytchAgent v${health.version} initialized. Health status: ${health.status}`);
+      addLog('info', 'System', `Locus v${health.version} initialized. Health status: ${health.status}`);
     });
 
     return () => {

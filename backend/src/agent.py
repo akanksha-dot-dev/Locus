@@ -1,5 +1,5 @@
 """
-SwytchAgent Day Planner — LangGraph Workflow (7 Integrations).
+Locus Day Planner — LangGraph Workflow (7 Integrations).
 
 Orchestrates all 7 data sources into a complete intelligent day plan.
 
@@ -88,7 +88,7 @@ def _route_after_notion(state: AgentState) -> str:
 
 def build_agent_graph() -> StateGraph:
     """
-    Build and compile the SwytchAgent Day Planner 7-integration workflow.
+    Build and compile the Locus Day Planner 7-integration workflow.
 
     Graph: 8 nodes, sequential pipeline with intelligent conditional routing.
 
@@ -162,7 +162,7 @@ def preprocess_state(initial_state: dict) -> dict:
         **initial_state,
         "city": city,
         "execution_log": initial_state.get("execution_log", [
-            f"🚀 SwytchAgent Day Planner started — {initial_state.get('user_request', 'Plan my day')}",
+            f"🚀 Locus Day Planner started — {initial_state.get('user_request', 'Plan my day')}",
             f"📡 Integrations active: OpenWeather · Gmail · Jira · GitHub · Notion · Slack · Resend",
         ]),
         "processed_at": datetime.now().isoformat(),

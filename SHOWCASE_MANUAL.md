@@ -1,4 +1,9 @@
-# 📅 SwytchAgent Day Planner v2.0 — End-to-End Showcase & Verification Manual
+<p align="center">
+  <img src="./docs/assets/locus_logo.png" alt="Locus Logo" width="220" />
+</p>
+
+# ⚡ Locus — Autonomous Incident Command Center & Day Planner
+### End-to-End Showcase & Verification Manual (v2.0)
 
 > **Track 5: AI Real World Agent | Build with Swytchcode Hackathon 2026**  
 > An autonomous, context-aware AI agent synthesizing real-world conditions (OpenWeather) with developer work context (Gmail, Jira, GitHub) to estimate workloads, recommend Office vs. WFH decisions, formulate hour-by-hour schedules, and automate executive briefings across Notion, Slack, and Resend.
@@ -27,7 +32,7 @@
 
 ## 1. System Architecture & 8-Node LangGraph Pipeline
 
-SwytchAgent executes an intelligent sequential-parallel pipeline compiled with **LangGraph**:
+Locus executes an intelligent sequential-parallel pipeline compiled with **LangGraph**:
 
 ```mermaid
 flowchart TD
@@ -58,7 +63,7 @@ flowchart TD
 
 ### Integration 1: OpenWeather API
 - **Source**: `https://api.openweathermap.org/data/2.5`
-- **Node File**: [`backend/src/nodes/weather_fetcher.py`](file:///d:/SwytchAgent2.0/backend/src/nodes/weather_fetcher.py)
+- **Node File**: [`backend/src/nodes/weather_fetcher.py`](./backend/src/nodes/weather_fetcher.py)
 - **Role in Day Planning**: Fetches live temperature, humidity, wind speed, condition codes, 24-hour hourly forecast curves, and severe storm/rain alerts. Computes an objective `weather_score` (0–100) determining commute feasibility.
 - **Graceful Fallback**: When `OPENWEATHER_API_KEY` is omitted, the node simulates realistic localized weather data matching the queried city.
 
@@ -90,7 +95,7 @@ curl.exe -s "http://localhost:8000/weather/Mumbai"
 
 ### Integration 2: Gmail Calendar Context via Swytchcode
 - **Tool Identifier**: `gmail.messages.list` & `gmail.messages.get`
-- **Node File**: [`backend/src/nodes/gmail_reader.py`](file:///d:/SwytchAgent2.0/backend/src/nodes/gmail_reader.py)
+- **Node File**: [`backend/src/nodes/gmail_reader.py`](./backend/src/nodes/gmail_reader.py)
 - **Role in Day Planning**: Scans inbox for hard calendar commitments, client syncs, flight confirmations (e.g. MakeMyTrip Delhi flights), and team outings (e.g. City Park picnic). Extracts `has_outdoor_plans` and `has_travel_plans` boolean anchors.
 
 #### How to Demonstrate:
@@ -115,7 +120,7 @@ In the CLI (`python main.py --demo`) or API (`POST /run`), examine the `gmail_ev
 
 ### Integration 3: Jira Workload & Sprint Intelligence
 - **Tool Identifier**: `jira.issues.list` / REST `jira.issues.search`
-- **Node File**: [`backend/src/nodes/jira_workload.py`](file:///d:/SwytchAgent2.0/backend/src/nodes/jira_workload.py)
+- **Node File**: [`backend/src/nodes/jira_workload.py`](./backend/src/nodes/jira_workload.py)
 - **Role in Day Planning**: Analyzes assigned tickets (`PROJ-101` to `PROJ-104`), maps priority weights (High = 3h, Medium = 2h, Low = 1h), and computes total focus hours required (`jira_estimated_hours: ~8.0h`).
 
 #### How to Demonstrate:
@@ -129,7 +134,7 @@ In the Command Center UI or API response, look for the **Jira Sprint HUD**:
 
 ### Integration 4: GitHub PR & Code Review Queue
 - **Tool Identifier**: `github.pullRequests.list`
-- **Node File**: [`backend/src/nodes/github_workload.py`](file:///d:/SwytchAgent2.0/backend/src/nodes/github_workload.py)
+- **Node File**: [`backend/src/nodes/github_workload.py`](./backend/src/nodes/github_workload.py)
 - **Role in Day Planning**: Tracks review obligations (`PR #42`, `PR #43`), flags stale reviews (>2 days old), and computes code review workload (~4.0h).
 
 #### How to Demonstrate:
@@ -141,7 +146,7 @@ Look at the **GitHub Review Matrix** in the UI or CLI:
 
 ### Integration 5: Google Gemini Multi-Source Reasoning Engine
 - **Engine**: Google Gemini (`gemini-2.5-flash` / Google GenAI SDK)
-- **Node File**: [`backend/src/nodes/ai_advisor.py`](file:///d:/SwytchAgent2.0/backend/src/nodes/ai_advisor.py)
+- **Node File**: [`backend/src/nodes/ai_advisor.py`](./backend/src/nodes/ai_advisor.py)
 - **Role in Day Planning**: The brain of the agent. Synthesizes all 4 data inputs (Weather + Gmail + Jira + GitHub) to:
   1. Determine `go_to_office`: `office`, `wfh`, or `hybrid` with commute reasoning.
   2. Estimate `estimated_productive_hours` balancing meetings vs deep focus.
@@ -163,7 +168,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/run" -Method Post -ContentType "ap
 
 ### Integration 6: Notion Executive Day Plan Logger
 - **Tool Identifier**: `notion.pages.create`
-- **Node File**: [`backend/src/nodes/notion_logger.py`](file:///d:/SwytchAgent2.0/backend/src/nodes/notion_logger.py)
+- **Node File**: [`backend/src/nodes/notion_logger.py`](./backend/src/nodes/notion_logger.py)
 - **Role in Day Planning**: Automatically logs the complete executive Day Plan as a structured Notion database page.
 - **Architectural Safeguard**: Strictly chunks rich text into paragraph blocks `<=1900` chars to stay within the Notion API's 2000-character payload limit.
 
@@ -175,18 +180,18 @@ The API and CLI response will output a direct URL:
 
 ### Integration 7: Slack Block Kit Alert Dispatcher
 - **Tool Identifier**: `slack.messages.send` / Webhook
-- **Node File**: [`backend/src/nodes/slack_notifier.py`](file:///d:/SwytchAgent2.0/backend/src/nodes/slack_notifier.py)
+- **Node File**: [`backend/src/nodes/slack_notifier.py`](./backend/src/nodes/slack_notifier.py)
 - **Role in Day Planning**: Dispatches rich Slack Block Kit cards with Office/WFH decision banners, schedule timeline bullet blocks, severe weather hazard highlights, and an interactive Notion link button.
 - **Agentic Logic**: Dispatches automatically if `risk_level` is `high`/`critical`, `should_alert` is `True`, or upon direct schedule requests.
 
 #### Sample Block Kit Payload Dispatched:
 ```json
 {
-  "text": "📅 SwytchAgent Day Plan: Mumbai — 🏠 WORK FROM HOME",
+  "text": "📅 Locus Day Plan: Mumbai — 🏠 WORK FROM HOME",
   "blocks": [
     {
       "type": "header",
-      "text": {"type": "plain_text", "text": "📅 SwytchAgent Day Plan: Mumbai"}
+      "text": {"type": "plain_text", "text": "📅 Locus Day Plan: Mumbai"}
     },
     {
       "type": "section",
@@ -200,7 +205,7 @@ The API and CLI response will output a direct URL:
 
 ### Integration 8: Resend Responsive HTML Briefing Digest
 - **Tool Identifier**: `resend.email.create`
-- **Node File**: [`backend/src/nodes/email_sender.py`](file:///d:/SwytchAgent2.0/backend/src/nodes/email_sender.py)
+- **Node File**: [`backend/src/nodes/email_sender.py`](./backend/src/nodes/email_sender.py)
 - **Role in Day Planning**: Delivers an email digest to the user's inbox containing:
   - Hero Weather Card with dynamic temperature gradient.
   - Decision Card with WFH/Office status.
@@ -270,7 +275,7 @@ The production frontend runs at **[http://localhost:5173](http://localhost:5173)
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│  ⚡ SWYTCHAGENT 2.0  [Track 5 AI Agent]   [● LIVE: :8000]   [19:42 UTC]│
+│  ⚡ LOCUS 2.0        [Track 5 AI Agent]   [● LIVE: :8000]   [19:42 UTC]│
 ├────────────────────────────────────────────────────────────────────────┤
 │  [Prompt Bar: Cmd/Ctrl + K]  [⚡ Storm London] [✈️ Delhi] [🚀 NYC]   │
 ├───────────────────────────────────┬────────────────────────────────────┤
@@ -314,7 +319,7 @@ The production frontend runs at **[http://localhost:5173](http://localhost:5173)
 If presenting in a terminal or headless environment:
 
 ```powershell
-cd d:\SwytchAgent2.0\backend
+cd backend
 
 # 1. Environment & API Connectivity Health Check
 .\venv\Scripts\python.exe main.py --verify
@@ -338,7 +343,7 @@ cd d:\SwytchAgent2.0\backend
 
 ## 6. Automated Verification & Test Suites (110 / 110 Tests)
 
-SwytchAgent 2.0 features **110 passing automated verification tests**:
+Locus 2.0 features **110 passing automated verification tests**:
 
 | Test Command | Scope | Result |
 |---|---|---|
@@ -353,15 +358,14 @@ SwytchAgent 2.0 features **110 passing automated verification tests**:
 #### Run All Tests in One Command:
 ```powershell
 # In root:
-cd d:\SwytchAgent2.0
 .\backend\venv\Scripts\python.exe test_audit.py
 
 # In backend:
-cd d:\SwytchAgent2.0\backend
+cd backend
 .\venv\Scripts\python.exe test_day_planner.py
 
 # In frontend:
-cd d:\SwytchAgent2.0\frontend
+cd frontend
 node verify_frontend_e2e.mjs
 npx tsx test_adversarial_exports.ts
 ```
@@ -374,7 +378,7 @@ npx tsx test_adversarial_exports.ts
 
 ### **[0:00–0:30] — The Hook & The Problem**
 > *"Judges, every day knowledge workers make dozens of disjointed decisions: Should I commute to the office today? How bad is the rain? What meetings do I have? How many Jira tickets and GitHub PRs are on my plate? Today, that requires checking 5 different apps.*  
-> *Meet **SwytchAgent 2.0** — an autonomous AI Real World Agent that synthesizes live weather conditions with your work context across Gmail, Jira, and GitHub, reasons about your day with Google Gemini, and delivers an hour-by-hour operational schedule with automated briefings to Notion, Slack, and your inbox."*
+> *Meet **Locus 2.0** — an autonomous AI Real World Agent that synthesizes live weather conditions with your work context across Gmail, Jira, and GitHub, reasons about your day with Google Gemini, and delivers an hour-by-hour operational schedule with automated briefings to Notion, Slack, and your inbox."*
 
 ### **[0:30–1:15] — The Live Demo (Passing the 3-Second Test)**
 > *(Open [http://localhost:5173](http://localhost:5173))*  
@@ -391,12 +395,12 @@ npx tsx test_adversarial_exports.ts
 
 ### **[2:15–3:00] — Engineering Rigor & Closing**
 > *"Under the hood, this isn't a prototype script: it is an 8-node compiled LangGraph pipeline powered by Google Gemini and Swytchcode tools, served by a FastAPI backend with 0 deprecation warnings, and backed by a 100-test automated verification suite covering unit fallbacks, graph compilation, and adversarial stress tests.*  
-> *SwytchAgent turns chaos into clarity before you take your first sip of coffee. Thank you!"*
+> *Locus turns chaos into clarity before you take your first sip of coffee. Thank you!"*
 
 ---
 
 ## 🚀 One-Click Launch Reminder
 To start both the FastAPI backend and React frontend with automated port management:
 ```powershell
-d:\SwytchAgent2.0\START_APP.bat
+.\START_APP.bat
 ```

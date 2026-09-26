@@ -1,5 +1,5 @@
 """
-LangGraph state definition for the SwytchAgent Day Planner.
+LangGraph state definition for the Locus Day Planner.
 
 This TypedDict flows through every node in the 7-integration workflow,
 accumulating real-world data so the AI can plan the user's full day.
@@ -12,7 +12,7 @@ from typing import TypedDict, Optional, Union
 
 
 class AgentState(TypedDict, total=False):
-    """State that flows through the SwytchAgent Day Planner workflow."""
+    """State that flows through the Locus Day Planner workflow."""
 
     # ── User Request (entry point) ───────────────────────────────
     user_request: str           # Natural language user request

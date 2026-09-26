@@ -1,5 +1,5 @@
 """
-SwytchAgent Day Planner — Node Registry.
+Locus Day Planner — Node Registry.
 
 The 8 LangGraph workflow nodes for the 7-integration Day Planner pipeline:
   1. weather_fetcher  — OpenWeather API: real-time weather & forecasts

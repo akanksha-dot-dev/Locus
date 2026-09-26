@@ -1,15 +1,15 @@
 """
-WeatherWise AI Life Agent — FastAPI Backend Server v2.0
+Locus — Autonomous Incident Command Center & Day Planner v2.0
 
-The interactive demo server for the WeatherWise AI Agent.
+The interactive demo server for the Locus AI Agent.
 Provides a complete REST API and WebSocket live feed for the dashboard.
 
 Track 5 — AI Real World Agent | Build with Swytchcode
-Integrations: OpenWeather, Gmail, Notion, Slack, Resend
+Integrations: OpenWeather, Gmail, Notion, Slack, Resend, Jira, GitHub
 
 Endpoints:
     GET  /health                    — Health check + integration status
-    POST /run                       — Run the full WeatherWise AI pipeline
+    POST /run                       — Run the full Locus AI pipeline
     POST /demo                      — Run demo with preset scenarios
     GET  /history                   — All past agent runs
     GET  /analytics                 — Aggregate metrics
@@ -91,7 +91,7 @@ manager = ConnectionManager()
 # ── Lifespan Context Manager ──────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🌦️  SwytchAgent Day Planner (WeatherWise v2.0) Server starting...")
+    print("🌦️  Locus: Autonomous Incident Command Center & Day Planner starting...")
     print(f"   Default city: {Config.DEFAULT_CITY}")
     print(f"   OpenWeather: {'✅ Configured' if Config.OPENWEATHER_API_KEY else '⚠️  Not configured (fallback active)'}")
     print(f"   Gmail:       {'✅ Configured' if bool(getattr(Config, 'GMAIL_USER', None)) else '⚠️  Demo simulation'}")
@@ -101,14 +101,14 @@ async def lifespan(app: FastAPI):
     print(f"   Slack:       {'✅ Configured' if (Config.SLACK_WEBHOOK_URL or Config.SLACK_BOT_TOKEN) else '⚠️  Not configured'}")
     print(f"   Resend:      {'✅ Configured' if Config.RESEND_API_KEY else '⚠️  Not configured'}")
     yield
-    print("🛑 SwytchAgent Day Planner Server shutting down...")
+    print("🛑 Locus Server shutting down...")
 
 
 # ── FastAPI App ───────────────────────────────────────────────────
 app = FastAPI(
-    title="SwytchAgent Day Planner API v2.0",
+    title="Locus API v2.0",
     description=(
-        "SwytchAgent Day Planner (WeatherWise v2.0) — 8-Node LangGraph AI Agent combining "
+        "Locus — 8-Node LangGraph AI Agent combining "
         "OpenWeather, Gmail, Jira, GitHub, Gemini AI, Notion, Slack, and Resend via Swytchcode."
     ),
     version="2.0.0",
@@ -255,7 +255,7 @@ async def health_check():
     return {
         "status": "ok",
         "timestamp": datetime.now().isoformat(),
-        "agent": "SwytchAgent Day Planner (WeatherWise v2.0)",
+        "agent": "Locus Day Planner (v2.0)",
         "version": "2.0.0",
         "track": "Track 5 — AI Real World Agent",
         "framework": "LangGraph + Google Gemini",
@@ -286,7 +286,7 @@ async def health_check():
 @app.post("/run", response_model=AgentResponse)
 async def run_agent(request: AgentRequest):
     """
-    Run the full SwytchAgent Day Planner AI agent pipeline.
+    Run the full Locus AI agent pipeline.
 
     Agent flow:
         User Request → OpenWeather → Gmail → Jira → GitHub →
@@ -298,7 +298,7 @@ async def run_agent(request: AgentRequest):
             "user_email": request.user_email or Config.RESEND_TO_EMAIL or Config.JIRA_EMAIL,
             "city": request.city or Config.DEFAULT_CITY,
             "execution_log": [
-                f"🚀 SwytchAgent Day Planner invoked via API at {datetime.now().isoformat()}"
+                f"🚀 Locus Day Planner invoked via API at {datetime.now().isoformat()}"
             ],
         }
 
@@ -671,7 +671,7 @@ async def websocket_endpoint(ws: WebSocket):
     try:
         await ws.send_json({
             "type": "connected",
-            "message": "SwytchAgent Day Planner WebSocket connected",
+            "message": "Locus Day Planner WebSocket connected",
             "recent_runs": len(recent),
         })
         while True:
@@ -684,7 +684,7 @@ async def websocket_endpoint(ws: WebSocket):
 
 # ── Run ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print("🌦️  SwytchAgent Day Planner (WeatherWise v2.0)")
+    print("🌦️  Locus — Autonomous Incident Command Center & Day Planner")
     print("   API:   http://localhost:8000")
     print("   Docs:  http://localhost:8000/docs")
     print("   WS:    ws://localhost:8000/ws")

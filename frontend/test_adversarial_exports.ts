@@ -1,5 +1,5 @@
 /**
- * SwytchAgent Day Planner v2.0 — Adversarial Stress & Compliance Test Suite
+ * Locus (v2.0) — Adversarial Stress & Compliance Test Suite
  * Forensic audit and empirical verification of client-side artifact generators,
  * RFC 5545 iCalendar compliance, Markdown table structure, JSON roundtrips,
  * and bundle integrity.
@@ -37,7 +37,7 @@ function testCase(name: string, fn: () => void) {
 }
 
 console.log('======================================================================');
-console.log('  SWYTCHAGENT 2.0: EMPIRICAL ADVERSARIAL CHALLENGER SUITE');
+console.log('  LOCUS: EMPIRICAL ADVERSARIAL CHALLENGER SUITE');
 console.log('======================================================================\n');
 
 // ── FIXTURES ────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ const baseResponse: AgentResponse = {
   ],
   activity_adjustments: ['Avoid morning outdoor commute', 'Shift sprint sync to virtual'],
   notion_logged: true,
-  notion_page_url: 'https://notion.so/swytchagent-day-plan-20260925',
+  notion_page_url: 'https://notion.so/locus-day-plan-20260925',
   slack_alert_sent: true,
   email_sent: true,
 };
@@ -86,7 +86,7 @@ testCase('1.1 RFC 5545 Container Structure (VCALENDAR & VEVENT)', () => {
   assert.ok(ics.startsWith('BEGIN:VCALENDAR\r\n'), 'Must start with BEGIN:VCALENDAR CRLF');
   assert.ok(ics.endsWith('END:VCALENDAR\r\n'), 'Must end with END:VCALENDAR CRLF');
   assert.ok(ics.includes('VERSION:2.0\r\n'), 'Must specify VERSION:2.0');
-  assert.ok(ics.includes('PRODID:-//SwytchAgent//Day Planner 2.0//EN\r\n'), 'Must specify PRODID');
+  assert.ok(ics.includes('PRODID:-//Locus//Day Planner 2.0//EN\r\n'), 'Must specify PRODID');
   assert.ok(ics.includes('CALSCALE:GREGORIAN\r\n'), 'Must specify CALSCALE:GREGORIAN');
   assert.ok(ics.includes('METHOD:PUBLISH\r\n'), 'Must specify METHOD:PUBLISH');
 
@@ -255,7 +255,7 @@ console.log('\n▶ Section 2: Formatted Markdown Export Generator Audit');
 
 testCase('2.1 Markdown Header, Badges & AI Rationale Structure', () => {
   const md = generateMarkdown(baseResponse, baseBlocks);
-  assert.ok(md.includes('# 📅 SwytchAgent Day Plan — London'), 'Must have City title in H1 header');
+  assert.ok(md.includes('# 📅 Locus Day Plan — London'), 'Must have City title in H1 header');
   assert.ok(md.includes('**Weather Score:** 35/100'), 'Must display weather score');
   assert.ok(md.includes('**Risk Level:** HIGH'), 'Must display uppercase risk level');
   assert.ok(md.includes('## 🎯 Executive Verdict: `WFH`'), 'Must display executive verdict badge');
@@ -370,7 +370,7 @@ testCase('3.1 Valid JSON Serialization & Exact Property Tree Schema', () => {
 
   // Check metadata attributes
   assert.strictEqual(parsed.metadata.version, '2.0.0');
-  assert.strictEqual(parsed.metadata.generator, 'SwytchAgent Day Planner (v2.0)');
+  assert.strictEqual(parsed.metadata.generator, 'Locus Day Planner (v2.0)');
 
   // Check synthesis fidelity
   assert.strictEqual(parsed.synthesis.city, 'London');
@@ -472,7 +472,7 @@ testCase('4.1 dist/index.html Structure, Root Node & Font Links', () => {
   const html = fs.readFileSync(indexHtmlPath, 'utf8');
   assert.ok(html.includes('<!DOCTYPE html>'), 'Must declare valid HTML5 DOCTYPE');
   assert.ok(html.includes('<div id="root"></div>'), 'Must contain <div id="root"> mount element');
-  assert.ok(html.includes('SwytchAgent Day Planner v2.0 — Incident Command Center'), 'Must have authoritative title');
+  assert.ok(html.includes('Locus — Autonomous Incident Command Center & Day Planner'), 'Must have authoritative title');
   assert.ok(html.includes('family=Inter') && html.includes('family=JetBrains+Mono'), 'Must import Inter and JetBrains Mono fonts');
   assert.ok(html.includes('class="dark"'), 'Root html tag must configure dark mode');
 });

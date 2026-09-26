@@ -20,7 +20,7 @@ CREATE_NEW_PROCESS_GROUP = 0x00000200
 DETACHED_PROCESS         = 0x00000008
 CREATE_NO_WINDOW         = 0x08000000
 
-print("🚀 Starting SwytchAgent Day Planner Services...")
+print("🚀 Starting Locus Day Planner Services...")
 print(f"   Base dir : {BASE_DIR}")
 print(f"   Python   : {PYTHON_EXE}")
 print(f"   Streamlit: {STREAMLIT_EXE}")

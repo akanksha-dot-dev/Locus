@@ -1,4 +1,4 @@
-# 📅 SwytchAgent Day Planner
+# 📅 Locus Day Planner
 
 > **Track 5 — AI Real World Agent | Build with Swytchcode Hackathon 2026**
 
@@ -10,7 +10,7 @@ An intelligent, context-aware AI agent that understands real-world situations by
 
 > *Build an AI agent that can understand real-world situations using external information and take useful actions for users.*
 
-**SwytchAgent Day Planner** solves this by:
+**Locus Day Planner** solves this by:
 1. Fetching **real-time weather and 24h forecasts** via OpenWeather
 2. Understanding scheduled meetings and travel commitments from **Gmail**
 3. Inspecting assigned tickets, priorities, and estimated hours from **Jira**

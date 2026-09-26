@@ -170,7 +170,7 @@ Issues:
 
 === META ===
 Generated: {now.isoformat()}
-Agent: SwytchAgent Day Planner v2.0 | Integrations: OpenWeather × Gmail × Jira × GitHub × Notion × Slack × Resend
+Agent: Locus Day Planner v2.0 | Integrations: OpenWeather × Gmail × Jira × GitHub × Notion × Slack × Resend
 """.strip()
 
     # Notion API limit: each rich_text content block must be ≤ 2000 chars

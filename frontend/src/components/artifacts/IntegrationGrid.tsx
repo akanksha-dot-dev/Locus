@@ -84,7 +84,7 @@ export const IntegrationGrid: React.FC = () => {
       icon: <MessageSquare className="w-5 h-5 text-emerald-400" />,
       status: activeAgentResponse.slack_message_sent ? 'Delivered' : 'Ready',
       statusColor: activeAgentResponse.slack_message_sent ? ('emerald' as const) : ('default' as const),
-      detail: '#swytchagent-briefings',
+      detail: '#locus-briefings',
       meta: 'Block Kit Formatted',
       iconBg: 'bg-emerald-500/10 border-emerald-500/25',
     },

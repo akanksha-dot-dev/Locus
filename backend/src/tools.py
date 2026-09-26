@@ -1,5 +1,5 @@
 """
-Swytchcode tool loader for the SwytchAgent Day Planner.
+Swytchcode tool loader for the Locus Day Planner.
 
 Loads integrations (Gmail, Notion, Jira, GitHub, Slack, Resend, OpenWeather)
 via the Swytchcode Python Runtime SDK.

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * SWYTCHAGENT 2.0: CHALLENGER ADVERSARIAL STRESS-TEST & VERIFICATION HARNESS
+ * LOCUS 2.0: CHALLENGER ADVERSARIAL STRESS-TEST & VERIFICATION HARNESS
  * ============================================================================
  * Focus Areas:
  * 1. WebSocket Resilience (Parsing, Keep-Alive Ping, Exponential Backoff, Offline Simulation)
@@ -576,16 +576,16 @@ async function testLaunchScriptVerification() {
 
   // 4.3 Python Virtual Environment Validation
   assert(
-    content.includes('planner-agent\\venv\\Scripts\\python.exe'),
-    'START_APP.bat verifies specific Python venv path: planner-agent\\venv\\Scripts\\python.exe'
+    content.includes('backend\\venv\\Scripts\\python.exe') || content.includes('planner-agent\\venv\\Scripts\\python.exe'),
+    'START_APP.bat verifies specific Python venv path: backend\\venv\\Scripts\\python.exe'
   );
   assert(
     content.includes('where python'),
     'START_APP.bat provides graceful fallback to system Python if virtual environment is absent'
   );
 
-  // Empirically check if planner-agent venv exists on this system
-  const venvPythonPath = path.join(rootDir, 'planner-agent', 'venv', 'Scripts', 'python.exe');
+  // Empirically check if backend venv exists on this system
+  const venvPythonPath = path.join(rootDir, 'backend', 'venv', 'Scripts', 'python.exe');
   const venvExists = fs.existsSync(venvPythonPath);
   assert(venvExists, `System verification: Python venv exists at ${venvPythonPath}`);
 
@@ -598,11 +598,11 @@ async function testLaunchScriptVerification() {
 
   // 4.5 Orchestrated Launch Commands
   assert(
-    content.includes('start "SwytchAgent-FastAPI-Backend" cmd /k') && content.includes('server.py'),
+    content.includes('start "Locus-FastAPI-Backend" cmd /k') && content.includes('server.py'),
     'FastAPI backend launched in independent titled command prompt'
   );
   assert(
-    content.includes('start "SwytchAgent-Vite-Frontend" cmd /k') && content.includes('npm run dev'),
+    content.includes('start "Locus-Vite-Frontend" cmd /k') && content.includes('npm run dev'),
     'Vite frontend dev server launched in independent titled command prompt'
   );
   assert(
@@ -624,7 +624,7 @@ async function testLaunchScriptVerification() {
 // ────────────────────────────────────────────────────────────────────────────
 async function runAllStressTests() {
   console.log('======================================================================');
-  console.log('  SWYTCHAGENT 2.0: EMPIRICAL CHALLENGER STRESS-TEST SUITE');
+  console.log('  LOCUS: EMPIRICAL CHALLENGER STRESS-TEST SUITE');
   console.log('======================================================================');
 
   await testWebSocketResilience();

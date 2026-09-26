@@ -1,12 +1,12 @@
 @echo off
 REM ============================================================
-REM  Swytchcode Setup Script for SwytchAgent Day Planner
+REM  Swytchcode Setup Script for Locus Day Planner
 REM  Run this ONCE before starting the agent.
 REM ============================================================
 
 echo.
 echo  ======================================================
-echo   Swytchcode Setup - SwytchAgent Day Planner (Track 5)
+echo   Swytchcode Setup - Locus Day Planner (Track 5)
 echo  ======================================================
 echo.
 

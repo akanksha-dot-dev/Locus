@@ -36,7 +36,7 @@ def _get_client():
 
 # ─── Master Day-Planner Prompt ──────────────────────────────────────────────
 DAY_PLANNER_PROMPT = """\
-You are SwytchAgent, an elite AI life assistant that plans your user's entire day \
+You are Locus, an elite AI life assistant that plans your user's entire day \
 using real-world data from 7 integrated sources. Be actionable, specific, and smart.
 
 === 1. WEATHER DATA (OpenWeather) ===

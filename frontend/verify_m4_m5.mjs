@@ -22,10 +22,10 @@ function generateICS(response, scheduleBlocks) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//SwytchAgent//Day Planner 2.0//EN',
+    'PRODID:-//Locus//Day Planner 2.0//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:SwytchAgent Day Plan - ${escapeICS(city)} (${dateStr})`,
+    `X-WR-CALNAME:Locus Day Plan - ${escapeICS(city)} (${dateStr})`,
     'X-WR-TIMEZONE:UTC',
   ];
 
@@ -53,7 +53,7 @@ function generateICS(response, scheduleBlocks) {
 
     const dtStart = `${dateStr}T${String(startHour).padStart(2, '0')}${String(startMin).padStart(2, '0')}00`;
     const dtEnd = `${dateStr}T${String(endHour).padStart(2, '0')}${String(endMin).padStart(2, '0')}00`;
-    const uid = `swytchagent-${dateStr}-${index}-${now.getTime()}@swytchagent.ai`;
+    const uid = `locus-${dateStr}-${index}-${now.getTime()}@locus.ai`;
     const summary = escapeICS(block.activity || 'Scheduled Block');
     const location = escapeICS(block.location || city);
     const categoryTag = block.category ? `[${block.category.toUpperCase().replace('_', ' ')}] ` : '';
@@ -91,7 +91,7 @@ function generateMarkdown(response, scheduleBlocks) {
   const pctDone = totalBlocks > 0 ? Math.round((totalCompleted / totalBlocks) * 100) : 0;
 
   const lines = [
-    `# 📅 SwytchAgent Day Plan — ${city}`,
+    `# 📅 Locus Day Plan — ${city}`,
     `**Weather Score:** ${response.weather_score}/100 | **Risk Level:** ${String(response.risk_level).toUpperCase()} | **Progress:** ${pctDone}%`,
     '',
     `## 🎯 Executive Verdict: \`${verdict}\``,
@@ -119,7 +119,7 @@ function generateMarkdown(response, scheduleBlocks) {
 function generateJSON(response, scheduleBlocks) {
   const payload = {
     metadata: {
-      generator: 'SwytchAgent Day Planner (v2.0)',
+      generator: 'Locus Day Planner (v2.0)',
       version: '2.0.0',
       exported_at: new Date().toISOString(),
     },
@@ -192,7 +192,7 @@ console.log('✅ Test 1 PASSED: Strict RFC 5545 CRLF compliance verified (total 
 // Test 2: Formatted Markdown Briefing Validation
 console.log('[Test 2] Testing Markdown executive briefing generation...');
 const mdOutput = generateMarkdown(mockResponse, mockBlocks);
-assert.ok(mdOutput.includes('# 📅 SwytchAgent Day Plan — London'), 'Header must contain city title');
+assert.ok(mdOutput.includes('# 📅 Locus Day Plan — London'), 'Header must contain city title');
 assert.ok(mdOutput.includes('Executive Verdict: `WFH`'), 'Must render verdict badge');
 assert.ok(mdOutput.includes('Severe thunderstorm warning'), 'Must contain AI reasoning');
 assert.ok(mdOutput.includes('| ✅ Done | `09:00 - 10:30` |'), 'Must include completed schedule slot in table');

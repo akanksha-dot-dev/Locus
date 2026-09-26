@@ -1,5 +1,5 @@
 """
-SwytchAgent Day Planner (WeatherWise v2.0) — Automated Test Suite
+Locus Day Planner (v2.0) — Automated Test Suite
 Requirement R4: Automated Testing and Verification Suite
 
 Covers:
@@ -575,7 +575,7 @@ class TestFastAPIEndpoints(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(data.get("status"), "ok")
-        self.assertEqual(data.get("agent"), "SwytchAgent Day Planner (WeatherWise v2.0)")
+        self.assertEqual(data.get("agent"), "Locus Day Planner (v2.0)")
         self.assertEqual(data.get("version"), "2.0.0")
         self.assertIn("integrations", data)
         self.assertIsInstance(data.get("integrations"), dict)

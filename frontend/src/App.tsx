@@ -87,15 +87,15 @@ function CommandCenterDashboard() {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & Operational Title */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold glow-indigo shadow-lg shadow-indigo-500/10">
-              <Sparkles className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-cyan-500/40 flex items-center justify-center glow-cyan shadow-lg shadow-cyan-500/20 bg-surface-card">
+              <img src="/locus_logo.png" alt="Locus Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm sm:text-base tracking-tight text-white font-mono">
-                  SWYTCHAGENT 2.0
+                <span className="font-bold text-sm sm:text-base tracking-wider text-white font-mono flex items-center gap-1.5">
+                  LOCUS
                 </span>
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 font-semibold">
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 font-semibold">
                   Track 5 AI Agent
                 </span>
               </div>
@@ -327,7 +327,7 @@ function CommandCenterDashboard() {
       <footer className="border-t border-hairline bg-surface-card/60 py-6 px-4 sm:px-6 mt-12 text-xs text-gray-400 select-none pb-16 sm:pb-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-gray-300 font-mono">SwytchAgent Day Planner v2.0.0</span>
+            <span className="font-semibold text-gray-300 font-mono">Locus Day Planner v2.0.0</span>
             <span className="text-gray-600">•</span>
             <span>Incident Command Center</span>
             <span className="text-gray-600">•</span>

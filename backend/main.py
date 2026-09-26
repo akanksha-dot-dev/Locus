@@ -1,11 +1,11 @@
 """
-WeatherWise AI Life Agent — Main Entry Point.
+Locus — Autonomous Incident Command Center & Day Planner — Main Entry Point.
 
 An intelligent AI agent that combines real-world weather data with personal
-calendar context to provide smart, actionable daily recommendations.
+calendar and developer workload context to provide smart, actionable daily recommendations.
 
 Track 5 — AI Real World Agent | Build with Swytchcode
-Integrations: OpenWeather, Gmail, Notion, Slack, Resend (5 APIs)
+Integrations: OpenWeather, Gmail, Notion, Slack, Resend, Jira, GitHub
 Framework: LangGraph
 
 Usage:
@@ -40,7 +40,7 @@ def print_banner():
     """Print a stylish startup banner."""
     console.print()
     console.print(Panel.fit(
-        "[bold cyan]📅  SwytchAgent Day Planner[/bold cyan]\n"
+        "[bold cyan]📅  Locus: Incident Command Center & Day Planner[/bold cyan]\n"
         "[dim]Your AI-powered full day plan using 7 real-world integrations[/dim]\n\n"
         "[bold]🔗 Integrations:[/bold] OpenWeather · Gmail · Jira · GitHub · Notion · Slack · Resend\n"
         "[bold]🤖 Framework:[/bold] LangGraph + Google Gemini\n"
@@ -54,7 +54,7 @@ def print_banner():
 def print_results(final_state: dict):
     """Print a beautifully formatted summary of the 7-integration Day Planner."""
     console.print()
-    console.print(Panel("[bold green]✅ SwytchAgent Day Plan Complete[/bold green]", border_style="green"))
+    console.print(Panel("[bold green]✅ Locus Day Plan Complete[/bold green]", border_style="green"))
 
     # ── Weather ───────────────────────────────────────────────────
     console.print()
@@ -219,7 +219,7 @@ def run_demo(city: str = None, email: str = None):
         "user_request": demo_request,
         "user_email": user_email,
         "city": city,
-        "execution_log": [f"🧪 [Demo] SwytchAgent Day Planner started at {datetime.now().isoformat()}"],
+        "execution_log": [f"🧪 [Demo] Locus Day Planner started at {datetime.now().isoformat()}"],
     }
 
     state = preprocess_state(initial_state)
@@ -266,7 +266,7 @@ def run_demo(city: str = None, email: str = None):
 
 def run_interactive(city: str = None, email: str = None):
     """Run the agent interactively with user input."""
-    console.print("[bold green]🔴 Interactive Mode — WeatherWise AI Agent[/bold green]")
+    console.print("[bold green]🔴 Interactive Mode — Locus AI Agent[/bold green]")
     console.print("[dim]Tell me about your plans and I'll give you a weather-aware briefing.[/dim]\n")
 
     default_city = city or Config.DEFAULT_CITY
@@ -286,7 +286,7 @@ def run_interactive(city: str = None, email: str = None):
         "user_request": user_request,
         "user_email": user_email,
         "city": default_city,
-        "execution_log": [f"🚀 WeatherWise Agent started at {datetime.now().isoformat()}"],
+        "execution_log": [f"🚀 Locus Agent started at {datetime.now().isoformat()}"],
     }
 
     state = preprocess_state(initial_state)
@@ -296,7 +296,7 @@ def run_interactive(city: str = None, email: str = None):
 
 def verify_setup():
     """Verify Swytchcode and API connectivity."""
-    console.print("[bold]🔍 Verifying WeatherWise Agent Setup...[/bold]\n")
+    console.print("[bold]🔍 Verifying Locus Agent Setup...[/bold]\n")
 
     checks = [
         ("Google Gemini API Key", bool(Config.GOOGLE_API_KEY), "GOOGLE_API_KEY"),

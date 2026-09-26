@@ -114,7 +114,7 @@ def _build_slack_blocks(state: dict) -> list[dict]:
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": f"📅 SwytchAgent Day Plan — {city}",
+                "text": f"📅 Locus Day Plan — {city}",
                 "emoji": True
             }
         },
@@ -220,7 +220,7 @@ def _build_slack_blocks(state: dict) -> list[dict]:
         "elements": [
             {
                 "type": "mrkdwn",
-                "text": f"SwytchAgent Day Planner | {datetime.now().strftime('%d %b %Y, %I:%M %p')} | OpenWeather × Gmail × Jira × GitHub × Notion × Slack × Resend"
+                "text": f"Locus Day Planner | {datetime.now().strftime('%d %b %Y, %I:%M %p')} | OpenWeather × Gmail × Jira × GitHub × Notion × Slack × Resend"
             }
         ]
     })
@@ -303,7 +303,7 @@ def run(state: dict) -> dict:
     condition = state.get("weather_condition", "Unknown")
     temp = state.get("temperature_c", 0)
     risk_label = risk.upper()
-    fallback_text = f"🌦️ WeatherWise Alert: {city} — {condition} at {temp:.1f}°C | Risk: {risk_label}"
+    fallback_text = f"⚡ Locus Alert: {city} — {condition} at {temp:.1f}°C | Risk: {risk_label}"
 
     blocks = _build_slack_blocks(state)
 

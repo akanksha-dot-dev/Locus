@@ -1,4 +1,8 @@
-# ⚡ SwytchAgent Day Planner v2.0 — Autonomous Incident Command Center
+<p align="center">
+  <img src="./docs/assets/locus_logo.png" alt="Locus Logo" width="160" height="160" style="border-radius: 28px; box-shadow: 0 8px 32px rgba(6, 182, 212, 0.3);" />
+</p>
+
+# ⚡ Locus — Autonomous Incident Command Center & Day Planner
 
 > **🏆 Track 5: AI Real World Agent | Build with Swytchcode Hackathon 2026**  
 > An autonomous, context-aware AI agent synthesizing real-world conditions (**OpenWeather**) with developer work context (**Gmail**, **Jira**, **GitHub**) to estimate workloads, recommend Office vs. WFH decisions, formulate hour-by-hour schedules, and automate executive briefings across **Notion**, **Slack**, and **Resend**.
@@ -14,7 +18,7 @@
 
 ## 📸 Incident Command Center UI
 
-![SwytchAgent 2.0 Command Center](./docs/screenshots/localhost.png)
+![Locus Command Center](./docs/screenshots/localhost.png)
 
 *Linear / Raycast dark-mode interface featuring dynamic 60fps atmospheric weather canvas, 8-node live swarm topology visualizer, interactive 24h schedule timeline, dual Jira/GitHub workload matrix, and 1-click RFC 5545 calendar export.*
 
@@ -29,13 +33,13 @@ Every morning, knowledge workers face fragmented decision fatigue across half a 
 - *Are there GitHub pull requests blocking teammates that need code reviews?*
 - *Should I commute to the office today or stay productive at home?*
 
-**SwytchAgent 2.0** turns this chaos into clarity before you take your first sip of coffee. Powered by an 8-node compiled LangGraph pipeline and Google Gemini reasoning, it autonomously fetches all inputs, balances meetings against deep work, renders an objective Office/WFH verdict, generates a conflict-free 24-hour schedule, and automatically dispatches briefings to your team.
+**Locus** turns this chaos into clarity before you take your first sip of coffee. Powered by an 8-node compiled LangGraph pipeline and Google Gemini reasoning, it autonomously fetches all inputs, balances meetings against deep work, renders an objective Office/WFH verdict, generates a conflict-free 24-hour schedule, and automatically dispatches briefings to your team.
 
 ---
 
 ## 🤖 8-Node LangGraph Pipeline
 
-SwytchAgent executes an intelligent sequential-parallel pipeline compiled with **LangGraph**:
+Locus executes an intelligent sequential-parallel pipeline compiled with **LangGraph**:
 
 ```mermaid
 flowchart TD
@@ -80,7 +84,7 @@ flowchart TD
 ## 📁 Repository Structure
 
 ```
-SwytchAgent2.0/
+Locus/
 ├── backend/                       # Python 3.11+ AI Agent & FastAPI Server
 │   ├── src/
 │   │   ├── agent.py               # Compiled 8-Node LangGraph StateGraph
@@ -155,7 +159,7 @@ Double-click [`START_APP.bat`](./START_APP.bat) or run from PowerShell:
 
 ## 🧪 Automated Verification Suite (110 / 110 Tests Passed)
 
-SwytchAgent 2.0 features **110 passing automated verification tests** across backend, frontend, RFC 5545 export compliance, and live telemetry:
+Locus features **110 passing automated verification tests** across backend, frontend, RFC 5545 export compliance, and live telemetry:
 
 | Test Command | Scope | Result |
 |---|---|---|

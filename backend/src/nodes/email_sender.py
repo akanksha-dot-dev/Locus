@@ -208,7 +208,7 @@ def _build_html_email(state: dict) -> str:
   <!-- Header Card -->
   <div style="background:linear-gradient(135deg,{grad_start},{grad_end});border-radius:16px;padding:32px 28px;color:#fff;margin-bottom:20px;">
     <p style="margin:0 0 4px;font-size:13px;opacity:0.8;">{now.strftime('%A, %B %d, %Y')}</p>
-    <h1 style="margin:0 0 8px;font-size:28px;font-weight:800;">🌦️ WeatherWise Day Planner</h1>
+    <h1 style="margin:0 0 8px;font-size:28px;font-weight:800;">⚡ Locus Day Planner</h1>
     <p style="margin:0 0 20px;font-size:16px;opacity:0.9;">Daily Executive Briefing for <strong>{city}</strong></p>
 
     <div style="display:flex;gap:16px;flex-wrap:wrap;">
@@ -305,7 +305,7 @@ def _build_html_email(state: dict) -> str:
 
   <!-- Footer -->
   <div style="text-align:center;padding:24px 0 8px;color:#9ca3af;font-size:12px;">
-    <p style="margin:0;">Powered by <strong style="color:#667eea;">SwytchAgent Day Planner v2.0</strong></p>
+    <p style="margin:0;">Powered by <strong style="color:#667eea;">Locus Day Planner v2.0</strong></p>
     <p style="margin:4px 0 0;">OpenWeather × Gmail × Jira × GitHub × Notion × Slack × Resend</p>
   </div>
 </div>
@@ -403,7 +403,7 @@ def run(state: dict) -> dict:
     temp = state.get("temperature_c", 0)
 
     go_to = (state.get("go_to_office") or "wfh").upper()
-    subject = f"🌦️ WeatherWise: {city} — {go_to} | {condition} {temp:.0f}°C | Risk: {risk} — {datetime.now().strftime('%b %d')}"
+    subject = f"⚡ Locus: {city} — {go_to} | {condition} {temp:.0f}°C | Risk: {risk} — {datetime.now().strftime('%b %d')}"
     log.append(f"📤 [Resend] Sending daily briefing to {recipient}...")
 
     html = _build_html_email(state)

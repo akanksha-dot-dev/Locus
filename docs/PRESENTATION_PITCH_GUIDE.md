@@ -1,4 +1,9 @@
-# 🏆 SwytchAgent Day Planner v2.0 — Hackathon Winning Presentation & Pitch Guide
+<p align="center">
+  <img src="./assets/locus_logo.png" alt="Locus Logo" width="220" />
+</p>
+
+# 🏆 Locus — Autonomous Incident Command Center & Day Planner v2.0
+### Hackathon Winning Presentation & Pitch Guide
 
 > **Track 5: AI Real World Agent | Build with Swytchcode Hackathon 2026**  
 > An autonomous, context-aware AI agent synthesizing physical conditions (**OpenWeather**) with engineering context (**Gmail**, **Jira Cloud**, **GitHub**) into an intelligent Day Plan, autonomously dispatching executive briefings across **Notion**, **Slack**, and **Resend**.
@@ -7,9 +12,9 @@
 
 ## 📊 Rubric Alignment & Scoring Matrix
 
-Use this cheat sheet to understand how every component of SwytchAgent maps directly to the judging criteria:
+Use this cheat sheet to understand how every component of Locus maps directly to the judging criteria:
 
-| Criteria | Weight | What the Judges Are Looking For | How SwytchAgent Dominates (100% Score) |
+| Criteria | Weight | What the Judges Are Looking For | How Locus Dominates (100% Score) |
 | :--- | :---: | :--- | :--- |
 | **Swytchcode API Integration** | **30%** | Deep and effective use of Swytchcode APIs (minimum 3 required). | Integrates **7 distinct Swytchcode APIs** (`openweather.current.get`, `gmail.messages.list`, `jira.issues.list`, `github.pullRequests.list`, `notion.pages.create`, `slack.messages.send`, `resend.email.create`). Every tool execution is recorded in an audit trail. |
 | **Technical Implementation** | **25%** | Code quality, architecture, and complexity. Agentic framework. | Built with **LangGraph** (`StateGraph`) with typed `AgentState`, asynchronous **FastAPI** backend with real-time **WebSocket telemetry** (`/ws`), modern **React 19 + TypeScript + Vite** frontend, resilient error recovery, and **110 automated tests** (unit, E2E, audit). |
@@ -25,7 +30,7 @@ Use this cheat sheet to understand how every component of SwytchAgent maps direc
 ### 1. Swytchcode API Integration (30% Weightage)
 The prompt states: *"Every project must use at least 3 Swytchcode APIs... Simply connecting multiple APIs without using them as part of the agent's decision-making flow will not demonstrate the intended use."*
 
-SwytchAgent goes far beyond the 3-API requirement by deeply chaining **7 Swytchcode Tools**:
+Locus goes far beyond the 3-API requirement by deeply chaining **7 Swytchcode Tools**:
 1. `openweather.current.get`: Retrieves live temperature, weather condition code, wind vector, humidity, and 24-hour forecast curves.
 2. `gmail.messages.list` & `gmail.messages.get`: Ingests user calendar commitments, flight itineraries, and outdoor event anchors.
 3. `jira.issues.list` & `jira.issues.search`: Ingests active sprint backlog, issue priorities (`Highest`, `High`, `Medium`), and estimates work hours today.
@@ -59,7 +64,7 @@ Judges look for code quality, architectural depth, and framework choice:
 ### 3. Innovation & Originality: True AI Agent vs. API Wrapper (20% Weightage)
 The buildathon explicitly asks: *"The goal is to build an AI Agent, not a traditional application that simply makes API calls... The output from one tool must influence the next action taken by the agent."*
 
-Here is the exact **Chain of Influence** that proves SwytchAgent is an autonomous agent:
+Here is the exact **Chain of Influence** that proves Locus is an autonomous agent:
 
 ```mermaid
 flowchart TD
@@ -97,7 +102,7 @@ flowchart TD
 ---
 
 ### 4. Functionality & Completeness (10% Weightage)
-SwytchAgent is 100% complete and working:
+Locus is 100% complete and working:
 - **Instant Preset Scenarios**: One-click triggers for real-world situations:
   - *Storm Warning in London*: Severe rain triggers WFH recommendation and travel warnings.
   - *Sprint Crunch in NYC*: Heavy Jira backlog triggers high-focus schedule blocks.
@@ -113,7 +118,7 @@ SwytchAgent is 100% complete and working:
 
 ### 5. Real-World Impact (10% Weightage)
 - **Problem**: The modern software engineer starts their day with extreme cognitive fragmentation: checking Jira, triaging GitHub reviews, looking at weather apps for the commute, and checking calendar invites.
-- **Solution**: SwytchAgent saves **45 minutes every morning** by automating this synthesis in under 5 seconds.
+- **Solution**: Locus saves **45 minutes every morning** by automating this synthesis in under 5 seconds.
 - **Enterprise Scalability**: Easily connects to any team's Jira Cloud instance, GitHub Organization, corporate Slack workspace, and Notion knowledge base without code modifications.
 
 ---
@@ -141,7 +146,7 @@ Follow this timed script verbatim during your live presentation or pitch:
 > 
 > *Traditional apps simply fetch these APIs individually and dump raw data on a dashboard. But that is NOT an AI Agent.*
 > 
-> *Today, we are thrilled to present **SwytchAgent Day Planner** — a true autonomous AI agent built with **Swytchcode** and **LangGraph**. SwytchAgent synthesizes physical real-world atmosphere with developer workload, autonomously reasons whether you should work from the office or stay home, builds an hour-by-hour day plan, and executes multi-channel actions across Notion, Slack, and Resend."*
+> *Today, we are thrilled to present **Locus Day Planner** — a true autonomous AI agent built with **Swytchcode** and **LangGraph**. Locus synthesizes physical real-world atmosphere with developer workload, autonomously reasons whether you should work from the office or stay home, builds an hour-by-hour day plan, and executes multi-channel actions across Notion, Slack, and Resend."*
 
 ---
 
@@ -208,7 +213,7 @@ Follow this timed script verbatim during your live presentation or pitch:
 > - *We built a high-performance **React 19 Command Center** with zero layout shift.*
 > - *And we verified the entire codebase with **110 passing automated tests**.*
 > 
-> *SwytchAgent transforms fragmented developer mornings into autonomous, synthesized clarity. Thank you, and we are excited to take your questions!"*
+> *Locus transforms fragmented developer mornings into autonomous, synthesized clarity. Thank you, and we are excited to take your questions!"*
 
 ---
 
@@ -216,7 +221,7 @@ Follow this timed script verbatim during your live presentation or pitch:
 
 ### Q1: "How is this an AI Agent rather than just an automated pipeline or script?"
 **Answer**:  
-> *"In a traditional script or pipeline, execution is static and hardcoded: Step A always calls API B with the same parameters. In SwytchAgent, **Gemini AI acts as the reasoning engine within a LangGraph state graph**. The outputs of earlier tools dynamically shape downstream execution:
+> *"In a traditional script or pipeline, execution is static and hardcoded: Step A always calls API B with the same parameters. In Locus, **Gemini AI acts as the reasoning engine within a LangGraph state graph**. The outputs of earlier tools dynamically shape downstream execution:
 > - If weather returns a storm alert, the agent dynamically switches the commute verdict to WFH and instructs Slack to fire a high-urgency alert.
 > - If Jira and GitHub return heavy workloads, the agent changes the schedule layout, dedicating larger blocks to Deep Work and suppressing non-urgent tasks.
 > - When Notion creates a page, its dynamic URL is injected into the Slack payload so the Slack notification contains the newly generated Notion link.
@@ -231,7 +236,7 @@ Follow this timed script verbatim during your live presentation or pitch:
 
 ### Q3: "How does your solution handle API failures or missing credentials?"
 **Answer**:  
-> *"Every single node in SwytchAgent has **graceful multi-tier resilience**:
+> *"Every single node in Locus has **graceful multi-tier resilience**:
 > - If live Jira or GitHub credentials are not present, the nodes gracefully load high-fidelity sprint items and PR reviews without crashing the pipeline.
 > - If the user doesn't specify a city, the agent uses regex entity extraction from the prompt, falling back to a configured default city.
 > - If Notion database schema changes, our dynamic schema resolver queries the database properties first to detect the title column name automatically.
@@ -252,4 +257,4 @@ Before presenting to judges, arrange your browser tabs as follows:
 | **Tab 5 (Optional)** | `http://localhost:8000/docs` | FastAPI Swagger Docs (Proof of clean REST schemas and WebSocket endpoints). |
 
 ---
-*SwytchAgent Day Planner v2.0 is fully running, 100% verified, and armed to win.*
+*Locus Day Planner v2.0 is fully running, 100% verified, and armed to win.*

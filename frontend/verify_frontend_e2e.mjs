@@ -1,5 +1,5 @@
 /**
- * SwytchAgent Day Planner v2.0 — Frontend E2E & Production Verification Suite
+ * Locus (v2.0) — Frontend E2E & Production Verification Suite
  * Verifies production build, bundle sizes, App component integration,
  * export generators, design tokens, and unified launch scripts.
  */
@@ -29,7 +29,7 @@ function assert(condition, message) {
 }
 
 console.log('======================================================================');
-console.log('  SWYTCHAGENT 2.0: FRONTEND PRODUCTION & E2E VERIFICATION SUITE');
+console.log('  LOCUS: FRONTEND PRODUCTION & E2E VERIFICATION SUITE');
 console.log('======================================================================\n');
 
 // ── TEST SUITE 1: Production Build Artifacts & Assets ──────────────────
@@ -42,7 +42,7 @@ assert(fs.existsSync(indexHtmlPath), 'dist/index.html exists');
 if (fs.existsSync(indexHtmlPath)) {
   const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
   assert(indexHtml.includes('id="root"'), 'dist/index.html contains root mount node');
-  assert(indexHtml.includes('SwytchAgent'), 'dist/index.html includes SwytchAgent title');
+  assert(indexHtml.includes('Locus'), 'dist/index.html includes Locus title');
 }
 
 const assetsDir = path.join(distDir, 'assets');

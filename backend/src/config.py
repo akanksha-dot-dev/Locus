@@ -1,5 +1,5 @@
 """
-Configuration module for the WeatherWise AI Life Agent.
+Configuration module for Locus Autonomous Agent.
 Loads environment variables and provides typed access to all settings.
 """
 import os

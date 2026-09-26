@@ -4,7 +4,7 @@
  * without requiring external audio asset files.
  */
 
-const STORAGE_KEY_MUTED = 'swytchagent_audio_muted';
+const STORAGE_KEY_MUTED = 'locus_audio_muted';
 
 class AudioSynthesizer {
   private ctx: AudioContext | null = null;
