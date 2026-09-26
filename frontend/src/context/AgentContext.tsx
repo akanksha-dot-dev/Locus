@@ -83,7 +83,7 @@ function normalizeTimeline(items: (string | ScheduleBlock)[]): ScheduleBlock[] {
     }
 
     return {
-      id: `block-${idx}-${Date.now()}`,
+      id: `block-${idx}`,
       time,
       activity,
       category,

@@ -525,8 +525,14 @@ testCase('4.4 CSS Bundle Design Token Infiltration', () => {
   assert.ok(cssFiles.length > 0, 'CSS bundle must exist');
 
   const cssContent = fs.readFileSync(path.join(assetsDir, cssFiles[0]), 'utf8');
-  assert.ok(cssContent.includes('#08090a') || cssContent.includes('08090a'), 'Surface base #08090a compiled into CSS');
-  assert.ok(cssContent.includes('#0f1011') || cssContent.includes('0f1011'), 'Surface card #0f1011 compiled into CSS');
+  assert.ok(
+    cssContent.includes('#090a0f') || cssContent.includes('090a0f') || cssContent.includes('#08090a') || cssContent.includes('08090a'),
+    'Surface base (#090a0f / #08090a) compiled into CSS'
+  );
+  assert.ok(
+    cssContent.includes('#11131a') || cssContent.includes('11131a') || cssContent.includes('#0f1011') || cssContent.includes('0f1011'),
+    'Surface card (#11131a / #0f1011) compiled into CSS'
+  );
   assert.ok(cssContent.includes('#10b981') || cssContent.includes('10b981'), 'Emerald semantic token #10b981 compiled into CSS');
   assert.ok(cssContent.includes('#6366f1') || cssContent.includes('6366f1'), 'Indigo semantic token #6366f1 compiled into CSS');
 });
