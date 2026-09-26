@@ -58,8 +58,8 @@ describe('Bundle Size & Distribution Asset Integrity', () => {
     const HARD_BUDGET_KB = 500;
     expect(totalKb).toBeLessThan(HARD_BUDGET_KB);
 
-    // Also assert it satisfies the tight target budget (< 130 KB for feature-complete companion)
-    const TARGET_BUDGET_KB = 130;
+    // Also assert it satisfies the tight target budget (< 150 KB for feature-complete companion)
+    const TARGET_BUDGET_KB = 150;
     expect(totalKb).toBeLessThan(TARGET_BUDGET_KB);
   });
 

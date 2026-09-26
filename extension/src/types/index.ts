@@ -625,6 +625,7 @@ export const GLOBAL_CITY_SUGGESTIONS = [
   'Kolkata',
   'Gurgaon',
   'Noida',
+  'Ahmedabad',
   // Americas
   'San Francisco',
   'New York',
@@ -635,6 +636,8 @@ export const GLOBAL_CITY_SUGGESTIONS = [
   'Chicago',
   'Toronto',
   'Vancouver',
+  'São Paulo',
+  'Mexico City',
   // Europe
   'London',
   'Berlin',
@@ -644,7 +647,11 @@ export const GLOBAL_CITY_SUGGESTIONS = [
   'Zurich',
   'Stockholm',
   'Warsaw',
-  // Asia-Pacific & Middle East
+  'Madrid',
+  'Rome',
+  'Munich',
+  'Vienna',
+  // Asia-Pacific, Africa & Oceania
   'Tokyo',
   'Singapore',
   'Sydney',
@@ -652,6 +659,10 @@ export const GLOBAL_CITY_SUGGESTIONS = [
   'Seoul',
   'Dubai',
   'Tel Aviv',
+  'Taipei',
+  'Bangkok',
+  'Cape Town',
+  'Auckland',
 ] as const;
 
 export const CITY_PRESETS = GLOBAL_CITY_SUGGESTIONS;

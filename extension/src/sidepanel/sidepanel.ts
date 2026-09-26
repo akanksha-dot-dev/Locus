@@ -390,7 +390,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auto-probe backend if currently in offline mode
     if (state.isOffline || !state.lastResponse) {
       btnSync?.classList.add('rotating');
-      chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true } }, (res) => {
+      const activeCity = sidepanelCitySelector?.value.trim() || state.settings?.defaultCity || state.lastResponse?.city || 'Mumbai';
+      chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true, city: activeCity } }, (res) => {
         btnSync?.classList.remove('rotating');
         if (res?.state) render(res.state);
       });
@@ -468,18 +469,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // City Selector Change & Enter Key Handler
-  function triggerSidepanelCitySync() {
+  let sidepanelCityDebounceTimer: number | null = null;
+  let isSidepanelSyncingCity = false;
+
+  function triggerSidepanelCitySync(force = false) {
     const rawVal = sidepanelCitySelector?.value.trim();
     if (!rawVal) return;
-    const newCity = rawVal;
-    if (newCity.toLowerCase() === (cachedStorageState?.lastResponse?.city || '').toLowerCase()) {
+    const currentCity = cachedStorageState?.lastResponse?.city || '';
+    if (!force && rawVal.toLowerCase() === currentCity.toLowerCase()) {
       return;
     }
+    if (isSidepanelSyncingCity) return;
+    isSidepanelSyncingCity = true;
+
     playTactileTick(600);
     btnSync?.classList.add('rotating');
     chrome.runtime.sendMessage(
-      { type: 'SYNC_REQUEST', payload: { force: true, city: newCity } },
+      { type: 'SYNC_REQUEST', payload: { force: true, city: rawVal } },
       (res) => {
+        isSidepanelSyncingCity = false;
         btnSync?.classList.remove('rotating');
         if (res?.state) {
           playSuccessChime();
@@ -489,26 +497,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
   }
 
-  sidepanelCitySelector?.addEventListener('change', triggerSidepanelCitySync);
+  // Select all text on focus for frictionless typing
+  sidepanelCitySelector?.addEventListener('focus', () => {
+    sidepanelCitySelector.select();
+  });
+
+  // Handle instant datalist selection or debounced manual entry
+  sidepanelCitySelector?.addEventListener('input', () => {
+    const rawVal = sidepanelCitySelector.value.trim();
+    if (!rawVal) return;
+
+    // Check if input matches any option in datalist
+    const datalist = document.getElementById('sidepanel-cities-list') as HTMLDataListElement | null;
+    const isMatched = datalist && Array.from(datalist.options).some(
+      (opt) => opt.value.toLowerCase() === rawVal.toLowerCase()
+    );
+
+    if (isMatched) {
+      if (sidepanelCityDebounceTimer) clearTimeout(sidepanelCityDebounceTimer);
+      triggerSidepanelCitySync(false);
+      return;
+    }
+
+    // For arbitrary world cities typed manually, debounce 650ms
+    if (sidepanelCityDebounceTimer) clearTimeout(sidepanelCityDebounceTimer);
+    if (rawVal.length >= 3) {
+      sidepanelCityDebounceTimer = window.setTimeout(() => {
+        triggerSidepanelCitySync(false);
+      }, 650);
+    }
+  });
+
+  sidepanelCitySelector?.addEventListener('change', () => triggerSidepanelCitySync(false));
+  sidepanelCitySelector?.addEventListener('blur', () => triggerSidepanelCitySync(false));
   sidepanelCitySelector?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       sidepanelCitySelector.blur();
-      triggerSidepanelCitySync();
+      triggerSidepanelCitySync(true);
     }
   });
 
   // Sync button
   btnSync?.addEventListener('click', () => {
     playTactileTick(500);
-    btnSync.classList.add('rotating');
-    const city = sidepanelCitySelector?.value || cachedStorageState?.lastResponse?.city;
-    chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true, city } }, (res) => {
-      setTimeout(() => btnSync.classList.remove('rotating'), 600);
-      if (res?.state) {
-        playSuccessChime();
-        render(res.state);
-      }
-    });
+    triggerSidepanelCitySync(true);
   });
 
   // Export .ics trigger (RFC 5545 1-click download)

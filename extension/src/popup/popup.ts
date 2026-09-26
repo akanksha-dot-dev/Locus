@@ -341,19 +341,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // City Selector Change & Enter Key Handler
-  function triggerCitySync() {
+  let cityDebounceTimer: number | null = null;
+  let isSyncingCity = false;
+
+  function triggerCitySync(force = false) {
     const rawVal = citySelector?.value.trim();
     if (!rawVal) return;
-    const newCity = rawVal;
-    if (newCity.toLowerCase() === (cachedState?.lastResponse?.city || '').toLowerCase()) {
+    const currentCity = cachedState?.lastResponse?.city || '';
+    if (!force && rawVal.toLowerCase() === currentCity.toLowerCase()) {
       return;
     }
+    if (isSyncingCity) return;
+    isSyncingCity = true;
+
     if (soundEnabled) playTactileTick(600);
     btnSync?.classList.add('rotating');
-    if (weatherDesc) weatherDesc.textContent = `Analyzing atmospheric data for ${newCity}...`;
+    if (weatherDesc) weatherDesc.textContent = `Analyzing atmospheric data & schedule for ${rawVal}...`;
+
     chrome.runtime.sendMessage(
-      { type: 'SYNC_REQUEST', payload: { force: true, city: newCity } },
+      { type: 'SYNC_REQUEST', payload: { force: true, city: rawVal } },
       (res) => {
+        isSyncingCity = false;
         btnSync?.classList.remove('rotating');
         if (res?.state) {
           playSuccessChime();
@@ -363,11 +371,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
   }
 
-  citySelector?.addEventListener('change', triggerCitySync);
+  // Select all text on focus for frictionless typing
+  citySelector?.addEventListener('focus', () => {
+    citySelector.select();
+  });
+
+  // Handle instant datalist selection or debounced manual entry
+  citySelector?.addEventListener('input', () => {
+    const rawVal = citySelector.value.trim();
+    if (!rawVal) return;
+
+    // Check if input matches any option in datalist (e.g. user clicked a dropdown suggestion)
+    const datalist = document.getElementById('global-cities-list') as HTMLDataListElement | null;
+    const isMatched = datalist && Array.from(datalist.options).some(
+      (opt) => opt.value.toLowerCase() === rawVal.toLowerCase()
+    );
+
+    if (isMatched) {
+      if (cityDebounceTimer) clearTimeout(cityDebounceTimer);
+      triggerCitySync(false);
+      return;
+    }
+
+    // For arbitrary world cities typed manually, debounce 650ms
+    if (cityDebounceTimer) clearTimeout(cityDebounceTimer);
+    if (rawVal.length >= 3) {
+      cityDebounceTimer = window.setTimeout(() => {
+        triggerCitySync(false);
+      }, 650);
+    }
+  });
+
+  citySelector?.addEventListener('change', () => triggerCitySync(false));
+  citySelector?.addEventListener('blur', () => triggerCitySync(false));
   citySelector?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       citySelector.blur();
-      triggerCitySync();
+      triggerCitySync(true);
     }
   });
 
@@ -396,7 +436,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auto-probe backend if currently in offline mode
     if (state.isOffline || !state.lastResponse) {
       btnSync?.classList.add('rotating');
-      chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true } }, (res) => {
+      const activeCity = citySelector?.value.trim() || state.settings?.defaultCity || state.lastResponse?.city || 'Mumbai';
+      chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true, city: activeCity } }, (res) => {
         btnSync?.classList.remove('rotating');
         if (res?.state) renderState(res.state);
       });
@@ -415,14 +456,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Manual Sync Button
   btnSync?.addEventListener('click', () => {
     if (soundEnabled) playTactileTick(500);
-    btnSync.classList.add('rotating');
-    chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true } }, (res) => {
-      setTimeout(() => btnSync.classList.remove('rotating'), 600);
-      if (res?.state) {
-        playSuccessChime();
-        renderState(res.state);
-      }
-    });
+    triggerCitySync(true);
   });
 
   // Active Block Checkbox Toggle
@@ -439,8 +473,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Quick Add Task Handler
   const handleQuickAdd = async () => {
     const title = quickAddInput?.value.trim();
-    if (!title || !cachedState) return;
+    if (!title) return;
 
+    const state = cachedState || ((await chrome.storage.local.get(null)) as unknown as StorageState);
     if (soundEnabled) playTaskComplete();
     const newBlock: ScheduleBlock = {
       id: `block-${Date.now()}`,
@@ -451,10 +486,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       completed: false,
     };
 
-    const updatedBlocks = [...(cachedState.scheduleBlocks || []), newBlock];
+    const updatedBlocks = [...(state.scheduleBlocks || []), newBlock];
     await chrome.storage.local.set({ scheduleBlocks: updatedBlocks });
     if (quickAddInput) quickAddInput.value = '';
-    renderState({ ...cachedState, scheduleBlocks: updatedBlocks });
+    renderState({ ...state, scheduleBlocks: updatedBlocks });
   };
 
   btnQuickAdd?.addEventListener('click', handleQuickAdd);

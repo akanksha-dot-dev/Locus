@@ -85,6 +85,9 @@ const CITY_PRESETS: Record<string, CityPreset> = {
   chicago: { temp: 18.0, feelsLike: 17.5, humidity: 64, windSpeed: 6.2, condition: 'Clouds', description: 'breezy & overcast', icon: '04d' },
   toronto: { temp: 18.5, feelsLike: 18.0, humidity: 60, windSpeed: 4.4, condition: 'Clear', description: 'crisp clear air', icon: '01d' },
   vancouver: { temp: 16.0, feelsLike: 15.5, humidity: 74, windSpeed: 3.9, condition: 'Rain', description: 'light pacific rain', icon: '10d' },
+  'são paulo': { temp: 24.5, feelsLike: 25.5, humidity: 68, windSpeed: 3.6, condition: 'Clouds', description: 'pleasant subtropical warmth', icon: '03d' },
+  'sao paulo': { temp: 24.5, feelsLike: 25.5, humidity: 68, windSpeed: 3.6, condition: 'Clouds', description: 'pleasant subtropical warmth', icon: '03d' },
+  'mexico city': { temp: 22.0, feelsLike: 21.5, humidity: 50, windSpeed: 3.2, condition: 'Clear', description: 'high-altitude sunshine', icon: '01d' },
 
   // Europe
   london: { temp: 16.0, feelsLike: 15.2, humidity: 68, windSpeed: 5.1, condition: 'Rain', description: 'light rain', icon: '10d' },
@@ -95,8 +98,12 @@ const CITY_PRESETS: Record<string, CityPreset> = {
   zurich: { temp: 17.0, feelsLike: 16.5, humidity: 65, windSpeed: 3.1, condition: 'Clear', description: 'clear alpine view', icon: '01d' },
   stockholm: { temp: 14.0, feelsLike: 13.0, humidity: 66, windSpeed: 4.3, condition: 'Clouds', description: 'cool Nordic breeze', icon: '03d' },
   warsaw: { temp: 16.0, feelsLike: 15.5, humidity: 63, windSpeed: 3.7, condition: 'Clouds', description: 'partly cloudy', icon: '03d' },
+  madrid: { temp: 26.5, feelsLike: 26.0, humidity: 42, windSpeed: 3.4, condition: 'Clear', description: 'warm castilian sun', icon: '01d' },
+  rome: { temp: 25.0, feelsLike: 25.5, humidity: 55, windSpeed: 3.2, condition: 'Clear', description: 'bright mediterranean skies', icon: '01d' },
+  munich: { temp: 18.0, feelsLike: 17.5, humidity: 60, windSpeed: 3.8, condition: 'Clouds', description: 'bavarian autumn clouds', icon: '03d' },
+  vienna: { temp: 19.0, feelsLike: 18.5, humidity: 58, windSpeed: 4.0, condition: 'Clear', description: 'crisp danube air', icon: '01d' },
 
-  // Asia-Pacific & Middle East
+  // Asia-Pacific, Africa & Oceania
   tokyo: { temp: 22.0, feelsLike: 21.8, humidity: 62, windSpeed: 3.2, condition: 'Clear', description: 'clear sky', icon: '01d' },
   singapore: { temp: 31.0, feelsLike: 36.5, humidity: 82, windSpeed: 3.0, condition: 'Rain', description: 'tropical afternoon shower', icon: '10d' },
   sydney: { temp: 22.5, feelsLike: 22.0, humidity: 60, windSpeed: 4.5, condition: 'Clear', description: 'sunny harbor skies', icon: '01d' },
@@ -104,6 +111,10 @@ const CITY_PRESETS: Record<string, CityPreset> = {
   seoul: { temp: 20.5, feelsLike: 20.0, humidity: 58, windSpeed: 3.4, condition: 'Clear', description: 'clear autumn skies', icon: '01d' },
   dubai: { temp: 36.0, feelsLike: 39.0, humidity: 45, windSpeed: 3.5, condition: 'Clear', description: 'hot & sunny', icon: '01d' },
   'tel aviv': { temp: 27.5, feelsLike: 28.5, humidity: 65, windSpeed: 3.8, condition: 'Clear', description: 'sunny mediterranean sky', icon: '01d' },
+  taipei: { temp: 27.0, feelsLike: 29.5, humidity: 76, windSpeed: 3.8, condition: 'Clouds', description: 'warm humid clouds', icon: '03d' },
+  bangkok: { temp: 32.5, feelsLike: 38.0, humidity: 80, windSpeed: 2.8, condition: 'Clouds', description: 'tropical warmth & clouds', icon: '04d' },
+  'cape town': { temp: 20.0, feelsLike: 19.5, humidity: 62, windSpeed: 5.8, condition: 'Clear', description: 'fresh ocean breeze', icon: '01d' },
+  auckland: { temp: 17.5, feelsLike: 17.0, humidity: 70, windSpeed: 5.0, condition: 'Clouds', description: 'maritime breeze & clouds', icon: '03d' },
 };
 
 /**
