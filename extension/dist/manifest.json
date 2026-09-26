@@ -7,7 +7,9 @@
   "permissions": [
     "storage",
     "sidePanel",
-    "alarms"
+    "alarms",
+    "contextMenus",
+    "notifications"
   ],
   "host_permissions": [
     "http://localhost:8000/*"
@@ -33,7 +35,8 @@
     {
       "matches": [
         "*://*.atlassian.net/*",
-        "*://github.com/*"
+        "*://github.com/*",
+        "*://calendar.google.com/*"
       ],
       "js": [
         "content.js"
@@ -57,6 +60,20 @@
         "mac": "Alt+L"
       },
       "description": "Open Locus HUD"
+    },
+    "toggle_sidepanel": {
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "mac": "Alt+Shift+S"
+      },
+      "description": "Toggle Locus Side Panel Companion"
+    },
+    "toggle_pomodoro": {
+      "suggested_key": {
+        "default": "Alt+Shift+P",
+        "mac": "Alt+Shift+P"
+      },
+      "description": "Start or Pause Focus Pomodoro Timer"
     }
   }
 }

@@ -118,16 +118,32 @@ async function buildExtension() {
     copyDirSafe(iconsSrc, path.join(DIST_DIR, 'icons'));
   }
 
-  // HTML Entry Points
+  // HTML Entry Points (Minified comments and inter-tag whitespace)
+  function copyMinifiedHtml(src, dest) {
+    if (fs.existsSync(src)) {
+      const rawHtml = fs.readFileSync(src, 'utf8');
+      const minified = rawHtml
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/>\s+</g, '><')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      const parentDir = path.dirname(dest);
+      if (!fs.existsSync(parentDir)) {
+        fs.mkdirSync(parentDir, { recursive: true });
+      }
+      fs.writeFileSync(dest, minified, 'utf8');
+    }
+  }
+
   const popupHtmlSrc = fs.existsSync(path.join(SRC_DIR, 'popup/popup.html'))
     ? path.join(SRC_DIR, 'popup/popup.html')
     : path.join(PUBLIC_DIR, 'popup.html');
-  copyFileSafe(popupHtmlSrc, path.join(DIST_DIR, 'popup.html'));
+  copyMinifiedHtml(popupHtmlSrc, path.join(DIST_DIR, 'popup.html'));
 
   const sidepanelHtmlSrc = fs.existsSync(path.join(SRC_DIR, 'sidepanel/sidepanel.html'))
     ? path.join(SRC_DIR, 'sidepanel/sidepanel.html')
     : path.join(PUBLIC_DIR, 'sidepanel.html');
-  copyFileSafe(sidepanelHtmlSrc, path.join(DIST_DIR, 'sidepanel.html'));
+  copyMinifiedHtml(sidepanelHtmlSrc, path.join(DIST_DIR, 'sidepanel.html'));
 
   // CSS Stylesheets (Minified with esbuild)
   const cssFiles = [

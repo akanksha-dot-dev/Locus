@@ -1,4 +1,4 @@
-"use strict";var LocusContentScript=(()=>{(function(){let r="";function c(){let t="",o=window.location.pathname.match(/\/browse\/([A-Z0-9]+-\d+)/i)||window.location.search.match(/selectedIssue=([A-Z0-9]+-\d+)/i);if(o&&o[1])t=o[1];else{let n=document.querySelector('[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue.item"]')||document.querySelector('a[data-testid="issue-key"]')||document.querySelector("#key-val");n&&n.textContent&&(t=n.textContent.trim())}if(!t)return null;let i="",e=document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]')||document.querySelector('h1[data-test-id="issue.views.issue-base.foundation.summary.heading"]')||document.querySelector("#summary-val")||document.querySelector("h1");return e&&e.textContent?i=e.textContent.trim():i=document.title.replace(` - ${t}`,"").replace(" - Jira","").trim(),{id:t,title:i||t}}function u(){let t=window.location.pathname.match(/\/pull\/(\d+)/i);if(!t||!t[1])return null;let o=`#${t[1]}`,i="",e=document.querySelector(".gh-header-title .js-issue-title")||document.querySelector("bdi.js-issue-title")||document.querySelector("h1.gh-header-title");return e&&e.textContent?i=e.textContent.trim():i=document.title.replace(/by \w+ · Pull Request #\d+.*$/i,"").trim(),{id:o,title:i||`PR ${o}`}}function l(){let t=window.location.href;if(t===r)return;let o=window.location.hostname,i=null;if(o.includes("atlassian.net")||o.includes("jira")){let e=c();e&&(i={source:"jira",id:e.id,title:e.title,url:t})}else if(o.includes("github.com")){let e=u();e&&(i={source:"github",id:e.id,title:e.title,url:t})}if(i){r=t,console.log("[Locus Content] Detected context:",i);try{chrome.runtime.sendMessage({type:"CONTEXT_DETECTED",payload:{...i,timestamp:Date.now()}})}catch(e){console.warn("[Locus Content] Message send failed (worker may be sleeping):",e)}p(i)}}function p(t){let o=document.getElementById("locus-copilot-host");o||(o=document.createElement("div"),o.id="locus-copilot-host",document.body.appendChild(o));let i=o.shadowRoot;i||(i=o.attachShadow({mode:"open"})),i.innerHTML=`
+"use strict";var LocusContentScript=(()=>{(function(){let l="";function u(){let e="",t=window.location.pathname.match(/\/browse\/([A-Z0-9]+-\d+)/i)||window.location.search.match(/selectedIssue=([A-Z0-9]+-\d+)/i);if(t&&t[1])e=t[1];else{let o=document.querySelector('[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue.item"]')||document.querySelector('a[data-testid="issue-key"]')||document.querySelector("#key-val");o&&o.textContent&&(e=o.textContent.trim())}if(!e)return null;let i="",n=document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]')||document.querySelector('h1[data-test-id="issue.views.issue-base.foundation.summary.heading"]')||document.querySelector("#summary-val")||document.querySelector("h1");return n&&n.textContent?i=n.textContent.trim():i=document.title.replace(` - ${e}`,"").replace(" - Jira","").trim(),{id:e,title:i||e}}function m(){let e=window.location.pathname.match(/\/pull\/(\d+)/i);if(e&&e[1]){let i=`#${e[1]}`,o=(document.querySelector(".gh-header-title .js-issue-title")||document.querySelector("bdi.js-issue-title")||document.querySelector("h1.gh-header-title"))?.textContent?.trim()||document.title.replace(/by \w+ · Pull Request #\d+.*$/i,"").trim();return{id:i,title:o||`PR ${i}`}}let t=window.location.pathname.match(/\/issues\/(\d+)/i);if(t&&t[1]){let i=`#${t[1]}`,o=(document.querySelector(".gh-header-title .js-issue-title")||document.querySelector("bdi.js-issue-title")||document.querySelector("h1.gh-header-title"))?.textContent?.trim()||document.title.replace(/· Issue #\d+.*$/i,"").trim();return{id:i,title:o||`Issue ${i}`}}return null}function p(){let e=document.querySelector('div[role="dialog"]');if(e){let t=e.querySelector('span[role="heading"]')||e.querySelector("h2");if(t&&t.textContent)return{id:"GCAL",title:t.textContent.trim()}}return null}function a(){let e=window.location.href;if(e===l)return;let t=window.location.hostname,i=null;if(t.includes("atlassian.net")||t.includes("jira")){let n=u();n&&(i={source:"jira",id:n.id,title:n.title,url:e})}else if(t.includes("github.com")){let n=m();n&&(i={source:"github",id:n.id,title:n.title,url:e})}else if(t.includes("calendar.google.com")){let n=p();n&&(i={source:"jira",id:n.id,title:n.title,url:e})}if(i){l=e,console.log("[Locus Content] Detected context:",i);try{chrome.runtime.sendMessage({type:"CONTEXT_DETECTED",payload:{...i,timestamp:Date.now()}})}catch(n){console.warn("[Locus Content] Message send failed (worker may be sleeping):",n)}b(i)}}function b(e){let t=document.getElementById("locus-copilot-host");t||(t=document.createElement("div"),t.id="locus-copilot-host",document.body.appendChild(t));let i=t.shadowRoot;i||(i=t.attachShadow({mode:"open"}));let n=!1;i.innerHTML=`
       <style>
         :host {
           all: initial;
@@ -23,6 +23,14 @@
           animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           transition: transform 0.2s ease, opacity 0.2s ease;
         }
+        .pill-container.minimized {
+          padding: 8px;
+          border-radius: 50%;
+          cursor: pointer;
+        }
+        .pill-container.minimized .content-wrapper {
+          display: none;
+        }
         @keyframes slide-in {
           from { transform: translateY(20px) scale(0.95); opacity: 0; }
           to { transform: translateY(0) scale(1); opacity: 1; }
@@ -33,6 +41,12 @@
           border-radius: 50%;
           background: #06b6d4;
           box-shadow: 0 0 8px #06b6d4;
+          flex-shrink: 0;
+        }
+        .content-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
         .brand-title {
           font-size: 11px;
@@ -46,14 +60,14 @@
           font-family: Menlo, monospace;
           padding: 2px 6px;
           border-radius: 4px;
-          background: ${t.source==="jira"?"rgba(99, 102, 241, 0.2)":"rgba(6, 182, 212, 0.2)"};
-          color: ${t.source==="jira"?"#818cf8":"#22d3ee"};
-          border: 1px solid ${t.source==="jira"?"rgba(99, 102, 241, 0.4)":"rgba(6, 182, 212, 0.4)"};
+          background: ${e.source==="jira"?"rgba(99, 102, 241, 0.2)":"rgba(6, 182, 212, 0.2)"};
+          color: ${e.source==="jira"?"#818cf8":"#22d3ee"};
+          border: 1px solid ${e.source==="jira"?"rgba(99, 102, 241, 0.4)":"rgba(6, 182, 212, 0.4)"};
         }
         .title-text {
           font-size: 11px;
           font-weight: 500;
-          max-width: 180px;
+          max-width: 170px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -77,7 +91,7 @@
           background: #22d3ee;
           box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
         }
-        .btn-close {
+        .btn-minimize {
           background: transparent;
           border: none;
           color: #9ca3af;
@@ -86,16 +100,19 @@
           padding: 2px 4px;
           line-height: 1;
         }
-        .btn-close:hover {
+        .btn-minimize:hover {
           color: #f3f4f6;
         }
       </style>
-      <div class="pill-container" id="locus-pill">
+      <div class="pill-container" id="locus-pill" title="Locus Day Planner Co-Pilot">
         <div class="brand-dot"></div>
-        <span class="brand-title">LOCUS</span>
-        <span class="context-tag">${t.id}</span>
-        <span class="title-text" title="${t.title}">${t.title}</span>
-        <button class="btn-add" id="btn-insert-plan">\u26A1 Add to Day Plan</button>
-        <button class="btn-close" id="btn-dismiss" title="Dismiss">\u2715</button>
+        <div class="content-wrapper">
+          <span class="brand-title">LOCUS</span>
+          <span class="context-tag">${e.id}</span>
+          <span class="title-text" title="${e.title}">${e.title}</span>
+          <button class="btn-add" id="btn-insert-plan">\u26A1 Add to Day Plan</button>
+          <button class="btn-minimize" id="btn-minimize" title="Minimize">\u2500</button>
+          <button class="btn-minimize" id="btn-dismiss" title="Dismiss">\u2715</button>
+        </div>
       </div>
-    `;let e=i.getElementById("btn-insert-plan"),n=i.getElementById("btn-dismiss"),s=i.getElementById("locus-pill");e?.addEventListener("click",()=>{e&&(e.textContent="\u2713 Scheduled!",e.setAttribute("style","background: #10b981; color: #08090a;")),chrome.runtime.sendMessage({type:"SYNC_REQUEST",payload:{userRequest:`Prioritize ${t.id}: ${t.title}`}}),setTimeout(()=>{s&&(s.style.opacity="0"),setTimeout(()=>o?.remove(),300)},1600)}),n?.addEventListener("click",()=>{s&&(s.style.opacity="0"),setTimeout(()=>o?.remove(),250)})}l();let a=null,d=new MutationObserver(()=>{clearTimeout(a),a=setTimeout(()=>{l()},500)});document.body?d.observe(document.body,{childList:!0,subtree:!0}):document.addEventListener("DOMContentLoaded",()=>{document.body&&d.observe(document.body,{childList:!0,subtree:!0})})})();})();
+    `;let o=i.getElementById("btn-insert-plan"),g=i.getElementById("btn-minimize"),f=i.getElementById("btn-dismiss"),s=i.getElementById("locus-pill");o?.addEventListener("click",()=>{o&&(o.textContent="\u2713 Scheduled!",o.setAttribute("style","background: #10b981; color: #08090a;")),chrome.runtime.sendMessage({type:"SYNC_REQUEST",payload:{userRequest:`Prioritize ${e.id}: ${e.title}`}}),setTimeout(()=>{s&&(s.style.opacity="0"),setTimeout(()=>t?.remove(),300)},1600)}),g?.addEventListener("click",r=>{r.stopPropagation(),n=!n,s&&(n?s.classList.add("minimized"):s.classList.remove("minimized"))}),s?.addEventListener("click",()=>{n&&(n=!1,s.classList.remove("minimized"))}),f?.addEventListener("click",r=>{r.stopPropagation(),s&&(s.style.opacity="0"),setTimeout(()=>t?.remove(),250)})}a();let d=null,c=new MutationObserver(()=>{clearTimeout(d),d=setTimeout(()=>{a()},500)});document.body?c.observe(document.body,{childList:!0,subtree:!0}):document.addEventListener("DOMContentLoaded",()=>{document.body&&c.observe(document.body,{childList:!0,subtree:!0})})})();})();
