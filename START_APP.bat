@@ -81,13 +81,13 @@ if not exist "%ROOT_DIR%frontend\node_modules" (
 
 :: ── Step 3b: Validate Environment Configuration (.env) ───────────────────
 echo  [Step 3b/5] Validating environment configuration...
-if not exist "%ROOT_DIR%backend\.env" if not exist "%ROOT_DIR%.env" (
+if not exist "%ROOT_DIR%backend\.env" (
     echo    [WARN] No .env file detected! Initializing backend\.env from template...
     copy "%ROOT_DIR%backend\.env.example" "%ROOT_DIR%backend\.env" >nul
     echo    [NOTICE] A template .env was created at backend\.env.
     echo    SwytchAgent will start in resilient demo mode. Add your API keys to backend\.env for live services.
 ) else (
-    echo    [OK] Environment configuration file detected.
+    echo    [OK] Environment configuration file detected at backend\.env.
 )
 
 :: ── Step 4: Launch FastAPI Backend (Port 8000) ─────────────────────────
