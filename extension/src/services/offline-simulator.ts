@@ -13,6 +13,7 @@ import {
   RiskLevel,
   ScheduleBlock,
   Verdict,
+  JudgeScenarioKey,
   parseTimeRange,
 } from '../types/index';
 
@@ -21,6 +22,7 @@ export interface OfflineSimulationOptions {
   userRequest?: string;
   now?: Date;
   seed?: number;
+  scenarioKey?: JudgeScenarioKey;
 }
 
 export interface OfflineSimulationResult {
@@ -244,11 +246,39 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
     let desc = preset.description;
     let icon = preset.icon;
 
-    // React to user prompt keywords
-    const hasOutdoorPlans = userRequest.includes('picnic') || userRequest.includes('outdoor') || userRequest.includes('beach') || userRequest.includes('cricket');
-    const hasTravelPlans = userRequest.includes('flight') || userRequest.includes('travel') || userRequest.includes('airport') || userRequest.includes('train');
+    // React to scenario modifier or user prompt keywords
+    const scenario = options.scenarioKey || (
+      userRequest.includes('monsoon') || userRequest.includes('storm') ? 'monsoon_storm' :
+      userRequest.includes('flight') || userRequest.includes('airport') ? 'airport_transit' :
+      userRequest.includes('heat') || userRequest.includes('hot') ? 'heatwave' :
+      userRequest.includes('crunch') || userRequest.includes('critical') ? 'sprint_crunch' :
+      'normal'
+    );
 
-    if (userRequest.includes('rain') || userRequest.includes('storm')) {
+    let hasOutdoorPlans = userRequest.includes('picnic') || userRequest.includes('outdoor') || userRequest.includes('beach') || userRequest.includes('cricket');
+    let hasTravelPlans = scenario === 'airport_transit' || userRequest.includes('flight') || userRequest.includes('travel') || userRequest.includes('airport') || userRequest.includes('train');
+
+    if (scenario === 'monsoon_storm') {
+      condition = 'Rain';
+      desc = 'severe monsoon storm & flooded transit routes';
+      icon = '11d';
+      temp = Math.max(18, temp - 5);
+      feelsLike = temp - 1;
+      humidity = 96;
+      windSpeed = 8.8;
+    } else if (scenario === 'airport_transit') {
+      condition = preset.condition;
+      desc = `${preset.description} • Evening flight departure`;
+      hasTravelPlans = true;
+    } else if (scenario === 'heatwave') {
+      condition = 'Clear';
+      desc = 'extreme heatwave & high UV index';
+      icon = '01d';
+      temp = 41.5;
+      feelsLike = 46.0;
+      humidity = 38;
+      windSpeed = 3.2;
+    } else if (userRequest.includes('rain') || userRequest.includes('storm')) {
       condition = 'Rain';
       desc = 'moderate rain & wet roads';
       icon = '10d';
@@ -264,13 +294,25 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
 
     const weatherScore = calculateWeatherScore(condition, temp, humidity, windSpeed);
     const isBadWeather = weatherScore < 45 || ['rain', 'thunderstorm', 'snow', 'tornado'].some(c => condition.toLowerCase().includes(c));
-    const riskLevel: RiskLevel = weatherScore < 35 ? 'high' : weatherScore < 65 ? 'medium' : 'low';
+    const riskLevel: RiskLevel = scenario === 'monsoon_storm' || scenario === 'heatwave' ? 'high' : weatherScore < 35 ? 'high' : weatherScore < 65 ? 'medium' : 'low';
 
     // Office vs WFH Verdict
     let verdict: Verdict = 'office';
     let officeReason = 'Favorable weather and commute conditions for working from office.';
 
-    if (userRequest.includes('wfh') || userRequest.includes('home')) {
+    if (scenario === 'monsoon_storm') {
+      verdict = 'wfh';
+      officeReason = `Severe monsoon rain and localized transit flooding in ${city} make working from home essential today.`;
+    } else if (scenario === 'airport_transit') {
+      verdict = 'wfh';
+      officeReason = `Airport flight departure at 17:00 requires working from home to avoid peak evening commute gridlock.`;
+    } else if (scenario === 'heatwave') {
+      verdict = 'wfh';
+      officeReason = `Extreme heat index (42°C) in ${city} makes midday transit hazardous; remote focus recommended.`;
+    } else if (scenario === 'sprint_crunch') {
+      verdict = 'wfh';
+      officeReason = 'Critical sprint milestone crunch requires uninterrupted deep work at remote workstation.';
+    } else if (userRequest.includes('wfh') || userRequest.includes('home')) {
       verdict = 'wfh';
       officeReason = 'Remote work preference aligned with scheduled focus workload.';
     } else if (userRequest.includes('office') || userRequest.includes('commute')) {
@@ -290,7 +332,12 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
       officeReason = 'Clear transit routes and moderate weather favor working from the office.';
     }
 
-    const outfit = deriveOutfitSuggestion(condition, temp);
+    let outfit = deriveOutfitSuggestion(condition, temp);
+    if (scenario === 'monsoon_storm') {
+      outfit = 'Heavy waterproof rain jacket, non-slip footwear, and sturdy storm umbrella.';
+    } else if (scenario === 'heatwave') {
+      outfit = 'Ultra-breathable linen attire, UV sunglasses, and continuous hydration for outdoor transit.';
+    }
 
     // Jira workload
     const jiraTickets: JiraTicket[] = [
@@ -299,6 +346,10 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
       { key: 'PROJ-103', summary: 'Write comprehensive unit tests for auth flow', priority: 'Medium', status: 'To Do', issue_type: 'Task', estimated_hours: 2.0 },
       { key: 'PROJ-104', summary: 'Update API documentation and schema definitions', priority: 'Low', status: 'To Do', issue_type: 'Task', estimated_hours: 1.0 },
     ];
+
+    if (scenario === 'sprint_crunch') {
+      jiraTickets.unshift({ key: 'CRIT-101', summary: 'Production outage: Payment webhook retry deadlock', priority: 'Highest', status: 'In Progress', issue_type: 'Bug', estimated_hours: 4.0 });
+    }
     const jiraTotalHours = jiraTickets.reduce((acc, t) => acc + t.estimated_hours, 0);
 
     // GitHub workload
@@ -319,11 +370,21 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
       { subject: 'Architecture Review: Manifest V3 Companion Client', from: 'architect@company.com', snippet: 'Reviewing offline fallback and storage contracts.', has_outdoor: false, has_travel: false },
     ];
 
+    if (scenario === 'airport_transit') {
+      gmailEvents.push({
+        subject: 'Flight Itinerary: Evening Departure Confirmed',
+        from: 'reservations@airline.com',
+        snippet: 'Terminal 3 boarding starts at 18:30. Traffic transit buffer advised.',
+        has_outdoor: false,
+        has_travel: true,
+      });
+    }
+
     // Raw timeline blueprints
     const rawTimeline = [
       { time: '07:00–08:00', title: "Morning routine & review today's briefing", category: 'general' as const },
-      { time: '08:00–09:00', title: verdict === 'office' ? 'Morning commute to office' : 'WFH morning workstation setup & focus coffee', category: 'commute' as const },
-      { time: '09:00–10:30', title: '[Jira PROJ-101] Fix login bug on mobile authentication flow', category: 'deep_work' as const, context: 'PROJ-101' },
+      { time: '08:00–09:00', title: scenario === 'monsoon_storm' ? 'Monsoon safety scan & remote workstation setup' : verdict === 'office' ? 'Morning commute to office' : 'WFH morning workstation setup & focus coffee', category: 'commute' as const },
+      { time: '09:00–10:30', title: scenario === 'sprint_crunch' ? '[Jira CRIT-101] Production outage: Payment webhook retry deadlock' : '[Jira PROJ-101] Fix login bug on mobile authentication flow', category: 'deep_work' as const, context: scenario === 'sprint_crunch' ? 'CRIT-101' : 'PROJ-101' },
       { time: '10:30–11:00', title: 'Engineering daily standup & sprint sync', category: 'meeting' as const },
       { time: '11:00–12:30', title: '[Jira PROJ-102] Review PR for payment gateway integration', category: 'deep_work' as const, context: 'PROJ-102' },
       { time: '12:30–13:30', title: isBadWeather ? 'Indoor lunch & wellness break' : 'Lunch break & outdoor recharge walk', category: 'break' as const },
@@ -332,7 +393,7 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
       { time: '15:30–16:30', title: 'Sprint backlog refinement & team sync', category: 'meeting' as const },
       { time: '16:30–17:30', title: '[GitHub Issue #99] Investigate MFA reset issue', category: 'deep_work' as const, context: 'Issue #99' },
       { time: '17:30–18:00', title: 'Daily retro: Log progress in Notion + plan tomorrow', category: 'general' as const },
-      { time: '18:00–19:00', title: verdict === 'office' ? 'Evening commute home' : 'Evening workout & mental decompression', category: 'commute' as const },
+      { time: '18:00–19:00', title: scenario === 'airport_transit' ? 'Airport transit: Departure flight check-in & boarding' : verdict === 'office' ? 'Evening commute home' : 'Evening workout & mental decompression', category: 'commute' as const },
       { time: '19:00–20:30', title: 'Dinner & personal leisure time', category: 'break' as const },
       { time: '20:30–22:00', title: 'Reading & technical exploration', category: 'general' as const },
       { time: '22:00–23:00', title: 'Night wind-down & sleep preparation', category: 'break' as const },
@@ -397,15 +458,31 @@ export function generateOfflineSimulation(options: OfflineSimulationOptions = {}
       weather_score: weatherScore,
       risk_level: riskLevel,
       forecast_summary: `24h forecast: ${condition} conditions prevailing. Temps: ${Math.round(temp - 3)}°C – ${Math.round(temp + 3)}°C`,
-      weather_alerts: isBadWeather ? [`⚠️ ${condition} advisory in ${city}`] : [],
-      ai_summary: `Today in ${city}: ${condition} at ${Math.round(temp)}°C. You have ~${productiveHours}h of focused work across ${jiraTickets.length} Jira tickets and ${githubPrs.length} GitHub PRs. Recommendation: ${verdict.toUpperCase()} (${officeReason}). [Offline Simulation Engine Active]`,
+      weather_alerts: scenario === 'monsoon_storm'
+        ? [`⚠️ Red rain alert in ${city}: Severe waterlogging and transit flooding reported.`]
+        : scenario === 'heatwave'
+        ? [`🔥 Extreme heat advisory (42°C) in ${city}: Severe dehydration & heatstroke risk.`]
+        : scenario === 'airport_transit'
+        ? [`✈️ Flight departure from ${city} Airport: Terminal boarding scheduled at 17:00.`]
+        : isBadWeather
+        ? [`⚠️ ${condition} advisory in ${city}`]
+        : [],
+      ai_summary: scenario === 'monsoon_storm'
+        ? `Severe Monsoon downpour in ${city} (${Math.round(temp)}°C, 96% humidity). Commute routes compromised. Verdict: WORK FROM HOME. Plan pivoted to 100% remote focus with indoor lunch.`
+        : scenario === 'airport_transit'
+        ? `Favorable weather in ${city} (${Math.round(temp)}°C), but evening airport flight departure at 17:00 requires working from home to eliminate commute gridlock.`
+        : scenario === 'heatwave'
+        ? `Extreme Heatwave alert in ${city} (${Math.round(temp)}°C). High UV index makes outdoor travel hazardous. Verdict: WORK FROM HOME with air-conditioned workstation setup.`
+        : scenario === 'sprint_crunch'
+        ? `High-intensity sprint crunch in ${city}. Production outage hotfix CRIT-101 assigned. Verdict: WORK FROM HOME to maximize uninterrupted deep focus (~8.5h focus allocated).`
+        : `Today in ${city}: ${condition} at ${Math.round(temp)}°C. You have ~${productiveHours}h of focused work across ${jiraTickets.length} Jira tickets and ${githubPrs.length} GitHub PRs. Recommendation: ${verdict.toUpperCase()} (${officeReason}). [Offline Simulation Engine Active]`,
       go_to_office: verdict,
       office_reason: officeReason,
       estimated_productive_hours: productiveHours,
       recommendations,
       outfit_suggestion: outfit,
       activity_adjustments: isBadWeather ? ['Shift outdoor errands to indoor alternatives'] : [],
-      should_alert: isBadWeather || riskLevel === 'high',
+      should_alert: isBadWeather || riskLevel === 'high' || scenario === 'monsoon_storm',
       gmail_events: gmailEvents,
       gmail_summary: `📋 Standard team schedule | ${gmailEvents.length} calendar commitments`,
       has_outdoor_plans: hasOutdoorPlans,

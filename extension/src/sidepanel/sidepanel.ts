@@ -7,6 +7,7 @@
 import {
   GitHubPR,
   JiraTicket,
+  JudgeScenarioKey,
   ScheduleBlock,
   StorageState,
   Verdict,
@@ -16,10 +17,13 @@ import {
 import { downloadIcsFile } from '../services/icalendar';
 import { SwarmVisualizer } from '../components/swarm-graph';
 import {
+  isSpeakingBriefing,
+  playSpeechBriefing,
   playSuccessChime,
   playSwarmBlip,
   playTactileTick,
   playTaskComplete,
+  stopSpeechBriefing,
 } from '../utils/audio';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -60,12 +64,67 @@ document.addEventListener('DOMContentLoaded', async () => {
   const footerSynced = document.getElementById('footer-synced');
 
   const btnSync = document.getElementById('btn-sidepanel-sync');
+  const btnSidepanelVoice = document.getElementById('btn-sidepanel-voice');
+  const btnRun5ApiWorkflow = document.getElementById('btn-run-5api-workflow');
+  const scenarioChips = document.querySelectorAll<HTMLButtonElement>('.scenario-chip');
   const sidepanelCitySelector = document.getElementById('sidepanel-city-selector') as HTMLInputElement | null;
   const btnExportIcs = document.getElementById('btn-export-ics');
   const btnOpenNotion = document.getElementById('btn-open-notion');
 
   const tabButtons = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
   const tabPanes = document.querySelectorAll<HTMLElement>('.tab-pane');
+
+  // Lightweight 0-dep canvas confetti celebration burst
+  function triggerConfetti(): void {
+    const canvas = document.getElementById('confetti-canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    canvas.style.display = 'block';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const particles: { x: number; y: number; vx: number; vy: number; color: string; size: number; alpha: number }[] = [];
+    const colors = ['#10b981', '#06b6d4', '#6366f1', '#f59e0b', '#ec4899'];
+    for (let i = 0; i < 50; i++) {
+      particles.push({
+        x: canvas.width / 2 + (Math.random() * 80 - 40),
+        y: canvas.height * 0.35 + (Math.random() * 40 - 20),
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.7) * 9,
+        color: colors[Math.floor(Math.random() * colors.length)] || '#10b981',
+        size: Math.random() * 5 + 3,
+        alpha: 1,
+      });
+    }
+
+    const startTime = performance.now();
+    function renderParticles() {
+      if (!ctx || !canvas) return;
+      const elapsed = performance.now() - startTime;
+      if (elapsed > 1800) {
+        canvas.style.display = 'none';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.22;
+        p.alpha = Math.max(0, 1 - elapsed / 1800);
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(renderParticles);
+    }
+    requestAnimationFrame(renderParticles);
+  }
 
   // Swarm Visualizer Component
   const swarmContainer = document.getElementById('swarm-graph-container');
@@ -231,6 +290,13 @@ document.addEventListener('DOMContentLoaded', async () => {
               const matched = activeBlocksCache.find((b) => b.id === blockId);
               if (matched) matched.completed = cb.checked;
               updateAnalytics(activeBlocksCache);
+
+              // Check if all blocks completed -> celebrate with confetti!
+              const allDone = activeBlocksCache.length > 0 && activeBlocksCache.every((b) => b.completed);
+              if (allDone) {
+                playSuccessChime();
+                triggerConfetti();
+              }
             }
           });
         });
@@ -565,5 +631,101 @@ document.addEventListener('DOMContentLoaded', async () => {
     const items = (await chrome.storage.local.get('lastResponse')) as unknown as StorageState;
     const url = items.lastResponse?.notion_page_url || 'https://notion.so';
     chrome.tabs.create({ url });
+  });
+
+  // Voice Briefing Toggle (SpeechSynthesis HUD)
+  btnSidepanelVoice?.addEventListener('click', () => {
+    playTactileTick(600);
+    if (isSpeakingBriefing()) {
+      stopSpeechBriefing();
+      if (btnSidepanelVoice) btnSidepanelVoice.textContent = '🔊 Audio Briefing';
+    } else {
+      const res = cachedStorageState?.lastResponse;
+      if (!res) return;
+      if (btnSidepanelVoice) btnSidepanelVoice.textContent = '⏹️ Stop Briefing';
+      const verdictStr = normalizeVerdict(res.go_to_office).toUpperCase();
+      const spokenText = `Locus Executive Briefing for ${res.city}. Work disposition is ${verdictStr}. ${res.ai_summary || res.office_reason || 'Day plan is synchronized.'}`;
+      playSpeechBriefing(spokenText, () => {
+        if (btnSidepanelVoice) btnSidepanelVoice.textContent = '🔊 Audio Briefing';
+      });
+    }
+  });
+
+  // Judge Scenario Playground Chips
+  scenarioChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      playTactileTick(500);
+      const scenario = chip.dataset.scenario as JudgeScenarioKey | undefined;
+      if (!scenario) return;
+      scenarioChips.forEach((c) => c.classList.remove('active'));
+      chip.classList.add('active');
+      btnSync?.classList.add('rotating');
+      chrome.runtime.sendMessage(
+        {
+          type: 'SYNC_REQUEST',
+          payload: {
+            force: true,
+            city: sidepanelCitySelector?.value || cachedStorageState?.lastResponse?.city || 'Mumbai',
+            scenarioKey: scenario,
+          },
+        },
+        (res) => {
+          btnSync?.classList.remove('rotating');
+          if (res?.state) {
+            playSuccessChime();
+            render(res.state);
+          }
+        }
+      );
+    });
+  });
+
+  // Swytchcode 5-API Orchestration Flow Simulation
+  let isRunning5Api = false;
+  btnRun5ApiWorkflow?.addEventListener('click', async () => {
+    if (isRunning5Api) return;
+    isRunning5Api = true;
+    playTactileTick(600);
+    if (btnRun5ApiWorkflow) {
+      btnRun5ApiWorkflow.textContent = '⏳ Executing...';
+      btnRun5ApiWorkflow.setAttribute('disabled', 'true');
+    }
+
+    const apis = [
+      { id: 'weather', name: 'OpenWeather', desc: 'Fetching barometric & precip metrics...' },
+      { id: 'gmail', name: 'Gmail/Calendar', desc: 'Scanning agenda & commute conflicts...' },
+      { id: 'notion', name: 'Notion', desc: 'Synchronizing timeline blocks to workspace...' },
+      { id: 'slack', name: 'Slack', desc: 'Broadcasting morning briefing to #general...' },
+      { id: 'resend', name: 'Resend', desc: 'Delivering executive email summary...' },
+    ];
+
+    for (const api of apis) {
+      const badge = document.getElementById(`api-badge-${api.id}`);
+      const detail = document.getElementById(`api-detail-${api.id}`);
+      if (badge) {
+        badge.className = 'badge badge-hybrid';
+        badge.textContent = 'RUNNING';
+      }
+      if (detail) detail.textContent = api.desc;
+      playSwarmBlip();
+      await new Promise((r) => setTimeout(r, 400));
+      if (badge) {
+        badge.className = 'badge badge-office';
+        badge.textContent = 'COMPLETED';
+      }
+    }
+
+    playSuccessChime();
+    triggerConfetti();
+    if (btnRun5ApiWorkflow) {
+      btnRun5ApiWorkflow.textContent = '✓ Flow Verified';
+      setTimeout(() => {
+        if (btnRun5ApiWorkflow) {
+          btnRun5ApiWorkflow.textContent = '▶ Run 5-API Flow';
+          btnRun5ApiWorkflow.removeAttribute('disabled');
+        }
+      }, 3000);
+    }
+    isRunning5Api = false;
   });
 });

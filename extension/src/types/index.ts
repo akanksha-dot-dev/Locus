@@ -24,6 +24,30 @@ export type DemoScenario =
   | 'clear_day'
   | 'work_from_home';
 
+export type JudgeScenarioKey =
+  | 'normal'
+  | 'monsoon_storm'
+  | 'airport_transit'
+  | 'heatwave'
+  | 'sprint_crunch';
+
+export interface JudgeScenario {
+  id: JudgeScenarioKey;
+  label: string;
+  icon: string;
+  badge: string;
+  description: string;
+}
+
+export interface SwytchcodeToolAudit {
+  name: 'OpenWeather' | 'Gmail' | 'Notion' | 'Slack' | 'Resend';
+  icon: string;
+  status: 'idle' | 'running' | 'completed' | 'simulated';
+  latencyMs?: number;
+  summary: string;
+  detail?: string;
+}
+
 // ── 2. Entity Models ─────────────────────────────────────────────────────────
 
 /**

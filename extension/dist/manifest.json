@@ -36,7 +36,9 @@
       "matches": [
         "*://*.atlassian.net/*",
         "*://github.com/*",
-        "*://calendar.google.com/*"
+        "*://calendar.google.com/*",
+        "*://*.notion.so/*",
+        "*://linear.app/*"
       ],
       "js": [
         "content.js"

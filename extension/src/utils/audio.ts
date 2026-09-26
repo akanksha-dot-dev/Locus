@@ -198,3 +198,69 @@ export function playTaskComplete(): void {
   }
 }
 
+/**
+ * High-tech ambient AI Voice Briefing using browser native SpeechSynthesis.
+ * Plays a soft opening chime before reading the executive summary aloud.
+ */
+let currentUtterance: SpeechSynthesisUtterance | null = null;
+
+export function isSpeakingBriefing(): boolean {
+  return typeof window !== 'undefined' && window.speechSynthesis ? window.speechSynthesis.speaking : false;
+}
+
+export function stopSpeechBriefing(): void {
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    currentUtterance = null;
+  }
+}
+
+export function playSpeechBriefing(text: string, onEnd?: () => void): void {
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    onEnd?.();
+    return;
+  }
+
+  stopSpeechBriefing();
+  playSuccessChime();
+
+  setTimeout(() => {
+    try {
+      const cleanText = text
+        .replace(/[*#_`]/g, '')
+        .replace(/\[.*?\]/g, '')
+        .replace(/\b(https?:\/\/\S+)/g, '')
+        .trim();
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      // Select natural English voice if available
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(
+        (v) => (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.lang.startsWith('en')) && !v.name.includes('Whisper')
+      );
+      if (preferred) utterance.voice = preferred;
+
+      utterance.onend = () => {
+        currentUtterance = null;
+        onEnd?.();
+      };
+
+      utterance.onerror = () => {
+        currentUtterance = null;
+        onEnd?.();
+      };
+
+      currentUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn('[Locus Audio] SpeechSynthesis error:', e);
+      onEnd?.();
+    }
+  }, 280);
+}
+
+

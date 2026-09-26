@@ -13,6 +13,7 @@ import {
   ScheduleBlock,
   StorageState,
   Verdict,
+  JudgeScenarioKey,
   normalizeTimeline,
   normalizeVerdict,
 } from '../types/index';
@@ -111,6 +112,7 @@ export interface SyncOptions {
   city?: string;
   userRequest?: string;
   reason?: string;
+  scenarioKey?: JudgeScenarioKey;
 }
 
 /**
@@ -130,6 +132,24 @@ export async function executeSync(options: SyncOptions = {}): Promise<StorageSta
   // If a city is explicitly requested, persist as default immediately
   if (requestedCity) {
     await storageService.setSettings({ defaultCity: requestedCity });
+  }
+
+  // If an explicit scenario key is requested (e.g. Judge Playground), generate simulated state immediately
+  if (options.scenarioKey) {
+    const simulated = generateOfflineSimulation({
+      city,
+      userRequest: options.userRequest,
+      scenarioKey: options.scenarioKey,
+    });
+    await storageService.setCachedSnapshot(simulated.response, 'simulated');
+    await storageService.setScheduleBlocks(simulated.scheduleBlocks);
+    await storageService.setOfflineStatus(true, 'simulated', `Judge Scenario: ${options.scenarioKey}`);
+    const scenarioState = await storageService.getState();
+    updateBadge(simulated.response.go_to_office, true);
+    if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+      chrome.runtime.sendMessage({ type: 'STATE_UPDATED', payload: scenarioState }).catch(() => {});
+    }
+    return scenarioState;
   }
 
   // 1. Probe backend liveness
@@ -561,7 +581,8 @@ async function handleMessageAsync(
         force: true,
         city: payload.city,
         userRequest: payload.userRequest,
-        reason: 'user_force_sync',
+        scenarioKey: payload.scenarioKey,
+        reason: payload.scenarioKey ? `scenario_${payload.scenarioKey}` : 'user_force_sync',
       });
       return {
         success: true,
@@ -575,6 +596,19 @@ async function handleMessageAsync(
       console.log('[Locus SW] CONTEXT_DETECTED:', detected);
       await storageService.setActiveContext(detected);
       return { success: true };
+    }
+
+    case 'OPEN_SIDEPANEL': {
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab?.id && chrome.sidePanel?.open) {
+          await chrome.sidePanel.open({ tabId: tab.id });
+          return { success: true };
+        }
+      } catch (err) {
+        console.warn('[Locus SW] Could not open side panel from message:', err);
+      }
+      return { success: false };
     }
 
     case 'RUN_PROMPT': {

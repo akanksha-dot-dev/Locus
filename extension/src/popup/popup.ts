@@ -12,10 +12,13 @@ import {
 } from '../types/index';
 import { downloadIcsFile } from '../services/icalendar';
 import {
+  isSpeakingBriefing,
   playPomodoroGong,
+  playSpeechBriefing,
   playSuccessChime,
   playTactileTick,
   playTaskComplete,
+  stopSpeechBriefing,
 } from '../utils/audio';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -23,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Elements
   const connectionBeacon = document.getElementById('connection-beacon');
+  const btnPopupVoice = document.getElementById('btn-popup-voice');
   const citySelector = document.getElementById('city-selector') as HTMLInputElement | null;
   const verdictBadge = document.getElementById('verdict-badge');
   const verdictConfidence = document.getElementById('verdict-confidence');
@@ -464,6 +468,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!currentBlockId) return;
     if (soundEnabled) playTaskComplete();
     const completed = activeBlockCheck.checked;
+    if (completed) {
+      if (soundEnabled) playSuccessChime();
+      triggerPopupConfetti();
+    }
     chrome.runtime.sendMessage({
       type: 'TOGGLE_BLOCK',
       payload: { blockId: currentBlockId, completed },
@@ -555,4 +563,74 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.warn('[Locus HUD] Could not open side panel:', err);
     }
   });
+
+  // Voice Briefing Toggle (Popup HUD)
+  btnPopupVoice?.addEventListener('click', () => {
+    if (soundEnabled) playTactileTick(600);
+    if (isSpeakingBriefing()) {
+      stopSpeechBriefing();
+      if (btnPopupVoice) btnPopupVoice.textContent = '🔊';
+    } else {
+      const res = cachedState?.lastResponse;
+      if (!res) return;
+      if (btnPopupVoice) btnPopupVoice.textContent = '⏹️';
+      const verdictStr = normalizeVerdict(res.go_to_office).toUpperCase();
+      const spokenText = `Locus Executive Briefing for ${res.city}. Work disposition is ${verdictStr}. ${res.ai_summary || res.office_reason || 'Day plan is synchronized.'}`;
+      playSpeechBriefing(spokenText, () => {
+        if (btnPopupVoice) btnPopupVoice.textContent = '🔊';
+      });
+    }
+  });
+
+  // Lightweight Confetti Celebration Burst for Popup
+  function triggerPopupConfetti(): void {
+    const canvas = document.getElementById('popup-confetti-canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    canvas.style.display = 'block';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const particles: { x: number; y: number; vx: number; vy: number; color: string; size: number; alpha: number }[] = [];
+    const colors = ['#10b981', '#06b6d4', '#6366f1', '#f59e0b', '#ec4899'];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: canvas.width / 2 + (Math.random() * 60 - 30),
+        y: canvas.height * 0.45 + (Math.random() * 40 - 20),
+        vx: (Math.random() - 0.5) * 7,
+        vy: (Math.random() - 0.7) * 8,
+        color: colors[Math.floor(Math.random() * colors.length)] || '#10b981',
+        size: Math.random() * 4 + 2,
+        alpha: 1,
+      });
+    }
+
+    const start = performance.now();
+    function renderParticles() {
+      if (!ctx || !canvas) return;
+      const elapsed = performance.now() - start;
+      if (elapsed > 1600) {
+        canvas.style.display = 'none';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.22;
+        p.alpha = Math.max(0, 1 - elapsed / 1600);
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(renderParticles);
+    }
+    requestAnimationFrame(renderParticles);
+  }
 });

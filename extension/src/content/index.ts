@@ -82,6 +82,28 @@
     return null;
   }
 
+  function extractNotionContext(): { id: string; title: string } | null {
+    const titleEl = document.querySelector('.notion-page-block [contenteditable="true"]') ||
+                    document.querySelector('.notion-page-content h1') ||
+                    document.querySelector('h1.notion-header');
+    const title = titleEl?.textContent?.trim() || document.title.replace(/ · Notion$/i, '').trim();
+    if (title && title !== 'Untitled') {
+      return { id: 'NOTION', title };
+    }
+    return null;
+  }
+
+  function extractLinearContext(): { id: string; title: string } | null {
+    const match = window.location.pathname.match(/\/issue\/([A-Z0-9]+-\d+)/i);
+    const key = match ? match[1] : '';
+    const titleEl = document.querySelector('h1') || document.querySelector('[data-testid="issue-title"]');
+    const title = titleEl?.textContent?.trim() || document.title.replace(/ · Linear$/i, '').trim();
+    if (key || (title && title !== 'Linear')) {
+      return { id: key || 'LINEAR', title: title || key || 'Linear Issue' };
+    }
+    return null;
+  }
+
   function inspectPage(): void {
     const currentUrl = window.location.href;
     if (currentUrl === lastDetectedUrl) return;
@@ -116,6 +138,26 @@
           source: 'jira',
           id: gcalCtx.id,
           title: gcalCtx.title,
+          url: currentUrl,
+        };
+      }
+    } else if (hostname.includes('notion.so')) {
+      const notionCtx = extractNotionContext();
+      if (notionCtx) {
+        detected = {
+          source: 'jira',
+          id: notionCtx.id,
+          title: notionCtx.title,
+          url: currentUrl,
+        };
+      }
+    } else if (hostname.includes('linear.app')) {
+      const linearCtx = extractLinearContext();
+      if (linearCtx) {
+        detected = {
+          source: 'jira',
+          id: linearCtx.id,
+          title: linearCtx.title,
           url: currentUrl,
         };
       }
@@ -266,7 +308,8 @@
           <span class="brand-title">LOCUS</span>
           <span class="context-tag">${detected.id}</span>
           <span class="title-text" title="${detected.title}">${detected.title}</span>
-          <button class="btn-add" id="btn-insert-plan">⚡ Add to Day Plan</button>
+          <button class="btn-add" id="btn-insert-plan">⚡ Add Task</button>
+          <button class="btn-add" id="btn-open-panel" style="background: rgba(255, 255, 255, 0.14); color: #f3f4f6; border: 1px solid rgba(255, 255, 255, 0.2);">Side Panel</button>
           <button class="btn-minimize" id="btn-minimize" title="Minimize">─</button>
           <button class="btn-minimize" id="btn-dismiss" title="Dismiss">✕</button>
         </div>
@@ -274,9 +317,15 @@
     `;
 
     const btnAdd = shadow.getElementById('btn-insert-plan');
+    const btnPanel = shadow.getElementById('btn-open-panel');
     const btnMinimize = shadow.getElementById('btn-minimize');
     const btnClose = shadow.getElementById('btn-dismiss');
     const pill = shadow.getElementById('locus-pill');
+
+    btnPanel?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      chrome.runtime.sendMessage({ type: 'OPEN_SIDEPANEL' });
+    });
 
     btnAdd?.addEventListener('click', () => {
       if (btnAdd) {
