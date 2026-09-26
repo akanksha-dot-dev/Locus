@@ -40,6 +40,7 @@ import {
   Clock,
   Sparkles,
   Download,
+  Compass,
 } from 'lucide-react';
 
 // Framer Motion spring transition variants
@@ -295,14 +296,40 @@ function CommandCenterDashboard() {
         {/* ── VIEW 1: COMMAND CENTER (HERO COCKPIT + EXECUTIVE OVERVIEW) ── */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+            {/* Executive Cockpit Header Banner */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+              <div>
+                <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <Compass className="w-4 h-4 text-indigo-500" />
+                  Executive Command Center & Incident Cockpit
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                  Autonomous decision verdicts, natural language constraint engine, and live operational pulse.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="indigo" size="sm" className="font-mono text-[10px]">
+                  Autonomous Agent Active
+                </Badge>
+              </div>
+            </div>
+
             {/* Hero Section */}
             <motion.section
               variants={sectionVariants}
               initial="hidden"
               animate="visible"
               aria-label="Hero Command Center and Autonomous Decision Engine"
-              className="space-y-4"
+              className="space-y-6"
             >
+              {/* 1. Full-Width Spotlight Command Center */}
+              <PromptBar
+                onSubmit={(query, city) => runCustomQuery(query, city)}
+                isLoading={isRunning}
+                defaultCity={activeAgentResponse.city}
+              />
+
+              {/* 2. Side-by-Side Decision Verdict + Workload Capacity & Benchmark Presets */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Left 7 Columns: Autonomous Decision Verdict Card */}
                 <div className="lg:col-span-7 flex flex-col space-y-4">
@@ -340,15 +367,8 @@ function CommandCenterDashboard() {
                   </div>
                 </div>
 
-                {/* Right 5 Columns: Natural Language Spotlight Prompt + Focus Capacity + Presets */}
+                {/* Right 5 Columns: Focus Capacity + Presets Showcase */}
                 <div className="lg:col-span-5 flex flex-col space-y-4">
-                  {/* Spotlight Natural Language Prompt Bar with Direct Editable City */}
-                  <PromptBar
-                    onSubmit={(query, city) => runCustomQuery(query, city)}
-                    isLoading={isRunning}
-                    defaultCity={activeAgentResponse.city}
-                  />
-
                   {/* Focus Capacity Gauge */}
                   <ProductiveHoursMeter
                     productiveHours={activeAgentResponse.estimated_productive_hours}
@@ -614,6 +634,37 @@ function CommandCenterDashboard() {
         {/* ── VIEW 6: ALL SECTIONS (CONTINUOUS STREAM WITH COLLAPSE TOGGLES) ── */}
         {activeTab === 'all' && (
           <div className="space-y-8">
+            {/* View 6 Continuous Mode Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 border-b border-hairline pb-3">
+              <div>
+                <h1 className="text-base sm:text-lg font-bold font-mono tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-cyan-500" />
+                  Continuous Unified Dashboard (All Subsystems)
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                  Complete end-to-end view of all 5 operational subsystems with independent minimize/maximize controls.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const allCollapsed = Object.values(collapsedSections).every(Boolean);
+                    setCollapsedSections({
+                      hero: !allCollapsed,
+                      pipeline: !allCollapsed,
+                      schedule: !allCollapsed,
+                      workload: !allCollapsed,
+                      artifacts: !allCollapsed,
+                    });
+                  }}
+                  className="text-xs font-mono text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                >
+                  {Object.values(collapsedSections).every(Boolean) ? 'Expand All Subsystems' : 'Minimize All Subsystems'}
+                </button>
+              </div>
+            </div>
+
             {/* Section 1: Hero */}
             <motion.section
               variants={sectionVariants}
@@ -649,42 +700,47 @@ function CommandCenterDashboard() {
               </div>
 
               {!collapsedSections.hero && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  <div className="lg:col-span-7 flex flex-col space-y-4">
-                    <DecisionCard
-                      decision={activeAgentResponse.go_to_office}
-                      riskLevel={activeAgentResponse.risk_level}
-                      officeReason={activeAgentResponse.office_reason}
-                      aiSummary={activeAgentResponse.ai_summary}
-                      city={activeAgentResponse.city}
-                      temperature={activeAgentResponse.temperature_c}
-                      feelsLike={activeAgentResponse.feels_like_c}
-                      weatherScore={activeAgentResponse.weather_score}
-                      weatherCondition={activeAgentResponse.weather_condition}
-                      windSpeed={activeAgentResponse.wind_speed}
-                      humidity={activeAgentResponse.humidity}
-                      productiveHours={activeAgentResponse.estimated_productive_hours}
-                      workloadHours={totalWorkloadHours}
-                      showTemperatureCurve={showTempCurve}
-                      className="flex-1"
-                    />
-                  </div>
-                  <div className="lg:col-span-5 flex flex-col space-y-4">
-                    <PromptBar
-                      onSubmit={(query, city) => runCustomQuery(query, city)}
-                      isLoading={isRunning}
-                      defaultCity={activeAgentResponse.city}
-                    />
-                    <ProductiveHoursMeter
-                      productiveHours={activeAgentResponse.estimated_productive_hours}
-                      totalDayHours={8.0}
-                    />
-                    <div className="rounded-2xl bg-surface-card border border-hairline p-4 sm:p-5 shadow-lg flex-1 flex flex-col justify-between card-highlight-glow">
-                      <PresetShowcase
-                        onSelectScenario={(scenarioKey, city) => runScenario(scenarioKey, city)}
-                        isRunning={isRunning}
-                        activeCity={activeAgentResponse.city}
+                <div className="space-y-6">
+                  {/* 1. Full-Width Spotlight Command Center */}
+                  <PromptBar
+                    onSubmit={(query, city) => runCustomQuery(query, city)}
+                    isLoading={isRunning}
+                    defaultCity={activeAgentResponse.city}
+                  />
+
+                  {/* 2. Side-by-Side Decision Verdict + Workload Capacity & Benchmark Presets */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-7 flex flex-col space-y-4">
+                      <DecisionCard
+                        decision={activeAgentResponse.go_to_office}
+                        riskLevel={activeAgentResponse.risk_level}
+                        officeReason={activeAgentResponse.office_reason}
+                        aiSummary={activeAgentResponse.ai_summary}
+                        city={activeAgentResponse.city}
+                        temperature={activeAgentResponse.temperature_c}
+                        feelsLike={activeAgentResponse.feels_like_c}
+                        weatherScore={activeAgentResponse.weather_score}
+                        weatherCondition={activeAgentResponse.weather_condition}
+                        windSpeed={activeAgentResponse.wind_speed}
+                        humidity={activeAgentResponse.humidity}
+                        productiveHours={activeAgentResponse.estimated_productive_hours}
+                        workloadHours={totalWorkloadHours}
+                        showTemperatureCurve={showTempCurve}
+                        className="flex-1"
                       />
+                    </div>
+                    <div className="lg:col-span-5 flex flex-col space-y-4">
+                      <ProductiveHoursMeter
+                        productiveHours={activeAgentResponse.estimated_productive_hours}
+                        totalDayHours={8.0}
+                      />
+                      <div className="rounded-2xl bg-surface-card border border-hairline p-4 sm:p-5 shadow-lg flex-1 flex flex-col justify-between card-highlight-glow">
+                        <PresetShowcase
+                          onSelectScenario={(scenarioKey, city) => runScenario(scenarioKey, city)}
+                          isRunning={isRunning}
+                          activeCity={activeAgentResponse.city}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

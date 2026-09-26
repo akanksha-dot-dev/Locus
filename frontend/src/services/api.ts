@@ -46,21 +46,36 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
 function findBestMockScenario(query: string, city?: string): AgentResponse {
   const q = (query || '').toLowerCase();
   const c = (city || '').toLowerCase();
+  const chosenCity = city?.trim() || 'London';
 
-  if (c.includes('delhi') || q.includes('flight') || q.includes('delhi') || q.includes('airport')) {
-    return { ...MOCK_RESPONSES.travel_day, city: city || 'Delhi', processed_at: new Date().toISOString() };
-  }
-  if (c.includes('new york') || c.includes('nyc') || q.includes('sprint') || q.includes('jira') || q.includes('pr')) {
-    return { ...MOCK_RESPONSES.day_planner_office, city: city || 'New York', processed_at: new Date().toISOString() };
-  }
-  if (c.includes('mumbai') || q.includes('picnic') || q.includes('friday') || q.includes('mumbai')) {
-    return { ...MOCK_RESPONSES.clear_day, city: city || 'Mumbai', processed_at: new Date().toISOString() };
+  let base: AgentResponse;
+
+  if (c.includes('delhi') || q.includes('flight') || q.includes('airport') || q.includes('transit')) {
+    base = { ...MOCK_RESPONSES.travel_day };
+  } else if (c.includes('new york') || c.includes('nyc') || q.includes('sprint') || q.includes('jira') || q.includes('pr') || q.includes('crunch')) {
+    base = { ...MOCK_RESPONSES.day_planner_office };
+  } else if (c.includes('mumbai') || q.includes('picnic') || q.includes('clear') || q.includes('sunny') || q.includes('office')) {
+    base = { ...MOCK_RESPONSES.clear_day };
+  } else {
+    base = { ...MOCK_RESPONSES.storm_warning };
   }
 
+  // Deep clone and adapt text for chosen city
   return {
-    ...MOCK_RESPONSES.storm_warning,
-    city: city || 'London',
+    ...base,
+    city: chosenCity,
+    office_reason: base.office_reason.replace(/Mumbai|Delhi|New York|London/gi, chosenCity),
+    ai_summary: base.ai_summary.replace(/Mumbai|Delhi|New York|London/gi, chosenCity),
     processed_at: new Date().toISOString(),
+    day_plan_timeline: (base.day_plan_timeline || []).map((item) =>
+      typeof item === 'string'
+        ? item.replace(/Mumbai|Delhi|New York|London/gi, chosenCity)
+        : {
+            ...item,
+            activity: item.activity.replace(/Mumbai|Delhi|New York|London/gi, chosenCity),
+            location: item.location ? item.location.replace(/Mumbai|Delhi|New York|London/gi, chosenCity) : chosenCity,
+          }
+    ),
   };
 }
 
@@ -112,12 +127,15 @@ export const apiService = {
       console.warn('[apiService] POST /demo failed. Using deterministic preset mock snapshot.', err);
       const scenarioKey = request.scenario;
       const baseMock = MOCK_RESPONSES[scenarioKey] || DEFAULT_MOCK_RESPONSE;
+      const targetCity = request.city || baseMock.city;
       return {
         ...baseMock,
-        city: request.city || baseMock.city,
+        city: targetCity,
+        office_reason: baseMock.office_reason.replace(/Mumbai|Delhi|New York|London/gi, targetCity),
+        ai_summary: baseMock.ai_summary.replace(/Mumbai|Delhi|New York|London/gi, targetCity),
         processed_at: new Date().toISOString(),
         execution_log: [
-          `⚡ [Standalone Demo Mode] Executing preset: ${request.scenario}`,
+          `⚡ [Standalone Demo Mode] Executing preset: ${request.scenario} for ${targetCity}`,
           ...baseMock.execution_log,
         ],
       };
