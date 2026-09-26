@@ -209,3 +209,340 @@ body {
   color: var(--text-primary);
   border-color: var(--border-hairline);
 }
+
+/* ─────────────────────────────────────────────────────────────
+ * WOW Edition Animations & Holographic Shaders
+ * ───────────────────────────────────────────────────────────── */
+
+@keyframes holo-breathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px currentColor);
+    opacity: 0.9;
+  }
+  50% {
+    filter: drop-shadow(0 0 10px currentColor);
+    opacity: 1;
+  }
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 0.4; }
+  100% { transform: scale(0.95); opacity: 0.9; }
+}
+
+@keyframes laser-pulse {
+  0%, 100% {
+    opacity: 0.85;
+    box-shadow: 0 0 8px #06b6d4, 0 0 16px rgba(6, 182, 212, 0.4);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 14px #06b6d4, 0 0 24px rgba(6, 182, 212, 0.7);
+  }
+}
+
+@keyframes agent-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 4px var(--color-cyan); }
+  50% { transform: scale(1.12); box-shadow: 0 0 12px var(--color-cyan); }
+}
+
+.holo-badge {
+  animation: holo-breathe 2.8s ease-in-out infinite;
+}
+
+/* Circular SVG Gauge */
+.gauge-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-svg {
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.gauge-track {
+  stroke: rgba(255, 255, 255, 0.08);
+  fill: none;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease;
+}
+
+.gauge-center-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.gauge-score {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.gauge-subtext {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Pomodoro Cyberpunk Focus Timer */
+.pomodoro-card {
+  background: linear-gradient(135deg, rgba(20, 21, 24, 0.95) 0%, rgba(12, 13, 15, 0.95) 100%);
+  border: 1px solid var(--border-hairline-strong);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pomodoro-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-cyan), transparent);
+}
+
+.pomodoro-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pomodoro-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pomodoro-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 6px var(--color-cyan);
+}
+
+.pomodoro-dot.active {
+  animation: pulse-ring 1.8s infinite;
+}
+
+.pomodoro-dot.idle {
+  background: var(--text-muted);
+  box-shadow: none;
+}
+
+.pomodoro-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pomodoro-clock {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-cyan);
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+}
+
+.pomodoro-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-pomodoro {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--color-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-pomodoro:hover {
+  background: rgba(6, 182, 212, 0.28);
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+.btn-sound-toggle {
+  background: transparent;
+  border: 1px solid var(--border-hairline);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.btn-sound-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hairline-strong);
+}
+
+/* Timeline Glowing Laser Bar */
+.timeline-laser-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.laser-line {
+  flex: 1;
+  height: 2px;
+  background: #06b6d4;
+  border-radius: 2px;
+  animation: laser-pulse 2s infinite ease-in-out;
+}
+
+.laser-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.35);
+  white-space: nowrap;
+}
+
+.laser-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #06b6d4;
+  box-shadow: 0 0 6px #06b6d4;
+  animation: pulse-ring 1.5s infinite;
+}
+
+/* LangGraph Agent Swarm Topology Graph */
+.swarm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.swarm-node {
+  background: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition-fast);
+}
+
+.swarm-node.running {
+  border-color: var(--color-cyan);
+  background: rgba(6, 182, 212, 0.08);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+}
+
+.swarm-node.completed {
+  border-color: var(--color-emerald-border);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.swarm-node.error {
+  border-color: var(--color-crimson-border);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.swarm-node-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-hairline);
+  flex-shrink: 0;
+}
+
+.swarm-node.running .swarm-node-icon {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: var(--color-cyan);
+  animation: agent-pulse 1.2s infinite;
+}
+
+.swarm-node.completed .swarm-node-icon {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--color-emerald);
+}
+
+.swarm-node-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+}
+
+.swarm-node-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.swarm-node-status {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.swarm-node.running .swarm-node-status {
+  color: var(--color-cyan);
+}
+
+.swarm-node.completed .swarm-node-status {
+  color: var(--color-emerald);
+}
+
