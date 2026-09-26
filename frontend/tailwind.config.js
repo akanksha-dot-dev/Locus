@@ -1,4 +1,14 @@
 /** @type {import('tailwindcss').Config} */
+
+function withOpacity(variableName) {
+  return ({ opacityValue }) => {
+    if (opacityValue !== undefined) {
+      return `rgb(var(${variableName}-rgb) / ${opacityValue})`;
+    }
+    return `var(${variableName})`;
+  };
+}
+
 export default {
   content: [
     "./index.html",
@@ -9,15 +19,15 @@ export default {
     extend: {
       colors: {
         surface: {
-          base: 'var(--bg-base)',
-          card: 'var(--surface-card)',
-          elevated: 'var(--surface-elevated)',
-          active: 'var(--surface-active)',
+          base: withOpacity('--bg-base'),
+          card: withOpacity('--surface-card'),
+          elevated: withOpacity('--surface-elevated'),
+          active: withOpacity('--surface-active'),
         },
         content: {
-          primary: 'var(--text-primary)',
-          secondary: 'var(--text-secondary)',
-          muted: 'var(--text-muted)',
+          primary: withOpacity('--text-primary'),
+          secondary: withOpacity('--text-secondary'),
+          muted: withOpacity('--text-muted'),
         },
         semantic: {
           emerald: '#10b981',

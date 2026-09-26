@@ -29,8 +29,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
-    const root = document.documentElement;
-
     const computeResolvedTheme = (): 'light' | 'dark' => {
       if (theme === 'system') {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -38,16 +36,36 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return theme;
     };
 
+    const applyThemeToDOM = (resolved: 'light' | 'dark') => {
+      const root = document.documentElement;
+      const body = document.body;
+
+      if (resolved === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+        if (body) {
+          body.classList.add('dark');
+          body.classList.remove('light');
+          body.style.backgroundColor = '#090a0f';
+          body.style.color = '#f8fafc';
+        }
+        root.style.colorScheme = 'dark';
+      } else {
+        root.classList.add('light');
+        root.classList.remove('dark');
+        if (body) {
+          body.classList.add('light');
+          body.classList.remove('dark');
+          body.style.backgroundColor = '#f8fafc';
+          body.style.color = '#0f172a';
+        }
+        root.style.colorScheme = 'light';
+      }
+    };
+
     const newResolved = computeResolvedTheme();
     setResolvedTheme(newResolved);
-
-    if (newResolved === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    }
+    applyThemeToDOM(newResolved);
 
     try {
       localStorage.setItem(THEME_STORAGE_KEY, theme);
@@ -60,13 +78,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const handleChange = () => {
         const updated = mediaQuery.matches ? 'dark' : 'light';
         setResolvedTheme(updated);
-        if (updated === 'dark') {
-          root.classList.add('dark');
-          root.classList.remove('light');
-        } else {
-          root.classList.add('light');
-          root.classList.remove('dark');
-        }
+        applyThemeToDOM(updated);
       };
 
       mediaQuery.addEventListener('change', handleChange);

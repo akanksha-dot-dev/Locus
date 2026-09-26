@@ -20,25 +20,21 @@ export const ScoreGauge: React.FC<ScoreGaugeProps> = ({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (clampedScore / 100) * circumference;
 
-  // Color thresholds
-  let color = '#10b981'; // Emerald
-  let glowColor = 'rgba(16, 185, 129, 0.35)';
+  let color = '#10b981';
   let labelText = 'OPTIMAL';
-  let labelColor = 'text-emerald-400';
-  let badgeBg = 'bg-emerald-500/10 border-emerald-500/25';
+  let labelColor = 'text-emerald-700 dark:text-emerald-400';
+  let badgeBg = 'bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/30';
 
   if (clampedScore < 40) {
-    color = '#ef4444'; // Crimson
-    glowColor = 'rgba(239, 68, 68, 0.35)';
+    color = '#ef4444';
     labelText = 'ADVERSE';
-    labelColor = 'text-rose-400';
-    badgeBg = 'bg-rose-500/10 border-rose-500/25';
+    labelColor = 'text-rose-700 dark:text-rose-400';
+    badgeBg = 'bg-rose-50 dark:bg-rose-500/15 border-rose-200 dark:border-rose-500/30';
   } else if (clampedScore < 70) {
-    color = '#f59e0b'; // Amber
-    glowColor = 'rgba(245, 158, 11, 0.35)';
+    color = '#f59e0b';
     labelText = 'MODERATE';
-    labelColor = 'text-amber-400';
-    badgeBg = 'bg-amber-500/10 border-amber-500/25';
+    labelColor = 'text-amber-700 dark:text-amber-400';
+    badgeBg = 'bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-amber-500/30';
   }
 
   return (
@@ -64,13 +60,13 @@ export const ScoreGauge: React.FC<ScoreGaugeProps> = ({
             </linearGradient>
           </defs>
 
-          {/* Background Track */}
+          {/* Background Track with light and dark mode adaptive stroke */}
           <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
             fill="transparent"
-            stroke="rgba(255, 255, 255, 0.07)"
+            className="stroke-slate-200 dark:stroke-white/[0.08]"
             strokeWidth={strokeWidth}
           />
 
@@ -94,20 +90,17 @@ export const ScoreGauge: React.FC<ScoreGaugeProps> = ({
 
         {/* Inner Centered Metrics */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span
-            className="text-2xl font-extrabold font-mono text-white tabular-nums tracking-tight leading-none"
-            style={{ textShadow: `0 0 16px ${glowColor}` }}
-          >
+          <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
             {clampedScore}
           </span>
-          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-0.5">
+          <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest mt-1">
             / 100
           </span>
         </div>
       </div>
 
       {showLabel && (
-        <div className={`mt-1.5 px-2 py-0.5 rounded-full border text-[10px] font-mono font-semibold tracking-wider ${labelColor} ${badgeBg}`}>
+        <div className={`mt-2 px-2.5 py-0.5 rounded-full border text-[10px] font-mono font-semibold tracking-wider ${labelColor} ${badgeBg}`}>
           {labelText}
         </div>
       )}

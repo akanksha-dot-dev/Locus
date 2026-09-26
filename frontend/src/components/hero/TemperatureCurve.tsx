@@ -17,16 +17,13 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
 }) => {
   const [hoveredHour, setHoveredHour] = useState<number | null>(null);
 
-  // Generate 24-hour diurnal curve if hourlyTemps array is not provided or incomplete
   const temps = useMemo<number[]>(() => {
     if (hourlyTemps && hourlyTemps.length === 24) {
       return hourlyTemps;
     }
-    // Realistic diurnal cycle: coolest at 05:00, warmest at 15:00
     const generated: number[] = [];
     const base = currentTemp;
     for (let h = 0; h < 24; h++) {
-      // Shift so peak is at 15:00 (radians = 0) and trough at 03:00-05:00
       const angle = ((h - 15) / 24) * 2 * Math.PI;
       const diurnalOffset = Math.cos(angle) * 4.5;
       const val = Math.round((base + diurnalOffset) * 10) / 10;
@@ -37,7 +34,6 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
 
   const currentHour = useMemo(() => new Date().getHours(), []);
 
-  // Geometry calculations
   const width = 600;
   const height = 140;
   const paddingX = 35;
@@ -58,7 +54,6 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
     return height - paddingBottom - normalized * usableHeight;
   };
 
-  // Build points array
   const points = useMemo(() => {
     return temps.map((temp, hour) => ({
       hour,
@@ -68,7 +63,6 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
     }));
   }, [temps, minTemp, maxTemp, tempRange]);
 
-  // Compute smooth cubic bezier path
   const { strokePath, fillPath } = useMemo(() => {
     if (points.length === 0) return { strokePath: '', fillPath: '' };
 
@@ -96,11 +90,9 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
     return { strokePath: d, fillPath: fill };
   }, [points]);
 
-  // Min and Max indices
   const minIndex = temps.indexOf(minTemp);
   const maxIndex = temps.indexOf(maxTemp);
 
-  // Active or hovered point
   const activeIndex = hoveredHour !== null ? hoveredHour : currentHour;
   const activePoint = points[activeIndex] || points[currentHour];
 
@@ -113,29 +105,29 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
   };
 
   return (
-    <div className={`relative w-full rounded-xl bg-surface-card/80 border border-hairline p-3 select-none ${className}`}>
+    <div className={`relative w-full rounded-xl bg-surface-card border border-hairline p-3 select-none ${className}`}>
       {/* Header bar with live summary */}
       <div className="flex items-center justify-between mb-1 px-1">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono uppercase text-gray-400 tracking-wider">
+          <span className="text-[11px] font-mono uppercase text-slate-500 dark:text-gray-400 tracking-wider font-medium">
             24H Temperature Forecast
           </span>
           {condition && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-300">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-elevated text-slate-700 dark:text-gray-300 border border-hairline">
               {condition}
             </span>
           )}
         </div>
         <div className="flex items-center gap-3 text-xs font-mono tabular-nums">
-          <span className="text-blue-400">
-            Min <strong className="text-gray-200">{minTemp}°</strong>
+          <span className="text-blue-600 dark:text-blue-400 font-medium">
+            Min <strong className="text-slate-900 dark:text-gray-200">{minTemp}°</strong>
           </span>
-          <span className="text-amber-400">
-            Max <strong className="text-gray-200">{maxTemp}°</strong>
+          <span className="text-amber-600 dark:text-amber-400 font-medium">
+            Max <strong className="text-slate-900 dark:text-gray-200">{maxTemp}°</strong>
           </span>
           {feelsLike !== undefined && (
-            <span className="text-gray-400 hidden sm:inline">
-              Feels <strong className="text-gray-200">{feelsLike}°C</strong>
+            <span className="text-slate-500 dark:text-gray-400 hidden sm:inline">
+              Feels <strong className="text-slate-900 dark:text-gray-200">{feelsLike}°C</strong>
             </span>
           )}
         </div>
@@ -149,14 +141,12 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
         onMouseLeave={() => setHoveredHour(null)}
       >
         <defs>
-          {/* Fill Gradient */}
           <linearGradient id="tempFillGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#6366f1" stopOpacity="0.32" />
             <stop offset="50%" stopColor="#06b6d4" stopOpacity="0.12" />
             <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
           </linearGradient>
 
-          {/* Stroke Gradient */}
           <linearGradient id="tempStrokeGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#38bdf8" />
             <stop offset="45%" stopColor="#6366f1" />
@@ -164,7 +154,6 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
             <stop offset="100%" stopColor="#f87171" />
           </linearGradient>
 
-          {/* Glow Filter */}
           <filter id="curveGlow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
@@ -174,13 +163,13 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
           </filter>
         </defs>
 
-        {/* Horizontal grid guide lines */}
         <line
           x1={paddingX}
           y1={getY(minTemp)}
           x2={width - paddingX}
           y2={getY(minTemp)}
-          stroke="rgba(255, 255, 255, 0.05)"
+          stroke="currentColor"
+          className="text-slate-200 dark:text-white/10"
           strokeDasharray="2 4"
         />
         <line
@@ -188,7 +177,8 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
           y1={getY(maxTemp)}
           x2={width - paddingX}
           y2={getY(maxTemp)}
-          stroke="rgba(255, 255, 255, 0.05)"
+          stroke="currentColor"
+          className="text-slate-200 dark:text-white/10"
           strokeDasharray="2 4"
         />
         <line
@@ -196,14 +186,13 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
           y1={height - paddingBottom}
           x2={width - paddingX}
           y2={height - paddingBottom}
-          stroke="rgba(255, 255, 255, 0.1)"
+          stroke="currentColor"
+          className="text-slate-300 dark:text-white/15"
           strokeWidth="1"
         />
 
-        {/* Gradient fill beneath curve */}
         <path d={fillPath} fill="url(#tempFillGrad)" />
 
-        {/* Smooth Cubic Bezier Stroke */}
         <path
           d={strokePath}
           fill="none"
@@ -213,7 +202,6 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
           filter="url(#curveGlow)"
         />
 
-        {/* Min Peak Point */}
         {points[minIndex] && (
           <g>
             <circle
@@ -221,21 +209,21 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
               cy={points[minIndex].y}
               r="3.5"
               fill="#38bdf8"
-              stroke="#08090a"
+              stroke="white"
+              className="dark:stroke-[#090a0f]"
               strokeWidth="2"
             />
             <text
               x={points[minIndex].x}
               y={points[minIndex].y + 16}
               textAnchor="middle"
-              className="text-[9px] fill-blue-300 font-mono tabular-nums select-none"
+              className="text-[9px] fill-blue-600 dark:fill-blue-300 font-mono tabular-nums select-none font-bold"
             >
               {minTemp}°
             </text>
           </g>
         )}
 
-        {/* Max Peak Point */}
         {points[maxIndex] && (
           <g>
             <circle
@@ -243,21 +231,21 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
               cy={points[maxIndex].y}
               r="3.5"
               fill="#fbbf24"
-              stroke="#08090a"
+              stroke="white"
+              className="dark:stroke-[#090a0f]"
               strokeWidth="2"
             />
             <text
               x={points[maxIndex].x}
               y={points[maxIndex].y - 8}
               textAnchor="middle"
-              className="text-[9px] fill-amber-300 font-mono tabular-nums select-none"
+              className="text-[9px] fill-amber-600 dark:fill-amber-300 font-mono tabular-nums select-none font-bold"
             >
               {maxTemp}°
             </text>
           </g>
         )}
 
-        {/* Active / Current Hour Cursor Line */}
         {activePoint && (
           <g>
             <line
@@ -274,10 +262,10 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
               cy={activePoint.y}
               r="5"
               fill={hoveredHour !== null ? '#22d3ee' : '#6366f1'}
-              stroke="#08090a"
+              stroke="white"
+              className="dark:stroke-[#090a0f]"
               strokeWidth="2"
             />
-            {/* Tooltip Pill */}
             <g
               transform={`translate(${Math.max(
                 45,
@@ -288,10 +276,11 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
                 x="-36"
                 y="-13"
                 width="72"
-                height="18"
-                rx="4"
-                fill="#141516"
-                stroke="rgba(255, 255, 255, 0.15)"
+                height="20"
+                rx="5"
+                fill="#0f172a"
+                className="dark:fill-[#141516]"
+                stroke="rgba(255, 255, 255, 0.2)"
                 strokeWidth="1"
               />
               <text
@@ -307,14 +296,13 @@ export const TemperatureCurve: React.FC<TemperatureCurveProps> = ({
           </g>
         )}
 
-        {/* Time Axis Markers */}
         {[0, 6, 12, 18, 23].map((hr) => (
           <text
             key={hr}
             x={getX(hr)}
             y={height - paddingBottom + 16}
             textAnchor="middle"
-            className="text-[10px] fill-gray-500 font-mono tabular-nums select-none"
+            className="text-[10px] fill-slate-500 dark:fill-gray-500 font-mono tabular-nums select-none"
           >
             {hr.toString().padStart(2, '0')}:00
           </text>

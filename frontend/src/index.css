@@ -5,13 +5,22 @@
 @layer base {
   :root {
     /* Light Theme (Crisp Modern Slate Palette) */
+    --bg-base-rgb: 248 250 252;
     --bg-base: #f8fafc;
+    --surface-card-rgb: 255 255 255;
     --surface-card: #ffffff;
+    --surface-elevated-rgb: 241 245 249;
     --surface-elevated: #f1f5f9;
+    --surface-active-rgb: 226 232 240;
     --surface-active: #e2e8f0;
+
+    --text-primary-rgb: 15 23 42;
     --text-primary: #0f172a;
+    --text-secondary-rgb: 71 85 105;
     --text-secondary: #475569;
+    --text-muted-rgb: 148 163 184;
     --text-muted: #94a3b8;
+
     --border-hairline: rgba(15, 23, 42, 0.08);
     --border-hairline-hover: rgba(15, 23, 42, 0.16);
     --border-hairline-strong: rgba(15, 23, 42, 0.14);
@@ -26,23 +35,50 @@
 
   .dark {
     /* Dark Theme (Obsidian Cyber-Industrial Palette) */
-    --bg-base: #08090a;
-    --surface-card: #0f1011;
-    --surface-elevated: #141516;
-    --surface-active: #1c1d20;
+    --bg-base-rgb: 9 10 15;
+    --bg-base: #090a0f;
+    --surface-card-rgb: 17 19 26;
+    --surface-card: #11131a;
+    --surface-elevated-rgb: 23 25 35;
+    --surface-elevated: #171923;
+    --surface-active-rgb: 30 34 48;
+    --surface-active: #1e2230;
+
+    --text-primary-rgb: 248 250 252;
     --text-primary: #f8fafc;
+    --text-secondary-rgb: 148 163 184;
     --text-secondary: #94a3b8;
+    --text-muted-rgb: 100 116 139;
     --text-muted: #64748b;
+
     --border-hairline: rgba(255, 255, 255, 0.08);
     --border-hairline-hover: rgba(255, 255, 255, 0.16);
     --border-hairline-strong: rgba(255, 255, 255, 0.14);
     --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
     --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-    --glass-bg: rgba(15, 16, 17, 0.75);
+    --glass-bg: rgba(17, 19, 26, 0.75);
     --glass-border: rgba(255, 255, 255, 0.08);
-    --scrollbar-track: #08090a;
-    --scrollbar-thumb: #1c1d20;
-    --scrollbar-hover: #2a2b30;
+    --scrollbar-track: #090a0f;
+    --scrollbar-thumb: #1e2230;
+    --scrollbar-hover: #2d3345;
+  }
+
+  html {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    color-scheme: light dark;
+  }
+
+  html.dark {
+    background-color: #090a0f !important;
+    color: #f8fafc !important;
+    color-scheme: dark;
+  }
+
+  html.light {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    color-scheme: light;
   }
 
   body {
@@ -52,6 +88,16 @@
     letter-spacing: -0.02em;
     overflow-x: hidden;
     transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  body.dark {
+    background-color: #090a0f !important;
+    color: #f8fafc !important;
+  }
+
+  body.light {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
   }
 
   /* Fixed-width tabular digits to prevent layout jitter on live updates */

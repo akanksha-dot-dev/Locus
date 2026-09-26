@@ -91,7 +91,7 @@ export const TerminalLogFeed: React.FC<TerminalLogFeedProps> = ({
   return (
     <div className="relative flex flex-col h-full font-mono text-xs select-text">
       {/* ── Filter Bar ─────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-surface-card/80 border-b border-hairline text-[11px]">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-surface-card border-b border-hairline text-[11px]">
         <div className="flex items-center gap-1.5 text-gray-400">
           <TerminalIcon className="w-3.5 h-3.5 text-cyan-400" />
           <span className="font-semibold text-gray-300">STREAMING AUDIT LOG</span>
