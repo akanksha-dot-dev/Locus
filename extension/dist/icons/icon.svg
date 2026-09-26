@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="locusGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="borderGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#06b6d4" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <!-- Background Squircle Canvas -->
+  <rect width="128" height="128" rx="32" fill="#0b0f17"/>
+  <rect x="3" y="3" width="122" height="122" rx="29" stroke="url(#borderGlow)" stroke-width="2"/>
+  
+  <!-- Outer Coordinate Radar Ring -->
+  <circle cx="64" cy="64" r="44" stroke="#312e81" stroke-width="2.5" stroke-dasharray="6 6"/>
+  
+  <!-- Primary Target Gradient Ring -->
+  <circle cx="64" cy="64" r="30" stroke="url(#locusGlow)" stroke-width="3.5"/>
+  
+  <!-- Reticle Cardinal Crosshair Ticks -->
+  <path d="M64 12V26M64 102V116M12 64H26M102 64H116" stroke="#06b6d4" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Hexagonal Tactical Nexus -->
+  <polygon points="64,44 82,54 82,74 64,84 46,74 46,54" fill="#0f172a" stroke="#06b6d4" stroke-width="3" filter="url(#shadow)"/>
+  
+  <!-- Central Pulse Core -->
+  <circle cx="64" cy="64" r="8" fill="#38bdf8"/>
+</svg>

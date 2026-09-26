@@ -1,0 +1,211 @@
+/**
+ * Locus Design System — Cyberpunk / Linear Dark Tokens
+ * Unified design system variables & utility classes for Locus Chrome Extension
+ */
+
+:root {
+  /* 4-Tier Surface Ladder */
+  --bg-base: #08090a;
+  --surface-card: #0f1011;
+  --surface-elevated: #141516;
+  --surface-active: #1c1d20;
+  --surface-overlay: rgba(8, 9, 10, 0.88);
+
+  /* Hairline Borders */
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-hairline-hover: rgba(255, 255, 255, 0.16);
+  --border-hairline-strong: rgba(255, 255, 255, 0.24);
+
+  /* Accent & Verdict Signals */
+  --color-emerald: #10b981;          /* Office verdict & success */
+  --color-emerald-bg: rgba(16, 185, 129, 0.12);
+  --color-emerald-border: rgba(16, 185, 129, 0.35);
+
+  --color-indigo: #6366f1;           /* WFH verdict & deep work */
+  --color-indigo-bg: rgba(99, 102, 241, 0.12);
+  --color-indigo-border: rgba(99, 102, 241, 0.35);
+
+  --color-amber: #f59e0b;            /* Warning & Offline badge */
+  --color-amber-bg: rgba(245, 158, 11, 0.12);
+  --color-amber-border: rgba(245, 158, 11, 0.35);
+
+  --color-crimson: #ef4444;          /* High/Critical risk & errors */
+  --color-crimson-bg: rgba(239, 68, 68, 0.12);
+  --color-crimson-border: rgba(239, 68, 68, 0.35);
+
+  --color-cyan: #06b6d4;             /* Telemetry & metrics */
+  --color-cyan-bg: rgba(6, 182, 212, 0.12);
+  --color-cyan-border: rgba(6, 182, 212, 0.35);
+
+  --color-purple: #a855f7;           /* Meetings & Calendar */
+  --color-purple-bg: rgba(168, 85, 247, 0.12);
+  --color-purple-border: rgba(168, 85, 247, 0.35);
+
+  /* Typography Colors */
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --text-disabled: #4b5563;
+
+  /* Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Roboto Mono', 'Cascadia Code', Menlo, monospace;
+
+  /* Spacing & Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Base resets for extension views */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular figures for stable telemetry counters */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+/* Glassmorphic card styling */
+.glassmorphic {
+  background: rgba(15, 16, 17, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+}
+
+/* Glowing halos */
+.glow-emerald {
+  box-shadow: 0 0 16px -2px rgba(16, 185, 129, 0.35);
+}
+
+.glow-indigo {
+  box-shadow: 0 0 16px -2px rgba(99, 102, 241, 0.35);
+}
+
+.glow-amber {
+  box-shadow: 0 0 16px -2px rgba(245, 158, 11, 0.35);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 16px -2px rgba(6, 182, 212, 0.35);
+}
+
+/* Cyberpunk Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-active);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2b30;
+}
+
+/* Status Pills & Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-office {
+  background: var(--color-emerald-bg);
+  color: var(--color-emerald);
+  border: 1px solid var(--color-emerald-border);
+}
+
+.badge-wfh {
+  background: var(--color-indigo-bg);
+  color: var(--color-indigo);
+  border: 1px solid var(--color-indigo-border);
+}
+
+.badge-hybrid {
+  background: var(--color-cyan-bg);
+  color: var(--color-cyan);
+  border: 1px solid var(--color-cyan-border);
+}
+
+.badge-offline {
+  background: var(--color-amber-bg);
+  color: var(--color-amber);
+  border: 1px solid var(--color-amber-border);
+}
+
+/* Common Interactive Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.btn-primary {
+  background: #25282f;
+  color: var(--text-primary);
+  border-color: var(--border-hairline-hover);
+}
+
+.btn-primary:hover {
+  background: #2f333c;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.btn-icon {
+  padding: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+}
+
+.btn-icon:hover {
+  background: var(--surface-active);
+  color: var(--text-primary);
+  border-color: var(--border-hairline);
+}
