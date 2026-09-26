@@ -9,7 +9,7 @@
 </head>
 <body>
   <div id="app" class="popup-container">
-    <!-- Header -->
+    <!-- Header with Latency Beacon & City Switcher -->
     <header class="popup-header">
       <div class="brand">
         <svg class="brand-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -18,10 +18,21 @@
           <path d="M2 12h20"></path>
         </svg>
         <span class="brand-title">LOCUS <span class="brand-sub">HUD</span></span>
+        <span id="connection-beacon" class="beacon-dot beacon-live" title="Status: Connected"></span>
       </div>
       <div class="header-actions">
-        <span id="offline-pill" class="badge badge-offline" style="display: none;">OFFLINE</span>
-        <button id="btn-sync" class="btn-icon" title="Sync now">
+        <div class="city-select-wrapper">
+          <select id="city-selector" class="city-select-pill" title="Switch default city">
+            <option value="Mumbai">Mumbai</option>
+            <option value="Bengaluru">Bengaluru</option>
+            <option value="London">London</option>
+            <option value="New York">New York</option>
+            <option value="San Francisco">San Francisco</option>
+            <option value="Tokyo">Tokyo</option>
+          </select>
+          <span class="city-select-arrow">▼</span>
+        </div>
+        <button id="btn-sync" class="btn-icon" title="Sync now (Alt+L)">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
           </svg>
@@ -33,20 +44,27 @@
     <section class="card verdict-card">
       <div class="verdict-header">
         <span class="section-label">RECOMMENDED DISPOSITION</span>
-        <div id="verdict-badge" class="badge badge-wfh glow-indigo">WFH</div>
+        <div class="verdict-badges-group">
+          <span id="verdict-confidence" class="badge badge-hybrid">98% CONF</span>
+          <div id="verdict-badge" class="badge badge-wfh glow-indigo holo-badge">WFH</div>
+        </div>
       </div>
       <div id="verdict-reason" class="verdict-reason">
         Analyzing real-time weather and sprint workload...
       </div>
     </section>
 
-    <!-- Telemetry Metrics Grid with Animated Circular Gauge -->
+    <!-- Telemetry Metrics Grid with Dual Concentric Circular Gauge -->
     <div class="metrics-grid">
       <div class="card metric-card metric-gauge-card">
         <div class="gauge-wrapper">
-          <svg class="gauge-svg" width="72" height="72" viewBox="0 0 72 72">
-            <circle class="gauge-track" cx="36" cy="36" r="30" stroke-width="5" />
-            <circle id="gauge-progress" class="gauge-fill" cx="36" cy="36" r="30" stroke-width="5" stroke-dasharray="188.5" stroke-dashoffset="188.5" stroke="#06b6d4" />
+          <svg class="gauge-svg" width="76" height="76" viewBox="0 0 76 76">
+            <!-- Outer Ring: Weather/Commute Index -->
+            <circle class="gauge-track" cx="38" cy="38" r="32" stroke-width="4.5" />
+            <circle id="gauge-progress" class="gauge-fill" cx="38" cy="38" r="32" stroke-width="4.5" stroke-dasharray="201.1" stroke-dashoffset="201.1" stroke="#06b6d4" />
+            <!-- Inner Ring: Focus Energy Capacity -->
+            <circle class="gauge-inner-track" cx="38" cy="38" r="24" stroke-width="3.5" />
+            <circle id="gauge-inner-progress" class="gauge-inner-fill" cx="38" cy="38" r="24" stroke-width="3.5" stroke-dasharray="150.8" stroke-dashoffset="150.8" stroke="#10b981" />
           </svg>
           <div class="gauge-center-text">
             <span id="gauge-score-num" class="gauge-score">--</span>
@@ -82,7 +100,7 @@
       </div>
     </section>
 
-    <!-- Active Schedule Block & Cyberpunk Pomodoro Focus Timer -->
+    <!-- Active Schedule Block, Next Peek & Quick Add -->
     <section class="card active-block-card">
       <div class="active-block-header">
         <span class="section-label">CURRENT FOCUS BLOCK</span>
@@ -94,18 +112,32 @@
           No active blocks scheduled
         </label>
       </div>
+      <div id="next-block-peek" class="next-block-peek" style="display: none;">
+        <span class="next-block-label">NEXT:</span>
+        <span id="next-block-title" class="next-block-title">--</span>
+      </div>
+      <div class="quick-add-task-row">
+        <input type="text" id="quick-add-input" class="quick-add-input" placeholder="+ Quick add focus task..." />
+        <button id="btn-quick-add" class="btn btn-primary btn-sm">Add</button>
+      </div>
     </section>
 
-    <!-- Cyberpunk Focus Timer HUD -->
+    <!-- Cyberpunk Focus Timer HUD with 4 Presets -->
     <section class="pomodoro-card">
       <div class="pomodoro-header">
         <div class="pomodoro-title-row">
           <span id="pomo-dot" class="pomodoro-dot idle"></span>
-          <span class="section-label">FOCUS TIMER</span>
+          <span class="section-label">POMODORO FOCUS</span>
         </div>
         <button id="btn-sound-toggle" class="btn-sound-toggle" title="Toggle audio feedback">
           <span id="sound-icon">🔊</span>
         </button>
+      </div>
+      <div class="pomodoro-presets-row">
+        <button class="btn-preset active" data-preset="focus_25" data-sec="1500">25m Focus</button>
+        <button class="btn-preset" data-preset="deep_50" data-sec="3000">50m Deep</button>
+        <button class="btn-preset" data-preset="short_break_5" data-sec="300">5m Break</button>
+        <button class="btn-preset" data-preset="long_break_15" data-sec="900">15m Rest</button>
       </div>
       <div class="pomodoro-controls-row">
         <div id="pomodoro-clock" class="pomodoro-clock tabular-nums">25:00</div>
@@ -130,7 +162,7 @@
             <line x1="8" y1="2" x2="8" y2="6"></line>
             <line x1="3" y1="10" x2="21" y2="10"></line>
           </svg>
-          <span>Export .ics</span>
+          <span>.ics</span>
         </button>
         <button id="btn-popup-notion" class="btn btn-secondary btn-sm" title="Open Notion Day Plan">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
@@ -140,6 +172,13 @@
           </svg>
           <span>Notion</span>
         </button>
+        <button id="btn-popup-standup" class="btn btn-secondary btn-sm" title="Copy formatted standup summary to clipboard">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span id="standup-btn-label">Standup</span>
+        </button>
       </div>
       <button id="btn-open-sidepanel" class="btn btn-primary btn-full">
         <span>Open Side Panel</span>
@@ -148,7 +187,7 @@
         </svg>
       </button>
       <div class="synced-row">
-        <span>Last synced: <span id="last-synced-time" class="tabular-nums">just now</span></span>
+        <span>Synced: <span id="last-synced-time" class="tabular-nums">just now</span></span>
       </div>
     </footer>
   </div>

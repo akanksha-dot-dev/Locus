@@ -1,6 +1,7 @@
 /**
  * Locus Docked Side Panel Companion Logic
- * Manages 24h day plan timeline, Jira/GitHub workloads, and quick-prompt day planning
+ * Manages 24h day plan timeline, Jira/GitHub workloads, LangGraph swarm visualizer,
+ * real-time day analytics, global search filtering, and quick-prompt day planning.
  */
 
 import {
@@ -9,11 +10,17 @@ import {
   ScheduleBlock,
   StorageState,
   Verdict,
+  calculateDayAnalytics,
   normalizeVerdict,
 } from '../types/index';
 import { downloadIcsFile } from '../services/icalendar';
 import { SwarmVisualizer } from '../components/swarm-graph';
-import { playSuccessChime, playTactileTick } from '../utils/audio';
+import {
+  playSuccessChime,
+  playSwarmBlip,
+  playTactileTick,
+  playTaskComplete,
+} from '../utils/audio';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Elements
@@ -32,9 +39,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   const contextTitle = document.getElementById('context-title');
   const btnContextPlan = document.getElementById('btn-context-plan');
 
+  const searchInput = document.getElementById('sidepanel-search') as HTMLInputElement | null;
   const promptInput = document.getElementById('prompt-input') as HTMLInputElement | null;
   const btnPromptSend = document.getElementById('btn-prompt-send');
+  const promptChips = document.querySelectorAll<HTMLButtonElement>('.prompt-chip');
 
+  const timelineAddInput = document.getElementById('timeline-add-input') as HTMLInputElement | null;
+  const btnTimelineAdd = document.getElementById('btn-timeline-add');
+
+  // Analytics Elements
+  const analyticsRate = document.getElementById('analytics-rate');
+  const analyticsRateBar = document.getElementById('analytics-rate-bar');
+  const analyticsDeepHours = document.getElementById('analytics-deep-hours');
+  const analyticsMeetingHours = document.getElementById('analytics-meeting-hours');
+  const analyticsBreakHours = document.getElementById('analytics-break-hours');
+
+  // Footer Elements
   const footerVerdict = document.getElementById('footer-verdict');
   const footerCityWeather = document.getElementById('footer-city-weather');
   const footerSynced = document.getElementById('footer-synced');
@@ -50,6 +70,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const swarmContainer = document.getElementById('swarm-graph-container');
   const swarmVisualizer = swarmContainer ? new SwarmVisualizer(swarmContainer) : null;
   const swarmLogs = document.getElementById('swarm-logs');
+
+  let activeBlocksCache: ScheduleBlock[] = [];
+  let cachedStorageState: StorageState | null = null;
 
   // Tab switching with tactile audio tick
   tabButtons.forEach((btn) => {
@@ -110,8 +133,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Render Full State
   function render(state: Partial<StorageState>): void {
+    cachedStorageState = state as StorageState;
     const res = state.lastResponse;
     const blocks: ScheduleBlock[] = state.scheduleBlocks || [];
+    activeBlocksCache = blocks;
     const jiraTickets: JiraTicket[] = res?.jira_tickets || [];
     const githubPrs: GitHubPR[] = res?.github_prs || [];
     const isOffline = Boolean(state.isOffline);
@@ -138,6 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (countTimeline) countTimeline.textContent = String(blocks.length);
     if (countJira) countJira.textContent = String(jiraTickets.length);
     if (countGithub) countGithub.textContent = String(githubPrs.length);
+    if (countSwarm) countSwarm.textContent = '8';
 
     // 4. Timeline Blocks with Glowing Laser Bar
     if (timelineList) {
@@ -160,7 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           const isDone = Boolean(b.completed);
           itemsHtml += `
-            <div class="timeline-item ${isDone ? 'completed' : ''}" data-id="${b.id}">
+            <div class="timeline-item ${isDone ? 'completed' : ''}" data-id="${b.id}" data-search="${(b.title + ' ' + b.time).toLowerCase()}">
               <input type="checkbox" class="timeline-check block-checkbox" data-id="${b.id}" ${isDone ? 'checked' : ''} />
               <div class="timeline-info">
                 <div class="timeline-time-row">
@@ -179,7 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         timelineList.innerHTML = itemsHtml;
 
-        // Auto-scroll laser bar into view
+        // Auto-scroll laser bar into view smoothly
         setTimeout(() => {
           const laser = document.getElementById('timeline-laser-bar');
           laser?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -188,13 +214,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Attach checkbox change listeners with audio click
         timelineList.querySelectorAll<HTMLInputElement>('.timeline-check').forEach((cb) => {
           cb.addEventListener('change', () => {
-            playTactileTick(800);
+            playTaskComplete();
             const blockId = cb.dataset.id;
             if (blockId) {
               chrome.runtime.sendMessage({
                 type: 'TOGGLE_BLOCK',
                 payload: { blockId, completed: cb.checked },
               });
+              // Local update for instant analytics responsiveness
+              const matched = activeBlocksCache.find((b) => b.id === blockId);
+              if (matched) matched.completed = cb.checked;
+              updateAnalytics(activeBlocksCache);
             }
           });
         });
@@ -209,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         jiraList.innerHTML = jiraTickets
           .map(
             (t) => `
-          <div class="ticket-card">
+          <div class="ticket-card" data-search="${(t.key + ' ' + t.summary).toLowerCase()}">
             <div class="ticket-header">
               <span class="ticket-key">${t.key}</span>
               <span class="badge ${t.priority === 'Highest' || t.priority === 'High' ? 'badge-offline' : 'badge-wfh'}">${t.priority}</span>
@@ -234,7 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         githubList.innerHTML = githubPrs
           .map(
             (pr) => `
-          <div class="pr-card">
+          <div class="pr-card" data-search="${('#' + pr.number + ' ' + pr.title).toLowerCase()}">
             <div class="pr-header">
               <span class="pr-num">#${pr.number}</span>
               <span class="badge ${pr.days_old > 3 ? 'badge-offline' : 'badge-hybrid'}">${pr.days_old}d old</span>
@@ -251,7 +281,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // 7. Footer
+    // 7. Day Analytics Tab
+    updateAnalytics(blocks);
+
+    // 8. Footer
     if (footerVerdict) {
       const verdict: Verdict = normalizeVerdict(res?.go_to_office);
       footerVerdict.textContent = verdict.toUpperCase();
@@ -275,11 +308,69 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // 8. Swarm Visualizer State Update
+    // 9. Swarm Visualizer State Update
     if (res && swarmVisualizer) {
       swarmVisualizer.setAllCompleted();
     }
   }
+
+  // Update Analytics Tab
+  function updateAnalytics(blocks: ScheduleBlock[]): void {
+    const analytics = calculateDayAnalytics(blocks);
+    if (analyticsRate) analyticsRate.textContent = `${analytics.completionRate}%`;
+    if (analyticsRateBar) analyticsRateBar.style.width = `${analytics.completionRate}%`;
+    if (analyticsDeepHours) analyticsDeepHours.textContent = `${analytics.deepWorkHours}h`;
+    if (analyticsMeetingHours) analyticsMeetingHours.textContent = `${analytics.meetingHours}h`;
+    if (analyticsBreakHours) analyticsBreakHours.textContent = `${analytics.breakHours}h`;
+  }
+
+  // Global Search & Filter
+  searchInput?.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    const items = document.querySelectorAll<HTMLElement>('[data-search]');
+    items.forEach((item) => {
+      const text = item.dataset.search || '';
+      item.style.display = text.includes(query) ? '' : 'none';
+    });
+  });
+
+  // Prompt Preset Chips
+  promptChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const prompt = chip.dataset.prompt;
+      if (prompt && promptInput) {
+        playTactileTick(500);
+        promptInput.value = prompt;
+        btnPromptSend?.click();
+      }
+    });
+  });
+
+  // Inline Timeline Block Insertion
+  const handleTimelineAdd = async () => {
+    const title = timelineAddInput?.value.trim();
+    if (!title || !cachedStorageState) return;
+
+    playTaskComplete();
+    const newBlock: ScheduleBlock = {
+      id: `block-${Date.now()}`,
+      time: 'Focus Slot',
+      title,
+      activity: title,
+      category: 'deep_work',
+      completed: false,
+    };
+
+    const updatedBlocks = [...(cachedStorageState.scheduleBlocks || []), newBlock];
+    await chrome.storage.local.set({ scheduleBlocks: updatedBlocks });
+    if (timelineAddInput) timelineAddInput.value = '';
+    render({ ...cachedStorageState, scheduleBlocks: updatedBlocks });
+  };
+
+  btnTimelineAdd?.addEventListener('click', handleTimelineAdd);
+  timelineAddInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleTimelineAdd();
+  });
 
   // Load state on start
   chrome.storage.local.get(null, (items) => {
@@ -291,9 +382,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnSync?.classList.add('rotating');
       chrome.runtime.sendMessage({ type: 'SYNC_REQUEST', payload: { force: true } }, (res) => {
         btnSync?.classList.remove('rotating');
-        if (res?.state) {
-          render(res.state);
-        }
+        if (res?.state) render(res.state);
       });
     }
   });
@@ -310,6 +399,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Pipeline Step Updates from Swarm
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'PIPELINE_STEP_UPDATE') {
+      playSwarmBlip();
       const { node, status, elapsed_ms, details } = msg.payload || {};
       if (node && swarmVisualizer) {
         swarmVisualizer.updateNode(node, status, details, elapsed_ms);
@@ -401,4 +491,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.tabs.create({ url });
   });
 });
-

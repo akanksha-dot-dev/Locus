@@ -18,6 +18,7 @@
           <path d="M2 12h20"></path>
         </svg>
         <span class="brand-name">LOCUS <span class="brand-sub">COMPANION</span></span>
+        <span id="sidepanel-ws-badge" class="badge badge-hybrid" style="font-size: 9px; padding: 1px 5px;">⚡ LIVE WS</span>
       </div>
 
       <div class="header-tools">
@@ -44,6 +45,15 @@
       </div>
     </header>
 
+    <!-- Global Search & Filter Bar -->
+    <div class="search-bar" style="display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--surface-card); border-bottom: 1px solid var(--border-hairline);">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted); flex-shrink: 0;">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="sidepanel-search" style="flex: 1; background: transparent; border: none; font-size: 11px; color: var(--text-primary); outline: none;" placeholder="Search timeline, tickets, PRs..." />
+    </div>
+
     <!-- Offline Alert Banner -->
     <div id="sidepanel-offline-banner" class="offline-banner" style="display: none;">
       <span class="offline-dot"></span>
@@ -65,6 +75,14 @@
       <button id="btn-prompt-send" class="btn btn-primary btn-sm">Plan</button>
     </div>
 
+    <!-- Clickable Preset Prompt Chips -->
+    <div class="prompt-chips-row">
+      <button class="prompt-chip" data-prompt="Push morning meetings by 30 minutes">☕ Push 30m</button>
+      <button class="prompt-chip" data-prompt="Block 3 hours deep work for Jira sprint">🎯 Block 3h Jira</button>
+      <button class="prompt-chip" data-prompt="Shift disposition to WFH due to weather">🌧️ Shift WFH</button>
+      <button class="prompt-chip" data-prompt="Prioritize pending PR code reviews">🐙 Review PRs</button>
+    </div>
+
     <!-- Navigation Tabs -->
     <nav class="tabs-nav">
       <button class="tab-btn active" data-tab="timeline">
@@ -79,6 +97,9 @@
       <button class="tab-btn" data-tab="swarm">
         Swarm <span id="count-swarm" class="tabular-nums tab-count">8</span>
       </button>
+      <button class="tab-btn" data-tab="analytics">
+        Analytics
+      </button>
     </nav>
 
     <!-- Tab Panes -->
@@ -87,6 +108,11 @@
       <section id="pane-timeline" class="tab-pane active">
         <div id="timeline-list" class="blocks-list">
           <div class="empty-state">No schedule blocks loaded</div>
+        </div>
+        <!-- Inline Add Block Row -->
+        <div class="quick-add-task-row" style="margin-top: 10px;">
+          <input type="text" id="timeline-add-input" class="quick-add-input" placeholder="+ Insert new schedule block..." />
+          <button id="btn-timeline-add" class="btn btn-primary btn-sm">Add</button>
         </div>
       </section>
 
@@ -114,7 +140,35 @@
         <div class="swarm-activity-log">
           <span class="section-label">AGENT TELEMETRY FEED</span>
           <div id="swarm-logs" class="swarm-logs-list">
-            <div class="swarm-log-entry">⚡ 8 LangGraph autonomous agents ready.</div>
+            <div class="swarm-log-entry">⚡ 8 LangGraph autonomous agents ready. Click any node to inspect capabilities.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Analytics Pane -->
+      <section id="pane-analytics" class="tab-pane">
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <span class="section-label">COMPLETION RATE</span>
+            <span id="analytics-rate" class="analytics-num tabular-nums">--%</span>
+            <div class="analytics-bar-wrapper">
+              <div id="analytics-rate-bar" class="analytics-bar-fill" style="width: 0%; background: var(--color-emerald);"></div>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <span class="section-label">DEEP WORK</span>
+            <span id="analytics-deep-hours" class="analytics-num tabular-nums">-- hrs</span>
+            <span class="metric-caption">Sprint focus budget</span>
+          </div>
+          <div class="analytics-card">
+            <span class="section-label">MEETING LOAD</span>
+            <span id="analytics-meeting-hours" class="analytics-num tabular-nums">-- hrs</span>
+            <span class="metric-caption">Syncs & collaboration</span>
+          </div>
+          <div class="analytics-card">
+            <span class="section-label">BREAK & BUFFER</span>
+            <span id="analytics-break-hours" class="analytics-num tabular-nums">-- hrs</span>
+            <span class="metric-caption">Recovery time</span>
           </div>
         </div>
       </section>

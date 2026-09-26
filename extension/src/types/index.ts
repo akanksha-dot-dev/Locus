@@ -577,3 +577,89 @@ export function toWeatherSnapshot(res: AgentResponse): WeatherSnapshot {
     summary: res.weather_summary,
   };
 }
+
+// ── 7. WOW Edition: Pomodoro, Analytics & City Presets ───────────────────────
+
+export type PomodoroPreset = 'focus_25' | 'deep_50' | 'short_break_5' | 'long_break_15';
+
+export interface PomodoroPresetConfig {
+  id: PomodoroPreset;
+  label: string;
+  durationSeconds: number;
+}
+
+export const POMODORO_PRESETS: PomodoroPresetConfig[] = [
+  { id: 'focus_25', label: 'Focus 25m', durationSeconds: 25 * 60 },
+  { id: 'deep_50', label: 'Deep 50m', durationSeconds: 50 * 60 },
+  { id: 'short_break_5', label: 'Break 5m', durationSeconds: 5 * 60 },
+  { id: 'long_break_15', label: 'Rest 15m', durationSeconds: 15 * 60 },
+];
+
+export interface PomodoroState {
+  preset: PomodoroPreset;
+  remainingSeconds: number;
+  isRunning: boolean;
+  completedSessions: number;
+}
+
+export const CITY_PRESETS = [
+  'Mumbai',
+  'Bengaluru',
+  'London',
+  'New York',
+  'San Francisco',
+  'Tokyo',
+] as const;
+
+export type CityPreset = typeof CITY_PRESETS[number];
+
+export interface DayAnalytics {
+  totalBlocks: number;
+  completedBlocks: number;
+  completionRate: number; // 0 - 100
+  deepWorkHours: number;
+  meetingHours: number;
+  commuteHours: number;
+  breakHours: number;
+}
+
+/**
+ * Calculates real-time day plan analytics from schedule blocks.
+ */
+export function calculateDayAnalytics(blocks: ScheduleBlock[]): DayAnalytics {
+  const totalBlocks = blocks.length;
+  const completedBlocks = blocks.filter((b) => b.completed).length;
+  const completionRate = totalBlocks > 0 ? Math.round((completedBlocks / totalBlocks) * 100) : 0;
+
+  let deepWorkHours = 0;
+  let meetingHours = 0;
+  let commuteHours = 0;
+  let breakHours = 0;
+
+  for (const b of blocks) {
+    let hours = 1.0;
+    if (b.time) {
+      const match = b.time.match(/(\d{1,2}):(\d{2})\s*[-–—]\s*(\d{1,2}):(\d{2})/);
+      if (match && match[1] && match[2] && match[3] && match[4]) {
+        const start = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+        const end = parseInt(match[3], 10) * 60 + parseInt(match[4], 10);
+        hours = Math.max(0.25, (end - start) / 60);
+      }
+    }
+    if (b.category === 'deep_work') deepWorkHours += hours;
+    else if (b.category === 'meeting') meetingHours += hours;
+    else if (b.category === 'commute') commuteHours += hours;
+    else if (b.category === 'break') breakHours += hours;
+  }
+
+  return {
+    totalBlocks,
+    completedBlocks,
+    completionRate,
+    deepWorkHours: Number(deepWorkHours.toFixed(1)),
+    meetingHours: Number(meetingHours.toFixed(1)),
+    commuteHours: Number(commuteHours.toFixed(1)),
+    breakHours: Number(breakHours.toFixed(1)),
+  };
+}
+

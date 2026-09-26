@@ -96,3 +96,105 @@ export function playSuccessChime(): void {
     // Ignore audio errors
   }
 }
+
+/**
+ * Resonant, harmonic singing-bowl gong for Pomodoro interval completion.
+ */
+export function playPomodoroGong(): void {
+  if (!soundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.type = 'sine';
+    osc2.type = 'sine';
+    osc1.frequency.setValueAtTime(440, now); // A4 fundamental
+    osc2.frequency.setValueAtTime(880, now); // A5 octave overtone
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 1.25);
+    osc2.stop(now + 1.25);
+  } catch {
+    // Graceful error handling
+  }
+}
+
+/**
+ * Snappy micro-blip (1200Hz) when an autonomous agent completes an execution step.
+ */
+export function playSwarmBlip(): void {
+  if (!soundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const now = ctx.currentTime;
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(1200, now);
+    osc.frequency.exponentialRampToValueAtTime(600, now + 0.025);
+
+    gain.gain.setValueAtTime(0.03, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.03);
+  } catch {
+    // Ignore audio errors
+  }
+}
+
+/**
+ * Satisfying rising triad chord for checking off schedule blocks.
+ */
+export function playTaskComplete(): void {
+  if (!soundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const freqs = [523.25, 659.25, 783.99]; // C5, E5, G5
+
+    freqs.forEach((freq, idx) => {
+      const delay = idx * 0.04;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + delay);
+
+      gain.gain.setValueAtTime(0.0001, now + delay);
+      gain.gain.linearRampToValueAtTime(0.05, now + delay + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.25);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.28);
+    });
+  } catch {
+    // Ignore audio errors
+  }
+}
+

@@ -82,6 +82,12 @@
   justify-content: space-between;
 }
 
+.verdict-badges-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .verdict-reason {
   font-size: 12px;
   line-height: 1.45;
