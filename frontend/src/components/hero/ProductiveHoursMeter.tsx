@@ -16,19 +16,19 @@ export const ProductiveHoursMeter: React.FC<ProductiveHoursMeterProps> = ({
 
   // Focus tier classification
   let tierLabel = 'BALANCED CAPACITY';
-  let tierColor = 'text-cyan-400';
-  let tierBg = 'bg-cyan-500/10 border-cyan-500/25';
+  let tierColor = 'text-cyan-700 dark:text-cyan-400';
+  let tierBg = 'bg-cyan-500/10 dark:bg-cyan-500/15 border-cyan-500/25';
   let barGradient = 'from-cyan-500 to-indigo-500';
 
   if (productiveHours >= 7.0) {
     tierLabel = 'HIGH FOCUS DENSITY';
-    tierColor = 'text-emerald-400';
-    tierBg = 'bg-emerald-500/10 border-emerald-500/25';
+    tierColor = 'text-emerald-700 dark:text-emerald-400';
+    tierBg = 'bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/25';
     barGradient = 'from-emerald-500 to-teal-400';
   } else if (productiveHours < 5.0) {
     tierLabel = 'FRAGMENTED SCHEDULE';
-    tierColor = 'text-amber-400';
-    tierBg = 'bg-amber-500/10 border-amber-500/25';
+    tierColor = 'text-amber-700 dark:text-amber-400';
+    tierBg = 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/25';
     barGradient = 'from-amber-500 to-rose-400';
   }
 
@@ -36,14 +36,14 @@ export const ProductiveHoursMeter: React.FC<ProductiveHoursMeterProps> = ({
   const segments = Array.from({ length: 8 }, (_, i) => i + 1);
 
   return (
-    <div className={`p-4 rounded-xl bg-surface-card border border-hairline flex flex-col justify-between select-none ${className}`}>
+    <div className={`p-4 sm:p-5 rounded-2xl bg-surface-card border border-hairline flex flex-col justify-between select-none shadow-lg card-highlight-glow ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-          <Clock className="w-3.5 h-3.5 text-indigo-400" />
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-gray-400 font-medium">
+          <Clock className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
           <span className="uppercase tracking-wider font-mono text-[11px]">Focus Capacity</span>
         </div>
-        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono font-semibold tracking-wider ${tierColor} ${tierBg}`}>
+        <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-mono font-semibold tracking-wider ${tierColor} ${tierBg}`}>
           {tierLabel}
         </span>
       </div>
@@ -51,20 +51,20 @@ export const ProductiveHoursMeter: React.FC<ProductiveHoursMeterProps> = ({
       {/* Main Metric */}
       <div className="my-2 flex items-baseline justify-between">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-3xl font-extrabold font-mono text-white tabular-nums tracking-tight">
+          <span className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white tabular-nums tracking-tight">
             {productiveHours.toFixed(1)}
           </span>
-          <span className="text-sm font-mono text-gray-400">/ {totalDayHours.toFixed(1)} hrs</span>
+          <span className="text-sm font-mono text-slate-500 dark:text-gray-400">/ {totalDayHours.toFixed(1)} hrs</span>
         </div>
-        <div className="flex items-center gap-1 text-xs font-mono text-gray-300 tabular-nums">
-          <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" />
-          <span>{percentage}%</span>
+        <div className="flex items-center gap-1 text-xs font-mono text-slate-700 dark:text-gray-300 tabular-nums">
+          <Zap className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 fill-amber-500/30" />
+          <span className="font-semibold">{percentage}%</span>
         </div>
       </div>
 
       {/* Progress Bar with 8 Segment Markers */}
       <div className="space-y-1.5 mt-1">
-        <div className="relative w-full h-2.5 rounded-full bg-surface-base border border-hairline overflow-hidden p-0.5">
+        <div className="relative w-full h-2.5 rounded-full bg-surface-elevated border border-hairline overflow-hidden p-0.5">
           <div
             className={`h-full rounded-full bg-gradient-to-r ${barGradient} transition-all duration-700 ease-out`}
             style={{ width: `${percentage}%` }}
@@ -72,11 +72,11 @@ export const ProductiveHoursMeter: React.FC<ProductiveHoursMeterProps> = ({
         </div>
 
         {/* 8-Hour Slot Segment Markers */}
-        <div className="flex justify-between px-0.5 text-[9px] font-mono text-gray-500 tabular-nums">
+        <div className="flex justify-between px-0.5 text-[9px] font-mono text-slate-400 dark:text-gray-500 tabular-nums">
           {segments.map((seg) => (
             <span
               key={seg}
-              className={seg <= productiveHours ? 'text-gray-300 font-semibold' : 'text-gray-600'}
+              className={seg <= productiveHours ? 'text-slate-700 dark:text-gray-300 font-semibold' : 'text-slate-400 dark:text-gray-600'}
             >
               {seg}h
             </span>

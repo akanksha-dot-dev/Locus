@@ -92,16 +92,14 @@ export const ScheduleTimeline: React.FC = () => {
   };
 
   const handleDeleteBlock = (blockId: string) => {
-    // If deleted, filter it out via custom update or context
     const idx = scheduleBlocks.findIndex((b) => b.id === blockId);
     if (idx !== -1) {
-      // If we move it to bottom or remove, we can handle it
       reorderScheduleBlocks(idx, scheduleBlocks.length - 1);
     }
   };
 
   return (
-    <Card surface="elevated" className="p-5 sm:p-6 space-y-5 shadow-xl relative overflow-hidden card-highlight-glow">
+    <Card surface="card" className="p-5 sm:p-6 space-y-5 shadow-lg relative overflow-hidden card-highlight-glow">
       {/* Subtle grid pattern background */}
       <div className="absolute inset-0 bg-grid-subtle opacity-15 pointer-events-none" />
 
@@ -109,14 +107,14 @@ export const ScheduleTimeline: React.FC = () => {
       <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hairline pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-inner">
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 shadow-inner">
               <CalendarDays className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-white font-mono">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white font-mono">
               24-Hour Visual Schedule Timeline
             </h2>
           </div>
-          <p className="text-xs text-gray-400 mt-1 font-sans">
+          <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 font-sans">
             Hour-by-hour focus blueprint synchronized with AI commute and workload recommendations
           </p>
         </div>
@@ -126,12 +124,12 @@ export const ScheduleTimeline: React.FC = () => {
           <Button
             variant="secondary"
             size="sm"
-            icon={<RotateCcw className="w-3.5 h-3.5" />}
+            icon={<RotateCcw className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400" />}
             onClick={resetSchedule}
             title="Reset to raw Gemini AI plan"
-            className="text-xs"
+            className="text-xs font-mono"
           >
-            Reset to AI Plan
+            Reset Plan
           </Button>
           <Button
             variant="primary"
@@ -140,32 +138,32 @@ export const ScheduleTimeline: React.FC = () => {
             onClick={handleOpenAddModal}
             className="text-xs"
           >
-            Add Custom Block
+            Add Block
           </Button>
         </div>
       </div>
 
       {/* ── Interactive Task Completion Progress Bar ────────────────── */}
-      <div className="p-3.5 rounded-xl bg-surface-card border border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-200">
+              <span className="text-xs font-semibold text-slate-800 dark:text-gray-200">
                 Daily Focus Progress
               </span>
               <Badge variant="emerald" size="sm" className="font-mono tabular-nums text-[10px] py-0 px-1.5">
                 {progressPercentage}% DONE
               </Badge>
             </div>
-            <p className="text-[11px] text-gray-400">
-              <span className="font-mono text-emerald-400 font-semibold tabular-nums">
+            <p className="text-[11px] text-slate-500 dark:text-gray-400">
+              <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold tabular-nums">
                 {completedCount}
               </span>{' '}
               of{' '}
-              <span className="font-mono text-gray-300 font-semibold tabular-nums">
+              <span className="font-mono text-slate-700 dark:text-gray-300 font-semibold tabular-nums">
                 {totalBlocksCount}
               </span>{' '}
               scheduled slots completed
@@ -175,7 +173,7 @@ export const ScheduleTimeline: React.FC = () => {
 
         {/* Visual Progress Bar */}
         <div className="w-full sm:w-64 space-y-1">
-          <div className="h-2 w-full bg-surface-base rounded-full overflow-hidden border border-hairline">
+          <div className="h-2 w-full bg-surface-card rounded-full overflow-hidden border border-hairline">
             <motion.div
               className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
               initial={{ width: 0 }}
@@ -183,7 +181,7 @@ export const ScheduleTimeline: React.FC = () => {
               transition={{ duration: 0.4, ease: 'easeOut' }}
             />
           </div>
-          <div className="flex justify-between text-[10px] font-mono text-gray-500 tabular-nums">
+          <div className="flex justify-between text-[10px] font-mono text-slate-400 dark:text-gray-500 tabular-nums">
             <span>0%</span>
             <span>50%</span>
             <span>100%</span>
@@ -193,7 +191,7 @@ export const ScheduleTimeline: React.FC = () => {
 
       {/* ── Category Filter Chips ──────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-1.5 pt-1">
-        <span className="text-xs font-mono text-gray-500 mr-1 flex items-center gap-1">
+        <span className="text-xs font-mono text-slate-500 dark:text-gray-500 mr-1 flex items-center gap-1">
           <Filter className="w-3 h-3" /> Filter:
         </span>
 
@@ -203,8 +201,8 @@ export const ScheduleTimeline: React.FC = () => {
           onClick={() => setActiveCategoryFilter('all')}
           className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${
             activeCategoryFilter === 'all'
-              ? 'bg-white/10 text-white border-white/30 shadow-sm'
-              : 'bg-surface-card border-hairline text-gray-400 hover:text-gray-200 hover:bg-surface-active'
+              ? 'bg-slate-900 text-white dark:bg-white/10 dark:text-white border-slate-900 dark:border-white/30 shadow-xs'
+              : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200 hover:bg-surface-active'
           }`}
         >
           All <span className="text-[10px] font-mono ml-1 opacity-70 tabular-nums">({categoryCounts.all})</span>
@@ -216,8 +214,8 @@ export const ScheduleTimeline: React.FC = () => {
           onClick={() => setActiveCategoryFilter('deep_work')}
           className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${
             activeCategoryFilter === 'deep_work'
-              ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 shadow-sm'
-              : 'bg-surface-card border-hairline text-gray-400 hover:text-indigo-300 hover:bg-surface-active'
+              ? 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-500/40 shadow-xs'
+              : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-surface-active'
           }`}
         >
           Deep Work{' '}
@@ -230,8 +228,8 @@ export const ScheduleTimeline: React.FC = () => {
           onClick={() => setActiveCategoryFilter('meeting')}
           className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${
             activeCategoryFilter === 'meeting'
-              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-              : 'bg-surface-card border-hairline text-gray-400 hover:text-amber-300 hover:bg-surface-active'
+              ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/40 shadow-xs'
+              : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-surface-active'
           }`}
         >
           Meetings{' '}
@@ -244,8 +242,8 @@ export const ScheduleTimeline: React.FC = () => {
           onClick={() => setActiveCategoryFilter('commute')}
           className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${
             activeCategoryFilter === 'commute'
-              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
-              : 'bg-surface-card border-hairline text-gray-400 hover:text-cyan-300 hover:bg-surface-active'
+              ? 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border-cyan-500/40 shadow-xs'
+              : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-300 hover:bg-surface-active'
           }`}
         >
           Commute{' '}
@@ -258,8 +256,8 @@ export const ScheduleTimeline: React.FC = () => {
           onClick={() => setActiveCategoryFilter('break')}
           className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${
             activeCategoryFilter === 'break'
-              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
-              : 'bg-surface-card border-hairline text-gray-400 hover:text-emerald-300 hover:bg-surface-active'
+              ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 shadow-xs'
+              : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-surface-active'
           }`}
         >
           Breaks & Outdoor{' '}
@@ -275,16 +273,16 @@ export const ScheduleTimeline: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="py-10 text-center rounded-xl bg-surface-card/40 border border-dashed border-hairline space-y-3"
+              className="py-10 text-center rounded-xl bg-surface-elevated/40 border border-dashed border-hairline space-y-3"
             >
-              <div className="w-10 h-10 rounded-full bg-white/5 border border-hairline flex items-center justify-center text-gray-400 mx-auto">
-                <Sparkles className="w-5 h-5 text-gray-500" />
+              <div className="w-10 h-10 rounded-full bg-slate-200/50 dark:bg-white/5 border border-hairline flex items-center justify-center text-slate-400 dark:text-gray-400 mx-auto">
+                <Sparkles className="w-5 h-5 text-slate-400 dark:text-gray-500" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-300">
+                <p className="text-xs font-semibold text-slate-800 dark:text-gray-300">
                   No schedule blocks matching "{activeCategoryFilter}"
                 </p>
-                <p className="text-[11px] text-gray-500 mt-0.5">
+                <p className="text-[11px] text-slate-500 dark:text-gray-500 mt-0.5">
                   Try switching filters or add a new custom block to this category.
                 </p>
               </div>

@@ -4,20 +4,54 @@
 
 @layer base {
   :root {
+    /* Light Theme (Crisp Modern Slate Palette) */
+    --bg-base: #f8fafc;
+    --surface-card: #ffffff;
+    --surface-elevated: #f1f5f9;
+    --surface-active: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border-hairline: rgba(15, 23, 42, 0.08);
+    --border-hairline-hover: rgba(15, 23, 42, 0.16);
+    --border-hairline-strong: rgba(15, 23, 42, 0.14);
+    --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(15, 23, 42, 0.08);
+    --scrollbar-track: #f1f5f9;
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-hover: #94a3b8;
+  }
+
+  .dark {
+    /* Dark Theme (Obsidian Cyber-Industrial Palette) */
     --bg-base: #08090a;
     --surface-card: #0f1011;
     --surface-elevated: #141516;
     --surface-active: #1c1d20;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
     --border-hairline: rgba(255, 255, 255, 0.08);
     --border-hairline-hover: rgba(255, 255, 255, 0.16);
+    --border-hairline-strong: rgba(255, 255, 255, 0.14);
+    --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    --glass-bg: rgba(15, 16, 17, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --scrollbar-track: #08090a;
+    --scrollbar-thumb: #1c1d20;
+    --scrollbar-hover: #2a2b30;
   }
 
   body {
-    background-color: #08090a;
-    color: #f3f4f6;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     letter-spacing: -0.02em;
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   /* Fixed-width tabular digits to prevent layout jitter on live updates */
@@ -25,34 +59,38 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Custom cyberpunk dark scrollbars */
+  /* Custom adaptive scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #08090a;
+    background: var(--scrollbar-track);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1c1d20;
+    background: var(--scrollbar-thumb);
     border-radius: 3px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-hairline);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #2a2b30;
+    background: var(--scrollbar-hover);
   }
 }
 
 @layer utilities {
   .border-hairline {
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-hairline);
   }
   
+  .border-hairline-hover {
+    border-color: var(--border-hairline-hover);
+  }
+
   .border-hairline-strong {
-    border-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--border-hairline-strong);
   }
 
   .glow-indigo {
@@ -76,9 +114,25 @@
   }
 
   .glassmorphic {
-    background: rgba(15, 16, 17, 0.75);
+    background: var(--glass-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
+  }
+
+  .card-highlight-glow {
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .card-highlight-glow:hover {
+    box-shadow: var(--card-shadow-hover);
+  }
+
+  .bg-grid-subtle {
+    background-size: 24px 24px;
+    background-image: 
+      linear-gradient(to right, var(--border-hairline) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border-hairline) 1px, transparent 1px);
   }
 }

@@ -9,10 +9,15 @@ export default {
     extend: {
       colors: {
         surface: {
-          base: '#08090a',      // Base canvas
-          card: '#0f1011',      // Surface cards
-          elevated: '#141516',  // Elevated panels
-          active: '#1c1d20',    // Hover / active
+          base: 'var(--bg-base)',
+          card: 'var(--surface-card)',
+          elevated: 'var(--surface-elevated)',
+          active: 'var(--surface-active)',
+        },
+        content: {
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
         },
         semantic: {
           emerald: '#10b981',
@@ -23,8 +28,9 @@ export default {
         },
       },
       borderColor: {
-        hairline: 'rgba(255, 255, 255, 0.08)',
-        'hairline-hover': 'rgba(255, 255, 255, 0.16)',
+        hairline: 'var(--border-hairline)',
+        'hairline-hover': 'var(--border-hairline-hover)',
+        'hairline-strong': 'var(--border-hairline-strong)',
       },
       fontFamily: {
         sans: ['Inter', 'Geist Sans', 'system-ui', 'sans-serif'],

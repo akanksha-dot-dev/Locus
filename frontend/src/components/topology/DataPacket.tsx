@@ -33,14 +33,14 @@ export const DataPacket: React.FC<DataPacketProps> = ({
   if (!isActive) {
     return (
       <div
-        className={`relative flex items-center justify-center opacity-20 ${
+        className={`relative flex items-center justify-center opacity-30 ${
           direction === 'horizontal' ? 'w-full h-1' : 'w-1 h-full'
         } ${className}`}
       >
         <div
           className={`${
             direction === 'horizontal' ? 'w-full h-[1px]' : 'w-[1px] h-full'
-          } bg-white/20`}
+          } bg-slate-300 dark:bg-white/20`}
         />
       </div>
     );
@@ -71,7 +71,7 @@ export const DataPacket: React.FC<DataPacketProps> = ({
       <div
         className={`absolute ${
           direction === 'horizontal' ? 'w-full h-[1.5px]' : 'w-[1.5px] h-full'
-        } bg-white/15`}
+        } bg-slate-300 dark:bg-white/15`}
       />
 
       {/* Animated glowing moving particle */}
@@ -111,15 +111,15 @@ export const TopologyConnector: React.FC<TopologyConnectorProps> = ({
           isCompleted
             ? 'bg-emerald-500/60 shadow-[0_0_6px_rgba(16,185,129,0.3)]'
             : isActive
-            ? 'bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]'
-            : 'bg-white/10'
+            ? 'bg-cyan-500 dark:bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]'
+            : 'bg-slate-200 dark:bg-white/10'
         }`}
       />
 
       {/* Pulsing indicator when active */}
       {isActive && (
         <span
-          className="absolute w-2 h-2 rounded-full bg-cyan-300 animate-ping opacity-90"
+          className="absolute w-2 h-2 rounded-full bg-cyan-400 animate-ping opacity-90"
           style={{ boxShadow: '0 0 10px #22d3ee' }}
         />
       )}

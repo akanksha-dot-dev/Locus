@@ -25,7 +25,7 @@ export const IntegrationGrid: React.FC = () => {
       id: 'openweather',
       name: 'OpenWeather',
       type: 'Telemetry API',
-      icon: <CloudSun className="w-5 h-5 text-amber-400" />,
+      icon: <CloudSun className="w-5 h-5 text-amber-500 dark:text-amber-400" />,
       status: 'Connected',
       statusColor: 'emerald' as const,
       detail: `${activeAgentResponse.city}: ${activeAgentResponse.temperature_c}°C, ${activeAgentResponse.weather_condition}`,
@@ -36,7 +36,7 @@ export const IntegrationGrid: React.FC = () => {
       id: 'gmail',
       name: 'Google Gmail',
       type: 'Calendar & Travel',
-      icon: <Mail className="w-5 h-5 text-rose-400" />,
+      icon: <Mail className="w-5 h-5 text-rose-500 dark:text-rose-400" />,
       status: activeAgentResponse.has_travel_plans || activeAgentResponse.has_outdoor_plans ? 'Event Triggered' : 'Synced',
       statusColor: 'emerald' as const,
       detail: `${activeAgentResponse.gmail_events?.length || 0} anchor events parsed`,
@@ -47,7 +47,7 @@ export const IntegrationGrid: React.FC = () => {
       id: 'jira',
       name: 'Atlassian Jira',
       type: 'Sprint & Issues',
-      icon: <CheckSquare className="w-5 h-5 text-indigo-400" />,
+      icon: <CheckSquare className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />,
       status: 'Synced',
       statusColor: 'emerald' as const,
       detail: `${activeAgentResponse.jira_tickets?.length || 0} active sprint issues`,
@@ -58,7 +58,7 @@ export const IntegrationGrid: React.FC = () => {
       id: 'github',
       name: 'GitHub API',
       type: 'Code Review & PRs',
-      icon: <GitPullRequest className="w-5 h-5 text-cyan-400" />,
+      icon: <GitPullRequest className="w-5 h-5 text-cyan-500 dark:text-cyan-400" />,
       status: 'Synced',
       statusColor: 'emerald' as const,
       detail: `${activeAgentResponse.github_prs?.length || 0} PRs pending review`,
@@ -69,19 +69,19 @@ export const IntegrationGrid: React.FC = () => {
       id: 'notion',
       name: 'Notion Database',
       type: 'Workspace Sync',
-      icon: <BookOpen className="w-5 h-5 text-gray-200" />,
+      icon: <BookOpen className="w-5 h-5 text-slate-700 dark:text-gray-200" />,
       status: activeAgentResponse.notion_logged ? 'Page Created' : 'Configured',
       statusColor: activeAgentResponse.notion_logged ? ('emerald' as const) : ('default' as const),
       detail: activeAgentResponse.notion_logged ? 'Day plan logged to DB' : 'Ready for dispatch',
       meta: activeAgentResponse.notion_page_url ? 'Deep Link Active' : 'API Token Verified',
-      iconBg: 'bg-white/10 border-white/20',
+      iconBg: 'bg-slate-200/60 dark:bg-white/10 border-slate-300 dark:border-white/20',
       actionUrl: activeAgentResponse.notion_page_url,
     },
     {
       id: 'slack',
       name: 'Slack Webhook',
       type: 'Incident Alerts',
-      icon: <MessageSquare className="w-5 h-5 text-emerald-400" />,
+      icon: <MessageSquare className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />,
       status: activeAgentResponse.slack_message_sent ? 'Delivered' : 'Ready',
       statusColor: activeAgentResponse.slack_message_sent ? ('emerald' as const) : ('default' as const),
       detail: '#locus-briefings',
@@ -92,7 +92,7 @@ export const IntegrationGrid: React.FC = () => {
       id: 'resend',
       name: 'Resend SMTP',
       type: 'Executive Email',
-      icon: <Send className="w-5 h-5 text-purple-400" />,
+      icon: <Send className="w-5 h-5 text-purple-500 dark:text-purple-400" />,
       status: activeAgentResponse.email_sent ? 'Sent' : 'Ready',
       statusColor: activeAgentResponse.email_sent ? ('emerald' as const) : ('default' as const),
       detail: activeAgentResponse.resend_message_id ? `ID: ${activeAgentResponse.resend_message_id.slice(0, 14)}...` : 'HTML Template Compiled',
@@ -102,29 +102,29 @@ export const IntegrationGrid: React.FC = () => {
   ];
 
   return (
-    <Card surface="elevated" className="p-5 sm:p-6 space-y-4 shadow-xl relative overflow-hidden card-highlight-glow">
+    <Card surface="card" className="p-5 sm:p-6 space-y-4 shadow-lg relative overflow-hidden card-highlight-glow">
       <div className="absolute inset-0 bg-grid-subtle opacity-15 pointer-events-none" />
       {/* ── Section Header ────────────────────────────────────────── */}
       <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-hairline pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-inner">
+          <div className="p-2 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 shadow-inner">
             <Server className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2 font-mono">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2 font-mono">
               7-Channel Integration Delivery Matrix
               <Badge variant="emerald" size="sm" className="font-mono text-[10px] py-0 px-1.5" dot>
                 ALL 7 HEALTHY
               </Badge>
             </h3>
-            <p className="text-xs text-gray-400 font-sans">
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-sans">
               Bi-directional cloud connectors powering autonomous data aggregation & multi-channel delivery
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs font-mono text-gray-400 bg-surface-card/90 px-3 py-1.5 rounded-lg border border-hairline shadow-xs">
-          <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+        <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 dark:text-gray-400 bg-surface-elevated px-3 py-1.5 rounded-lg border border-hairline shadow-xs">
+          <Radio className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 animate-pulse" />
           <span>7 / 7 Online</span>
         </div>
       </div>
@@ -134,18 +134,18 @@ export const IntegrationGrid: React.FC = () => {
         {integrations.map((item) => (
           <div
             key={item.id}
-            className="p-3.5 rounded-xl bg-surface-card border border-hairline hover:border-hairline-hover hover:bg-surface-active transition-all group flex flex-col justify-between space-y-3"
+            className="p-3.5 rounded-xl bg-surface-elevated/60 border border-hairline hover:border-hairline-hover hover:bg-surface-active transition-all group flex flex-col justify-between space-y-3 shadow-xs"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2.5">
-                <div className={`p-2 rounded-lg border ${item.iconBg} flex-shrink-0`}>
+                <div className={`p-2 rounded-lg border ${item.iconBg} flex-shrink-0 shadow-2xs`}>
                   {item.icon}
                 </div>
                 <div className="min-w-0">
-                  <span className="text-xs font-semibold text-gray-200 block truncate group-hover:text-white">
+                  <span className="text-xs font-semibold text-slate-800 dark:text-gray-200 block truncate group-hover:text-slate-900 dark:group-hover:text-white">
                     {item.name}
                   </span>
-                  <span className="text-[10px] text-gray-500 font-mono block">
+                  <span className="text-[10px] text-slate-500 dark:text-gray-400 font-mono block">
                     {item.type}
                   </span>
                 </div>
@@ -158,15 +158,15 @@ export const IntegrationGrid: React.FC = () => {
             </div>
 
             <div className="space-y-1 pt-2 border-t border-hairline/60 text-xs">
-              <p className="text-gray-300 font-medium truncate text-[11px]">{item.detail}</p>
-              <div className="flex items-center justify-between text-[10px] font-mono text-gray-500">
+              <p className="text-slate-700 dark:text-gray-300 font-medium truncate text-[11px]">{item.detail}</p>
+              <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 dark:text-gray-500">
                 <span>{item.meta}</span>
                 {item.actionUrl && (
                   <a
                     href={item.actionUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-cyan-400 hover:text-cyan-300 flex items-center gap-0.5"
+                    className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 flex items-center gap-0.5 font-medium"
                   >
                     <span>Open</span>
                     <ExternalLink className="w-2.5 h-2.5" />

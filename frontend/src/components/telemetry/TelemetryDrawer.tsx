@@ -36,16 +36,16 @@ export const TelemetryDrawer: React.FC = () => {
       aria-label="Telemetry and System Audit Logs"
       className="fixed bottom-0 right-0 left-0 sm:left-auto sm:right-6 sm:w-[680px] z-50 pointer-events-auto"
     >
-      <div className="rounded-t-xl sm:rounded-xl bg-surface-elevated/95 border border-hairline-strong shadow-2xl backdrop-blur-md overflow-hidden">
+      <div className="rounded-t-2xl sm:rounded-2xl bg-surface-card border border-hairline-strong shadow-2xl overflow-hidden backdrop-blur-md">
         {/* ── Collapsed Dock Bar ───────────────────────────────────── */}
-        <header className="px-4 py-2.5 flex items-center justify-between gap-3 border-b border-hairline bg-surface-card/70 select-none">
+        <header className="px-4 py-2.5 flex items-center justify-between gap-3 border-b border-hairline bg-surface-elevated/80 select-none">
           {/* Left: Terminal Toggle & Count Badge */}
           <button
             type="button"
             onClick={() => setIsTerminalOpen(!isTerminalOpen)}
-            className="flex items-center gap-2.5 text-xs font-mono text-gray-200 hover:text-white transition-colors cursor-pointer group"
+            className="flex items-center gap-2.5 text-xs font-mono text-slate-800 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer group"
           >
-            <div className="p-1 rounded-md bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 group-hover:glow-cyan transition-all">
+            <div className="p-1 rounded-md bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-500/25 text-cyan-600 dark:text-cyan-400 group-hover:glow-cyan transition-all">
               <TerminalIcon className="w-3.5 h-3.5" />
             </div>
             <span className="font-semibold tracking-wider uppercase text-[11px]">
@@ -84,12 +84,12 @@ export const TelemetryDrawer: React.FC = () => {
               type="button"
               onClick={() => setIsMuted(!isMuted)}
               title={isMuted ? 'Unmute cyber audio cues' : 'Mute cyber audio cues'}
-              className="p-1.5 rounded-md hover:bg-white/5 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
+              className="p-1.5 rounded-md hover:bg-slate-200/50 dark:hover:bg-white/5 text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-colors cursor-pointer"
             >
               {isMuted ? (
-                <VolumeX className="w-3.5 h-3.5 text-gray-500" />
+                <VolumeX className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
               ) : (
-                <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+                <Volume2 className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
               )}
             </button>
 
@@ -99,7 +99,7 @@ export const TelemetryDrawer: React.FC = () => {
                 type="button"
                 onClick={clearLogs}
                 title="Clear audit logs"
-                className="p-1.5 rounded-md hover:bg-white/5 text-gray-400 hover:text-rose-400 transition-colors cursor-pointer"
+                className="p-1.5 rounded-md hover:bg-slate-200/50 dark:hover:bg-white/5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -109,16 +109,16 @@ export const TelemetryDrawer: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsTerminalOpen(!isTerminalOpen)}
-              className="p-1.5 rounded-md hover:bg-white/5 text-gray-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-mono"
+              className="p-1.5 rounded-md hover:bg-slate-200/50 dark:hover:bg-white/5 text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-mono"
             >
               {isTerminalOpen ? (
                 <>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-slate-500 dark:text-gray-400" />
                   <span className="hidden sm:inline">Minimize</span>
                 </>
               ) : (
                 <>
-                  <ChevronUp className="w-4 h-4 text-cyan-400" />
+                  <ChevronUp className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                   <span className="hidden sm:inline">Expand</span>
                 </>
               )}

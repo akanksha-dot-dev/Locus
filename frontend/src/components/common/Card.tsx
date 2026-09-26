@@ -20,7 +20,7 @@ export const Card: React.FC<CardProps> = ({
     base: 'bg-surface-base border-hairline',
     card: 'bg-surface-card border-hairline',
     elevated: 'bg-surface-elevated border-hairline-strong',
-    active: 'bg-surface-active border-white/20',
+    active: 'bg-surface-active border-slate-300 dark:border-white/20',
     glass: 'glassmorphic',
   };
 
@@ -35,10 +35,10 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={cn(
-        'rounded-xl border transition-all duration-200',
+        'rounded-2xl border transition-all duration-200 card-highlight-glow',
         surfaceStyles[surface],
         glowing && glowStyles[glowing],
-        hoverable && 'hover:border-hairline-hover hover:bg-surface-active hover:shadow-lg cursor-pointer',
+        hoverable && 'hover:border-hairline-hover hover:bg-surface-active cursor-pointer active:scale-[0.995]',
         className
       )}
       {...props}

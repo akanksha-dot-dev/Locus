@@ -21,14 +21,14 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    default: 'bg-white/5 text-gray-300 border-white/10',
-    emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
-    indigo: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/25',
-    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
-    crimson: 'bg-rose-500/10 text-rose-400 border-rose-500/25',
-    cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/25',
-    outline: 'bg-transparent text-gray-300 border-white/15',
-    glass: 'bg-white/[0.04] backdrop-blur-md text-gray-200 border-white/10',
+    default: 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-gray-300 border-slate-200 dark:border-white/10',
+    emerald: 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25',
+    indigo: 'bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/25',
+    amber: 'bg-amber-500/10 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25',
+    crimson: 'bg-rose-500/10 dark:bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/25',
+    cyan: 'bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/25',
+    outline: 'bg-transparent text-slate-700 dark:text-gray-300 border-slate-300 dark:border-white/15',
+    glass: 'bg-white/60 dark:bg-white/[0.04] backdrop-blur-md text-slate-800 dark:text-gray-200 border-slate-200 dark:border-white/10',
   };
 
   const sizeStyles = {
@@ -38,14 +38,14 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const defaultDotColors = {
-    default: 'bg-gray-400',
-    emerald: 'bg-emerald-400',
-    indigo: 'bg-indigo-400',
-    amber: 'bg-amber-400',
-    crimson: 'bg-rose-400',
-    cyan: 'bg-cyan-400',
-    outline: 'bg-gray-300',
-    glass: 'bg-cyan-300',
+    default: 'bg-slate-400 dark:bg-gray-400',
+    emerald: 'bg-emerald-500 dark:bg-emerald-400',
+    indigo: 'bg-indigo-500 dark:bg-indigo-400',
+    amber: 'bg-amber-500 dark:bg-amber-400',
+    crimson: 'bg-rose-500 dark:bg-rose-400',
+    cyan: 'bg-cyan-500 dark:bg-cyan-400',
+    outline: 'bg-slate-400 dark:bg-gray-300',
+    glass: 'bg-cyan-500 dark:bg-cyan-300',
   };
 
   return (

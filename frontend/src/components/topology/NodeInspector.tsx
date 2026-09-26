@@ -84,7 +84,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150 select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-sm animate-in fade-in duration-150 select-none">
       <div
         className={`w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-surface-card border border-hairline-strong shadow-2xl overflow-hidden select-text ${className}`}
         onClick={(e) => e.stopPropagation()}
@@ -92,19 +92,19 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-hairline flex items-center justify-between bg-surface-elevated/70">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400">
+            <div className="p-2 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/15 border border-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-inner">
               <Cpu className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm sm:text-base text-white">
+                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
                   {node.name}
                 </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 border border-hairline text-gray-300">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-card border border-hairline text-slate-600 dark:text-gray-300">
                   STEP #{node.index + 1}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 font-mono">{node.service}</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 font-mono">{node.service}</p>
             </div>
           </div>
 
@@ -116,7 +116,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
             </span>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:text-gray-400 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors cursor-pointer"
               title="Close (Esc)"
             >
               <X className="w-4 h-4" />
@@ -129,42 +129,42 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           {/* Metadata Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
             <div className="p-2.5 rounded-xl bg-surface-elevated border border-hairline">
-              <span className="text-[10px] text-gray-500 block uppercase">Execution Latency</span>
-              <span className="text-cyan-400 font-semibold tabular-nums flex items-center gap-1 mt-0.5">
+              <span className="text-[10px] text-slate-500 dark:text-gray-500 block uppercase">Execution Latency</span>
+              <span className="text-cyan-700 dark:text-cyan-400 font-semibold tabular-nums flex items-center gap-1 mt-0.5">
                 <Clock className="w-3 h-3 text-cyan-500" />
                 {node.latencyMs ? `${node.latencyMs} ms` : '—'}
               </span>
             </div>
 
             <div className="p-2.5 rounded-xl bg-surface-elevated border border-hairline">
-              <span className="text-[10px] text-gray-500 block uppercase">LangGraph Node ID</span>
-              <span className="text-indigo-400 font-semibold mt-0.5 block truncate">
+              <span className="text-[10px] text-slate-500 dark:text-gray-500 block uppercase">LangGraph Node ID</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-semibold mt-0.5 block truncate">
                 {node.id}
               </span>
             </div>
 
             <div className="p-2.5 rounded-xl bg-surface-elevated border border-hairline col-span-2 sm:col-span-1">
-              <span className="text-[10px] text-gray-500 block uppercase">Service Adapter</span>
-              <span className="text-emerald-400 font-semibold mt-0.5 block truncate">
+              <span className="text-[10px] text-slate-500 dark:text-gray-500 block uppercase">Service Adapter</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5 block truncate">
                 {node.service}
               </span>
             </div>
           </div>
 
           {/* Description Callout */}
-          <div className="p-3 rounded-xl bg-surface-base border border-hairline text-xs text-gray-300 space-y-1">
-            <span className="text-[10px] font-mono uppercase text-gray-500 font-semibold flex items-center gap-1">
-              <Layers className="w-3 h-3 text-indigo-400" /> Swarm Role & Logic
+          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline text-xs text-slate-700 dark:text-gray-300 space-y-1">
+            <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-gray-500 font-semibold flex items-center gap-1">
+              <Layers className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> Swarm Role & Logic
             </span>
             <p className="leading-relaxed">{node.description}</p>
           </div>
 
           {/* Tool Invocation Record */}
-          <div className="p-3 rounded-xl bg-surface-base border border-hairline text-xs space-y-1 font-mono">
-            <span className="text-[10px] uppercase text-gray-500 font-semibold flex items-center gap-1">
-              <Terminal className="w-3 h-3 text-cyan-400" /> Registered Tool Call
+          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline text-xs space-y-1 font-mono">
+            <span className="text-[10px] uppercase text-slate-500 dark:text-gray-500 font-semibold flex items-center gap-1">
+              <Terminal className="w-3 h-3 text-cyan-500 dark:text-cyan-400" /> Registered Tool Call
             </span>
-            <p className="text-cyan-300 text-[11px] truncate">
+            <p className="text-cyan-700 dark:text-cyan-300 text-[11px] truncate font-medium">
               {getToolCallName(node.id)}
             </p>
           </div>
@@ -172,27 +172,27 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
           {/* Payload Raw Data Inspector */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase text-gray-400 font-semibold flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-indigo-400" /> Step Output Payload
+              <span className="text-[11px] font-mono uppercase text-slate-600 dark:text-gray-400 font-semibold flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> Step Output Payload
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleCopy}
-                icon={copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                icon={copied ? <Check className="w-3 h-3 text-emerald-500 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
                 className="text-[11px] h-7 px-2"
               >
                 {copied ? 'Copied' : 'Copy JSON'}
               </Button>
             </div>
 
-            <div className="rounded-xl bg-surface-base border border-hairline p-3 font-mono text-[11px] text-gray-300 max-h-56 overflow-y-auto">
+            <div className="rounded-xl bg-surface-elevated border border-hairline p-3 font-mono text-[11px] text-slate-800 dark:text-gray-300 max-h-56 overflow-y-auto shadow-inner">
               {node.payload ? (
                 <pre className="whitespace-pre-wrap leading-relaxed">
                   {JSON.stringify(node.payload, null, 2)}
                 </pre>
               ) : (
-                <div className="text-gray-500 italic py-4 text-center">
+                <div className="text-slate-400 dark:text-gray-500 italic py-4 text-center">
                   Node payload is idle. Run a prompt or scenario to inspect live execution telemetry.
                 </div>
               )}
@@ -202,7 +202,7 @@ export const NodeInspector: React.FC<NodeInspectorProps> = ({
 
         {/* Modal Footer */}
         <div className="p-3 px-5 border-t border-hairline flex items-center justify-between bg-surface-elevated/40 text-xs">
-          <span className="text-gray-500 font-mono text-[10px]">
+          <span className="text-slate-400 dark:text-gray-500 font-mono text-[10px]">
             LangGraph Swarm State Machine v2.0
           </span>
           <Button variant="secondary" size="sm" onClick={onClose}>

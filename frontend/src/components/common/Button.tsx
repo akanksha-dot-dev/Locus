@@ -23,16 +23,17 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const variantStyles = {
     primary:
-      'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.35)] border border-indigo-400/30 active:scale-[0.98]',
+      'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm hover:shadow-md border border-indigo-500/40 active:scale-[0.98]',
     secondary:
-      'bg-surface-elevated hover:bg-surface-active text-gray-200 border border-hairline hover:border-hairline-hover active:scale-[0.98]',
-    ghost: 'bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-100 border border-transparent',
+      'bg-surface-card hover:bg-surface-active text-slate-800 dark:text-gray-200 border border-hairline hover:border-hairline-hover shadow-xs active:scale-[0.98]',
+    ghost:
+      'bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 border border-transparent',
     danger:
-      'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 active:scale-[0.98]',
+      'bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 active:scale-[0.98]',
     outline:
-      'bg-transparent hover:bg-white/5 text-gray-300 border border-white/15 hover:border-white/30',
+      'bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-gray-300 border border-slate-300 dark:border-white/15 hover:border-slate-400 dark:hover:border-white/30',
     glass:
-      'glassmorphic hover:bg-white/[0.08] text-gray-100 hover:border-white/20 active:scale-[0.98]',
+      'glassmorphic hover:bg-white/80 dark:hover:bg-white/[0.08] text-slate-900 dark:text-gray-100 hover:border-slate-300 dark:hover:border-white/20 active:scale-[0.98]',
   };
 
   const sizeStyles = {

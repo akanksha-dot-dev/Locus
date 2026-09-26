@@ -66,31 +66,31 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
   };
 
   return (
-    <Card surface="elevated" className="p-5 space-y-4">
+    <Card surface="card" className="p-5 space-y-4 shadow-lg card-highlight-glow">
       {/* ── HUD Header with Review Hours & Stale Warning ─────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-hairline pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
+          <div className="p-2 rounded-lg bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-500/25 text-cyan-600 dark:text-cyan-400 shadow-inner">
             <GitPullRequest className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2 font-mono">
               GitHub Review HUD
               <Badge variant="cyan" size="sm" className="font-mono tabular-nums text-[10px]">
                 {prs.length} PRS
               </Badge>
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-sans">
               Open pull requests and assigned issue review queues
             </p>
           </div>
         </div>
 
         {/* Total Review Hours Metric */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-card border border-hairline">
-          <Clock className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="text-xs text-gray-400">Review Est:</span>
-          <span className="text-sm font-bold font-mono text-cyan-300 tabular-nums">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-elevated border border-hairline shadow-xs">
+          <Clock className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
+          <span className="text-xs text-slate-500 dark:text-gray-400">Review Est:</span>
+          <span className="text-sm font-bold font-mono text-cyan-700 dark:text-cyan-300 tabular-nums">
             ~{estimatedHours.toFixed(1)}h
           </span>
         </div>
@@ -98,14 +98,14 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
 
       {/* ── Tab Switcher & Stale Warning Chip ──────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-card border border-hairline">
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-elevated border border-hairline">
           <button
             type="button"
             onClick={() => setActiveTab('prs')}
             className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
               activeTab === 'prs'
-                ? 'bg-surface-elevated text-cyan-300 border border-hairline shadow-sm'
-                : 'text-gray-400 hover:text-gray-200'
+                ? 'bg-surface-card text-cyan-700 dark:text-cyan-300 border border-hairline shadow-xs'
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200'
             }`}
           >
             Pull Requests ({prs.length})
@@ -115,8 +115,8 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
             onClick={() => setActiveTab('issues')}
             className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
               activeTab === 'issues'
-                ? 'bg-surface-elevated text-cyan-300 border border-hairline shadow-sm'
-                : 'text-gray-400 hover:text-gray-200'
+                ? 'bg-surface-card text-cyan-700 dark:text-cyan-300 border border-hairline shadow-xs'
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200'
             }`}
           >
             Assigned Issues ({issues.length})
@@ -129,11 +129,11 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
             onClick={() => setFilterStaleOnly(!filterStaleOnly)}
             className={`px-2.5 py-1 rounded-full text-[11px] font-mono border transition-all cursor-pointer flex items-center gap-1.5 ${
               filterStaleOnly
-                ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-sm'
-                : 'bg-rose-500/10 text-rose-400 border-rose-500/25 hover:bg-rose-500/15'
+                ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/50 shadow-xs'
+                : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25 hover:bg-rose-500/15'
             }`}
           >
-            <AlertTriangle className="w-3 h-3 text-rose-400" />
+            <AlertTriangle className="w-3 h-3 text-rose-500 dark:text-rose-400" />
             <span>
               {staleCount} Overdue PR{staleCount > 1 ? 's' : ''} (&gt;2d)
             </span>
@@ -146,9 +146,9 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
         <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
           <AnimatePresence>
             {displayedPRs.length === 0 ? (
-              <div className="py-8 text-center rounded-lg bg-surface-card/40 border border-dashed border-hairline space-y-1">
-                <p className="text-xs text-gray-400 font-medium">No pull requests awaiting review</p>
-                <p className="text-[11px] text-gray-500">Your code review inbox is completely cleared.</p>
+              <div className="py-8 text-center rounded-lg bg-surface-elevated/40 border border-dashed border-hairline space-y-1">
+                <p className="text-xs text-slate-600 dark:text-gray-400 font-medium">No pull requests awaiting review</p>
+                <p className="text-[11px] text-slate-400 dark:text-gray-500">Your code review inbox is completely cleared.</p>
               </div>
             ) : (
               displayedPRs.map((pr) => {
@@ -165,17 +165,17 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className={`p-3 rounded-xl border transition-all ${
+                    className={`p-3.5 rounded-xl border transition-all shadow-xs ${
                       isStale
-                        ? 'bg-surface-card border-rose-500/30 hover:border-rose-500/50'
-                        : 'bg-surface-card border-hairline hover:border-hairline-hover hover:bg-surface-active'
+                        ? 'bg-surface-elevated/60 border-rose-500/30 hover:border-rose-500/50'
+                        : 'bg-surface-elevated/60 border-hairline hover:border-hairline-hover hover:bg-surface-active'
                     }`}
                   >
                     <div className="space-y-2">
                       {/* Top Bar: PR number, status badge, and Stale Warning Badge */}
                       <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono font-bold text-cyan-400 flex items-center gap-1">
+                          <span className="text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400 flex items-center gap-1">
                             <GitBranch className="w-3 h-3 text-cyan-500" />
                             #{pr.number}
                           </span>
@@ -184,8 +184,8 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
                           <span
                             className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-medium ${
                               isDraft
-                                ? 'bg-gray-800 text-gray-400 border-gray-700'
-                                : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                                ? 'bg-slate-200 dark:bg-gray-800 text-slate-700 dark:text-gray-400 border-slate-300 dark:border-gray-700'
+                                : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25'
                             }`}
                           >
                             {isDraft ? 'Draft' : 'Open'}
@@ -194,36 +194,36 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
 
                         {/* Stale Warning Badge (>2 days old) */}
                         {isStale && (
-                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1 animate-pulse">
-                            <AlertTriangle className="w-3 h-3 text-rose-400" />
-                            ⚠️ {pr.days_old} days stale - Review Overdue
+                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/35 flex items-center gap-1 animate-pulse">
+                            <AlertTriangle className="w-3 h-3 text-rose-500 dark:text-rose-400" />
+                            ⚠️ {pr.days_old} days stale - Overdue
                           </span>
                         )}
                       </div>
 
                       {/* PR Title */}
-                      <p className="text-xs font-medium text-gray-200 leading-snug line-clamp-2">
+                      <p className="text-xs font-medium text-slate-800 dark:text-gray-200 leading-snug line-clamp-2">
                         {pr.title}
                       </p>
 
                       {/* Bottom Info: Author Avatar/Handle and Review Estimate */}
-                      <div className="flex items-center justify-between pt-1 border-t border-hairline text-[11px] font-mono text-gray-400">
+                      <div className="flex items-center justify-between pt-1 border-t border-hairline text-[11px] font-mono text-slate-500 dark:text-gray-400">
                         {/* Author Avatar Pill */}
                         <div className="flex items-center gap-1.5">
                           <div
                             className={`w-5 h-5 rounded-full bg-gradient-to-br ${getAvatarGradient(
                               author
-                            )} flex items-center justify-center text-[9px] font-bold text-white shadow-xs`}
+                            )} flex items-center justify-center text-[9px] font-bold text-white shadow-2xs`}
                           >
                             {initials}
                           </div>
-                          <span className="text-gray-300">@{author}</span>
-                          <span className="text-gray-500">· {pr.days_old}d ago</span>
+                          <span className="text-slate-700 dark:text-gray-300">@{author}</span>
+                          <span className="text-slate-400 dark:text-gray-500">· {pr.days_old}d ago</span>
                         </div>
 
                         {/* Review Hours Estimate with Tabular Numbers */}
-                        <div className="flex items-center gap-1 text-cyan-400 tabular-nums">
-                          <Clock className="w-3 h-3" />
+                        <div className="flex items-center gap-1 text-cyan-700 dark:text-cyan-400 tabular-nums font-semibold">
+                          <Clock className="w-3 h-3 text-cyan-500" />
                           <span>~{hours}h review</span>
                         </div>
                       </div>
@@ -240,27 +240,27 @@ export const GitHubReviewHUD: React.FC<GitHubReviewHUDProps> = ({
       {activeTab === 'issues' && (
         <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
           {issues.length === 0 ? (
-            <div className="py-8 text-center rounded-lg bg-surface-card/40 border border-dashed border-hairline space-y-1">
-              <p className="text-xs text-gray-400 font-medium">No assigned repository issues</p>
-              <p className="text-[11px] text-gray-500">All assigned issues are resolved or triaged.</p>
+            <div className="py-8 text-center rounded-lg bg-surface-elevated/40 border border-dashed border-hairline space-y-1">
+              <p className="text-xs text-slate-600 dark:text-gray-400 font-medium">No assigned repository issues</p>
+              <p className="text-[11px] text-slate-400 dark:text-gray-500">All assigned issues are resolved or triaged.</p>
             </div>
           ) : (
             issues.map((issue) => (
               <div
                 key={issue.number}
-                className="p-3 rounded-xl bg-surface-card border border-hairline hover:border-hairline-hover hover:bg-surface-active transition-all space-y-1.5"
+                className="p-3.5 rounded-xl bg-surface-elevated/60 border border-hairline hover:border-hairline-hover hover:bg-surface-active transition-all space-y-1.5 shadow-xs"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5">
-                    <CircleDot className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="text-xs font-mono font-bold text-gray-300">Issue #{issue.number}</span>
+                    <CircleDot className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                    <span className="text-xs font-mono font-bold text-slate-700 dark:text-gray-300">Issue #{issue.number}</span>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/25">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25">
                     {issue.state || 'open'}
                   </span>
                 </div>
-                <p className="text-xs font-medium text-gray-200 line-clamp-2">{issue.title}</p>
-                <div className="flex items-center justify-between text-[10px] font-mono text-gray-500 pt-1 border-t border-hairline">
+                <p className="text-xs font-medium text-slate-800 dark:text-gray-200 line-clamp-2">{issue.title}</p>
+                <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 dark:text-gray-500 pt-1 border-t border-hairline">
                   <span>Age: {issue.days_old} days open</span>
                   {issue.author && <span>Assigned by @{issue.author}</span>}
                 </div>

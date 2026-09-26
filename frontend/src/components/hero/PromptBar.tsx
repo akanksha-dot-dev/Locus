@@ -61,18 +61,18 @@ export const PromptBar: React.FC<PromptBarProps> = ({
 
   return (
     <div
-      className={`rounded-2xl bg-surface-card border border-hairline p-4 space-y-3 shadow-lg select-none ${className}`}
+      className={`rounded-2xl bg-surface-card border border-hairline p-4 sm:p-5 space-y-3.5 shadow-lg select-none card-highlight-glow ${className}`}
     >
       {/* Header bar with shortcut guide */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-200 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> Natural Language Autonomous Prompt
+        <span className="text-xs font-semibold text-slate-800 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+          <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" /> Natural Language Prompt
         </span>
-        <div className="flex items-center gap-1.5 text-[10px] font-mono text-gray-400">
-          <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated border border-hairline text-gray-300">
+        <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-500 dark:text-gray-400">
+          <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated border border-hairline text-slate-700 dark:text-gray-300">
             ⌘/Ctrl + K
           </kbd>
-          <span>to focus</span>
+          <span>focus</span>
         </div>
       </div>
 
@@ -87,14 +87,14 @@ export const PromptBar: React.FC<PromptBarProps> = ({
             disabled={isLoading}
             placeholder="Describe your schedule, commute, flight, or workload (e.g. 'I have an early 6 AM flight from Delhi, check fog risks and plan my day...')"
             rows={2}
-            className="w-full text-xs sm:text-sm bg-surface-elevated border border-hairline rounded-xl p-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none disabled:opacity-50 leading-relaxed font-sans"
+            className="w-full text-xs sm:text-sm bg-surface-elevated border border-hairline rounded-xl p-3 text-slate-900 dark:text-gray-100 placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none disabled:opacity-50 leading-relaxed font-sans shadow-inner"
           />
 
           {prompt && !isLoading && (
             <button
               type="button"
               onClick={() => setPrompt('')}
-              className="absolute top-2.5 right-2.5 p-1 rounded-md text-gray-500 hover:text-gray-300 hover:bg-white/5 transition-colors"
+              className="absolute top-2.5 right-2.5 p-1 rounded-md text-slate-400 hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-slate-200/50 dark:hover:bg-white/5 transition-colors cursor-pointer"
               title="Clear prompt"
             >
               <X className="w-3.5 h-3.5" />
@@ -106,14 +106,14 @@ export const PromptBar: React.FC<PromptBarProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           {/* City override input */}
           <div className="relative flex-1">
-            <MapPin className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               disabled={isLoading}
               placeholder="City override (e.g. London, Delhi, NYC)"
-              className="w-full text-xs font-mono bg-surface-elevated border border-hairline rounded-xl pl-8 pr-3 py-2 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-all disabled:opacity-50"
+              className="w-full text-xs font-mono bg-surface-elevated border border-hairline rounded-xl pl-8 pr-3 py-2 text-slate-800 dark:text-gray-200 placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-all disabled:opacity-50 shadow-inner"
             />
           </div>
 
@@ -134,7 +134,7 @@ export const PromptBar: React.FC<PromptBarProps> = ({
 
       {/* Quick Suggestion Pills */}
       <div className="pt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
-        <span className="text-[10px] font-mono text-gray-500 uppercase mr-1">Suggestions:</span>
+        <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase mr-1">Suggestions:</span>
         <button
           type="button"
           onClick={() =>
@@ -143,7 +143,7 @@ export const PromptBar: React.FC<PromptBarProps> = ({
               'London'
             )
           }
-          className="px-2 py-0.5 rounded-lg bg-surface-elevated border border-hairline text-gray-400 hover:text-white hover:border-hairline-hover transition-colors truncate max-w-[200px]"
+          className="px-2.5 py-1 rounded-lg bg-surface-elevated border border-hairline text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:border-hairline-hover transition-colors truncate max-w-[200px] cursor-pointer"
         >
           🌧️ Storm in London
         </button>
@@ -155,7 +155,7 @@ export const PromptBar: React.FC<PromptBarProps> = ({
               'Delhi'
             )
           }
-          className="px-2 py-0.5 rounded-lg bg-surface-elevated border border-hairline text-gray-400 hover:text-white hover:border-hairline-hover transition-colors truncate max-w-[200px]"
+          className="px-2.5 py-1 rounded-lg bg-surface-elevated border border-hairline text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:border-hairline-hover transition-colors truncate max-w-[200px] cursor-pointer"
         >
           ✈️ 6 AM Delhi Flight
         </button>
@@ -167,7 +167,7 @@ export const PromptBar: React.FC<PromptBarProps> = ({
               'New York'
             )
           }
-          className="px-2 py-0.5 rounded-lg bg-surface-elevated border border-hairline text-gray-400 hover:text-white hover:border-hairline-hover transition-colors truncate max-w-[200px]"
+          className="px-2.5 py-1 rounded-lg bg-surface-elevated border border-hairline text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:border-hairline-hover transition-colors truncate max-w-[200px] cursor-pointer"
         >
           ⚡ Sprint Crunch NYC
         </button>

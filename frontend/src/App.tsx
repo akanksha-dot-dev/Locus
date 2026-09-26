@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { AgentProvider, useAgent } from './context/AgentContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Badge } from './components/common/Badge';
 import { Button } from './components/common/Button';
 import { DecisionCard } from './components/hero/DecisionCard';
@@ -29,6 +30,8 @@ import {
   Activity,
   CheckCircle2,
   ShieldCheck,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 // Framer Motion spring transition variants
@@ -58,6 +61,8 @@ function CommandCenterDashboard() {
     runScenario,
   } = useAgent();
 
+  const { resolvedTheme, toggleTheme } = useTheme();
+
   const [systemTime, setSystemTime] = useState<string>('');
   const [showTempCurve, setShowTempCurve] = useState<boolean>(true);
 
@@ -81,38 +86,38 @@ function CommandCenterDashboard() {
     (activeAgentResponse.github_estimated_hours || 0);
 
   return (
-    <div className="min-h-screen bg-surface-base text-gray-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200 antialiased">
+    <div className="min-h-screen bg-surface-base text-content-primary flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-600 dark:selection:text-indigo-200 antialiased transition-colors duration-200">
       {/* ── 1. Top Incident Command Navigation Bar ────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-hairline bg-surface-card/90 backdrop-blur-md px-4 sm:px-6 py-3 transition-colors">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-surface-card/90 backdrop-blur-md px-4 sm:px-6 py-3 transition-colors shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & Operational Title */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl overflow-hidden border border-cyan-500/40 flex items-center justify-center glow-cyan shadow-lg shadow-cyan-500/20 bg-surface-card">
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-cyan-500/30 flex items-center justify-center glow-cyan shadow-sm bg-surface-card">
               <img src="/locus_logo.png" alt="Locus Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm sm:text-base tracking-wider text-white font-mono flex items-center gap-1.5">
+                <span className="font-bold text-sm sm:text-base tracking-wider text-slate-900 dark:text-white font-mono flex items-center gap-1.5">
                   LOCUS
                 </span>
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 font-semibold">
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border border-cyan-500/25 font-semibold">
                   Track 5 AI Agent
                 </span>
               </div>
-              <p className="text-[11px] text-gray-400 hidden sm:block">
+              <p className="text-[11px] text-slate-500 dark:text-gray-400 hidden sm:block">
                 Incident Command Center & Autonomous Day Planner
               </p>
             </div>
           </div>
 
           {/* Real-time Status Indicators */}
-          <div className="flex items-center gap-2.5 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Live UTC Monospace Clock with tabular-nums */}
             <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-elevated border border-hairline text-xs font-mono text-gray-300 tabular-nums select-none shadow-inner"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-elevated border border-hairline text-xs font-mono text-slate-700 dark:text-gray-300 tabular-nums select-none shadow-inner"
               title="Current Synchronized System Time (UTC)"
             >
-              <Clock className="w-3.5 h-3.5 text-indigo-400" />
+              <Clock className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
               <span>{systemTime || '00:00:00 UTC'}</span>
             </div>
 
@@ -124,9 +129,9 @@ function CommandCenterDashboard() {
                   size="sm"
                   dot
                   pulse
-                  className="font-mono text-[11px] py-1 px-2.5 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                  className="font-mono text-[11px] py-1 px-2.5 shadow-xs"
                 >
-                  <span className="text-emerald-400 mr-1.5">🟢</span> CONNECTED
+                  <span className="text-emerald-500 dark:text-emerald-400 mr-1.5">🟢</span> CONNECTED
                 </Badge>
               ) : wsStatus === 'reconnecting' ? (
                 <Badge
@@ -134,18 +139,18 @@ function CommandCenterDashboard() {
                   size="sm"
                   dot
                   pulse
-                  className="font-mono text-[11px] py-1 px-2.5 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+                  className="font-mono text-[11px] py-1 px-2.5 shadow-xs"
                 >
-                  <span className="text-amber-400 mr-1.5">🟡</span> RECONNECTING
+                  <span className="text-amber-500 dark:text-amber-400 mr-1.5">🟡</span> RECONNECTING
                 </Badge>
               ) : (
                 <Badge
                   variant="crimson"
                   size="sm"
                   dot
-                  className="font-mono text-[11px] py-1 px-2.5 shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                  className="font-mono text-[11px] py-1 px-2.5 shadow-xs"
                 >
-                  <span className="text-rose-400 mr-1.5">🔴</span> OFFLINE / STANDALONE
+                  <span className="text-rose-500 dark:text-rose-400 mr-1.5">🔴</span> OFFLINE / STANDALONE
                 </Badge>
               )}
             </div>
@@ -155,12 +160,27 @@ function CommandCenterDashboard() {
               type="button"
               onClick={() => setIsMuted(!isMuted)}
               title={isMuted ? 'Unmute cyber synthesizer cues' : 'Mute cyber synthesizer cues'}
-              className="p-2 rounded-lg bg-surface-elevated border border-hairline hover:bg-surface-active text-gray-300 hover:text-white transition-all cursor-pointer select-none"
+              className="p-2 rounded-lg bg-surface-elevated border border-hairline hover:bg-surface-active text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer select-none shadow-xs"
             >
               {isMuted ? (
-                <VolumeX className="w-4 h-4 text-gray-500" />
+                <VolumeX className="w-4 h-4 text-slate-400 dark:text-gray-500" />
               ) : (
-                <Volume2 className="w-4 h-4 text-cyan-400" />
+                <Volume2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+              )}
+            </button>
+
+            {/* Theme Toggle Button (Light / Dark) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={`Switch to ${resolvedTheme === 'dark' ? 'Light' : 'Dark'} mode`}
+              aria-label={`Toggle theme: current is ${resolvedTheme}`}
+              className="p-2 rounded-lg bg-surface-elevated border border-hairline hover:bg-surface-active text-slate-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-amber-400 transition-all cursor-pointer select-none shadow-xs"
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-600" />
               )}
             </button>
 
@@ -168,7 +188,7 @@ function CommandCenterDashboard() {
             <Button
               variant="secondary"
               size="sm"
-              icon={<RotateCcw className="w-3.5 h-3.5 text-gray-400" />}
+              icon={<RotateCcw className="w-3.5 h-3.5 text-slate-400 dark:text-gray-400" />}
               onClick={resetSchedule}
               title="Reset schedule and workspace to raw Gemini AI synthesis"
               className="hidden lg:inline-flex text-xs font-mono"
@@ -183,19 +203,19 @@ function CommandCenterDashboard() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
         {/* Offline Resilient Simulation Notice Banner */}
         {isOfflineMode && (
-          <div className="rounded-xl bg-amber-500/10 border border-amber-500/25 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-200 shadow-md">
+          <div className="rounded-2xl bg-amber-500/10 border border-amber-500/25 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-800 dark:text-amber-200 shadow-sm">
             <div className="flex items-center gap-2.5">
-              <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0" />
               <span>
                 Backend server currently offline at{' '}
-                <code className="font-mono bg-black/40 px-1.5 py-0.5 rounded text-amber-300 border border-amber-500/20">
+                <code className="font-mono bg-black/10 dark:bg-black/40 px-1.5 py-0.5 rounded text-amber-800 dark:text-amber-300 border border-amber-500/20">
                   http://localhost:8000
                 </code>
                 . Running in standalone simulation mode with verified synthetic snapshot cache.
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono uppercase bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 border border-amber-500/30 whitespace-nowrap">
+              <span className="text-[10px] font-mono uppercase bg-amber-500/20 px-2 py-0.5 rounded text-amber-800 dark:text-amber-300 border border-amber-500/30 whitespace-nowrap">
                 Zero-Downtime Fallback Active
               </span>
             </div>
@@ -232,15 +252,15 @@ function CommandCenterDashboard() {
               />
 
               {/* Curve Toggle Ribbon */}
-              <div className="flex items-center justify-between px-2 text-xs font-mono text-gray-400">
+              <div className="flex items-center justify-between px-2 text-xs font-mono text-slate-500 dark:text-gray-400">
                 <span className="flex items-center gap-1.5">
-                  <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
+                  <TrendingUp className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
                   24-Hour Diurnal Forecast Plotted
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowTempCurve(!showTempCurve)}
-                  className="text-[11px] text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer"
+                  className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline cursor-pointer"
                 >
                   {showTempCurve ? 'Hide Curve' : 'Show 24h Curve'}
                 </button>
@@ -263,7 +283,7 @@ function CommandCenterDashboard() {
               />
 
               {/* 4 Preset Benchmark Scenarios Showcase */}
-              <div className="rounded-2xl bg-surface-card border border-hairline p-4 shadow-lg flex-1 flex flex-col justify-between">
+              <div className="rounded-2xl bg-surface-card border border-hairline p-4 sm:p-5 shadow-lg flex-1 flex flex-col justify-between card-highlight-glow">
                 <PresetShowcase
                   onSelectScenario={(scenarioKey, city) => runScenario(scenarioKey, city)}
                   isRunning={isRunning}
@@ -324,21 +344,21 @@ function CommandCenterDashboard() {
       <TelemetryDrawer />
 
       {/* ── 4. Operational Footer ─────────────────────────────────── */}
-      <footer className="border-t border-hairline bg-surface-card/60 py-6 px-4 sm:px-6 mt-12 text-xs text-gray-400 select-none pb-16 sm:pb-6">
+      <footer className="border-t border-hairline bg-surface-card/60 py-6 px-4 sm:px-6 mt-12 text-xs text-slate-500 dark:text-gray-400 select-none pb-16 sm:pb-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-gray-300 font-mono">Locus Day Planner v2.0.0</span>
-            <span className="text-gray-600">•</span>
+            <span className="font-semibold text-slate-700 dark:text-gray-300 font-mono">Locus Day Planner v2.0.0</span>
+            <span className="text-slate-300 dark:text-gray-600">•</span>
             <span>Incident Command Center</span>
-            <span className="text-gray-600">•</span>
-            <span className="text-emerald-400/90 font-mono flex items-center gap-1">
+            <span className="text-slate-300 dark:text-gray-600">•</span>
+            <span className="text-emerald-600 dark:text-emerald-400/90 font-mono flex items-center gap-1 font-medium">
               <ShieldCheck className="w-3.5 h-3.5" /> High-Assurance AI Swarm
             </span>
           </div>
-          <div className="flex items-center gap-4 text-gray-500 font-mono text-[11px]">
+          <div className="flex items-center gap-4 text-slate-400 dark:text-gray-500 font-mono text-[11px]">
             <span>Zero-CLS Hydration</span>
             <span>WebSocket + REST Dual-Transport</span>
-            <span>100% Client-Side Exports</span>
+            <span>Light & Dark Themed</span>
           </div>
         </div>
       </footer>
@@ -348,8 +368,10 @@ function CommandCenterDashboard() {
 
 export default function App() {
   return (
-    <AgentProvider>
-      <CommandCenterDashboard />
-    </AgentProvider>
+    <ThemeProvider>
+      <AgentProvider>
+        <CommandCenterDashboard />
+      </AgentProvider>
+    </ThemeProvider>
   );
 }
