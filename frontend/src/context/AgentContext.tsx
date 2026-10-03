@@ -15,6 +15,8 @@ import {
 import { DEFAULT_MOCK_RESPONSE, INITIAL_TOPOLOGY_NODES, MOCK_RESPONSES } from '../constants/mockData';
 import { apiService } from '../services/api';
 import { wsClient } from '../services/websocket';
+import { rebalanceSchedule } from '../services/rebalancer';
+import { playTone } from '../services/audio';
 
 const STORAGE_KEY_SNAPSHOT = 'locus_latest_snapshot';
 const STORAGE_KEY_MUTED = 'locus_audio_muted';
@@ -44,6 +46,7 @@ export interface AgentContextType {
   reorderScheduleBlocks: (sourceIndex: number, destIndex: number) => void;
   addScheduleBlock: (newBlock: Omit<ScheduleBlock, 'id'>) => void;
   resetSchedule: () => void;
+  rebalanceCurrentSchedule: () => void;
   clearLogs: () => void;
   setIsTerminalOpen: (open: boolean) => void;
   setSelectedNode: (node: TopologyNode | null) => void;
@@ -402,9 +405,29 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         ...prev,
         day_plan_timeline: originalSnapshot.day_plan_timeline,
       }));
+      playTone('step');
       addLog('info', 'Schedule', 'Restored schedule back to raw Gemini AI synthesis');
     }
   }, [addLog, originalSnapshot]);
+
+  // AI Smart Rebalance Schedule
+  const rebalanceCurrentSchedule = useCallback(() => {
+    setActiveAgentResponse((prev) => {
+      const currentBlocks = normalizeTimeline(prev.day_plan_timeline);
+      const result = rebalanceSchedule(currentBlocks);
+      playTone('rebalance');
+      addLog(
+        'success',
+        'AI Rebalancer',
+        `${result.summary} (Score: ${result.focusScore}/100)`
+      );
+      return {
+        ...prev,
+        day_plan_timeline: result.rebalancedBlocks,
+        estimated_productive_hours: result.deepWorkHours + result.meetingHours,
+      };
+    });
+  }, [addLog]);
 
   // Clear logs
   const clearLogs = useCallback(() => {
@@ -434,6 +457,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     reorderScheduleBlocks,
     addScheduleBlock,
     resetSchedule,
+    rebalanceCurrentSchedule,
     clearLogs,
     setIsTerminalOpen,
     setSelectedNode,

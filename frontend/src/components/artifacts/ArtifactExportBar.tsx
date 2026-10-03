@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { useAgent } from '../../context/AgentContext';
-import { downloadICS, downloadMarkdown, downloadJSON, generateMarkdown } from '../../services/export';
+import {
+  downloadICS,
+  downloadMarkdown,
+  downloadJSON,
+  generateMarkdown,
+  generateGoogleCalendarUrl,
+  generateOutlookCalendarUrl,
+  downloadExecutiveHtmlReport,
+  triggerPrintReport,
+} from '../../services/export';
 import { playTone } from '../../services/audio';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
@@ -15,6 +24,8 @@ import {
   Sparkles,
   Share2,
   Copy,
+  Printer,
+  Globe,
 } from 'lucide-react';
 
 export const ArtifactExportBar: React.FC = () => {
@@ -22,7 +33,7 @@ export const ArtifactExportBar: React.FC = () => {
   const [downloadingFormat, setDownloadingFormat] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const handleDownload = (format: 'ics' | 'md' | 'json') => {
+  const handleDownload = (format: 'ics' | 'md' | 'json' | 'html') => {
     setDownloadingFormat(format);
     playTone('step');
 
@@ -33,6 +44,8 @@ export const ArtifactExportBar: React.FC = () => {
         downloadMarkdown(activeAgentResponse, scheduleBlocks);
       } else if (format === 'json') {
         downloadJSON(activeAgentResponse, scheduleBlocks);
+      } else if (format === 'html') {
+        downloadExecutiveHtmlReport(activeAgentResponse, scheduleBlocks);
       }
     } finally {
       setTimeout(() => {
@@ -53,6 +66,29 @@ export const ArtifactExportBar: React.FC = () => {
     }
   };
 
+  const handleOpenGoogleCalendar = () => {
+    playTone('step');
+    const primaryBlock = scheduleBlocks.find((b) => b.category === 'deep_work') || scheduleBlocks[0];
+    if (primaryBlock) {
+      const url = generateGoogleCalendarUrl(primaryBlock, activeAgentResponse.city || 'Office');
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleOpenOutlookCalendar = () => {
+    playTone('step');
+    const primaryBlock = scheduleBlocks.find((b) => b.category === 'deep_work') || scheduleBlocks[0];
+    if (primaryBlock) {
+      const url = generateOutlookCalendarUrl(primaryBlock, activeAgentResponse.city || 'Office');
+      window.open(url, '_blank');
+    }
+  };
+
+  const handlePrint = () => {
+    playTone('step');
+    triggerPrintReport();
+  };
+
   const hasNotionUrl = Boolean(activeAgentResponse.notion_page_url);
   const notionUrl = activeAgentResponse.notion_page_url || 'https://notion.so';
 
@@ -68,20 +104,31 @@ export const ArtifactExportBar: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white font-mono">
-                Instant Artifact Generator
+                Instant Multi-Channel Dispatch Suite
               </h3>
               <Badge variant="cyan" size="sm" className="font-mono text-[10px]">
                 100% Client-Side
               </Badge>
             </div>
             <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5 font-sans">
-              1-Click multi-channel synthesis export: standard RFC 5545 iCalendar, Markdown briefing, and JSON
+              1-Click multi-platform sync: Google Cal, Outlook, RFC 5545 iCal, Executive HTML, and Markdown
             </p>
           </div>
         </div>
 
         {/* Right Buttons: 1-Click Export Actions & Notion Deep Link */}
         <div className="flex flex-wrap items-center gap-2 font-mono">
+          {/* Google Calendar Direct Sync */}
+          <button
+            type="button"
+            onClick={handleOpenGoogleCalendar}
+            title="Sync primary deep work focus block directly to Google Calendar"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-hairline bg-surface-elevated hover:bg-surface-active hover:border-cyan-500/40 text-slate-700 dark:text-gray-300 text-xs font-medium transition-all cursor-pointer shadow-xs"
+          >
+            <Globe className="w-3.5 h-3.5 text-cyan-500" />
+            <span>Google Cal</span>
+          </button>
+
           {/* iCalendar (.ics) */}
           <Button
             variant="secondary"
@@ -97,6 +144,24 @@ export const ArtifactExportBar: React.FC = () => {
               </span>
             ) : (
               'Export .ics'
+            )}
+          </Button>
+
+          {/* Standalone Executive HTML Report */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleDownload('html')}
+            icon={<Globe className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />}
+            title="Download self-contained Executive HTML Briefing"
+            className="text-xs hover:border-cyan-500/40 shadow-xs"
+          >
+            {downloadingFormat === 'html' ? (
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <Check className="w-3 h-3" /> Saved
+              </span>
+            ) : (
+              'HTML Briefing'
             )}
           </Button>
 
@@ -134,6 +199,18 @@ export const ArtifactExportBar: React.FC = () => {
             ) : (
               'Export .json'
             )}
+          </Button>
+
+          {/* Print / PDF Briefing */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handlePrint}
+            icon={<Printer className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400" />}
+            title="Print or Save as PDF"
+            className="text-xs"
+          >
+            PDF / Print
           </Button>
 
           {/* Copy Briefing to Clipboard */}

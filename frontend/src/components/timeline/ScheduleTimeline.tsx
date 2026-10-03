@@ -14,6 +14,7 @@ import {
   Sparkles,
   CheckCircle2,
   Filter,
+  Zap,
 } from 'lucide-react';
 
 export const ScheduleTimeline: React.FC = () => {
@@ -27,6 +28,7 @@ export const ScheduleTimeline: React.FC = () => {
     reorderScheduleBlocks,
     addScheduleBlock,
     resetSchedule,
+    rebalanceCurrentSchedule,
   } = useAgent();
 
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<ScheduleCategory | 'all'>('all');
@@ -130,6 +132,16 @@ export const ScheduleTimeline: React.FC = () => {
             className="text-xs font-mono"
           >
             Reset Plan
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Zap className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />}
+            onClick={rebalanceCurrentSchedule}
+            title="AI Smart Rebalance: Optimize task distribution around peak cognitive energy hours"
+            className="text-xs font-mono hover:border-amber-500/40 text-amber-600 dark:text-amber-300"
+          >
+            AI Rebalance
           </Button>
           <Button
             variant="primary"

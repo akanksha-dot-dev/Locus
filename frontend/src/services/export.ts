@@ -368,3 +368,208 @@ export function downloadJSON(response: AgentResponse, scheduleBlocks: ScheduleBl
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   downloadBlob(content, `locus_${city}_${dateStr}.json`, 'application/json;charset=utf-8');
 }
+
+/**
+ * Generates direct Google Calendar Web link for a schedule block
+ */
+export function generateGoogleCalendarUrl(block: ScheduleBlock, city: string = 'Office'): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const dateStr = `${year}${month}${day}`;
+
+  const timeMatches = Array.from(block.time.matchAll(/(\d{1,2}):(\d{2})/g));
+  let startHour = 9;
+  let startMin = 0;
+  let endHour = 10;
+  let endMin = 0;
+
+  if (timeMatches.length >= 2) {
+    startHour = parseInt(timeMatches[0][1], 10);
+    startMin = parseInt(timeMatches[0][2], 10);
+    endHour = parseInt(timeMatches[1][1], 10);
+    endMin = parseInt(timeMatches[1][2], 10);
+  }
+
+  const dtStart = `${dateStr}T${String(startHour).padStart(2, '0')}${String(startMin).padStart(2, '0')}00Z`;
+  const dtEnd = `${dateStr}T${String(endHour).padStart(2, '0')}${String(endMin).padStart(2, '0')}00Z`;
+
+  const title = encodeURIComponent(`[LOCUS] ${block.activity}`);
+  const details = encodeURIComponent(
+    `Category: ${block.category.toUpperCase()}\nLocation: ${block.location || city}\nNotes: ${block.context || 'Planned via Locus AI'}`
+  );
+  const location = encodeURIComponent(block.location || city);
+
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dtStart}/${dtEnd}&details=${details}&location=${location}`;
+}
+
+/**
+ * Generates direct Outlook / Office 365 Calendar Web link
+ */
+export function generateOutlookCalendarUrl(block: ScheduleBlock, city: string = 'Office'): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  const timeMatches = Array.from(block.time.matchAll(/(\d{1,2}):(\d{2})/g));
+  let startHour = 9;
+  let startMin = 0;
+  let endHour = 10;
+  let endMin = 0;
+
+  if (timeMatches.length >= 2) {
+    startHour = parseInt(timeMatches[0][1], 10);
+    startMin = parseInt(timeMatches[0][2], 10);
+    endHour = parseInt(timeMatches[1][1], 10);
+    endMin = parseInt(timeMatches[1][2], 10);
+  }
+
+  const dtStart = `${year}-${month}-${day}T${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:00`;
+  const dtEnd = `${year}-${month}-${day}T${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}:00`;
+
+  const subject = encodeURIComponent(`[LOCUS] ${block.activity}`);
+  const body = encodeURIComponent(
+    `Category: ${block.category.toUpperCase()}\nNotes: ${block.context || 'Planned via Locus AI'}`
+  );
+  const location = encodeURIComponent(block.location || city);
+
+  return `https://outlook.live.com/calendar/0/deeplink/compose?subject=${subject}&body=${body}&startdt=${dtStart}&enddt=${dtEnd}&location=${location}`;
+}
+
+/**
+ * Generates standalone, pixel-perfect executive HTML briefing document
+ */
+export function generateExecutiveHtmlReport(response: AgentResponse, scheduleBlocks: ScheduleBlock[]): string {
+  const verdict = (response.go_to_office || 'wfh').toUpperCase();
+  const city = response.city || 'Command Center';
+  const temp = response.temperature_c ?? 25;
+  const weatherCond = response.weather_condition || 'Clear';
+  const weatherScore = response.weather_score ?? 85;
+  const jiraHours = response.jira_estimated_hours || 0;
+  const githubHours = response.github_estimated_hours || 0;
+  const totalHours = (jiraHours + githubHours).toFixed(1);
+  const now = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Locus Executive Day Plan — ${city}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 32px; background: #090a0f; color: #f1f5f9; line-height: 1.5; }
+    .container { max-width: 860px; margin: 0 auto; background: #0f121a; border: 1px solid #1e293b; border-radius: 16px; padding: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 20px; margin-bottom: 24px; }
+    .logo { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: #06b6d4; font-family: monospace; }
+    .verdict-banner { padding: 18px 24px; border-radius: 12px; margin-bottom: 24px; background: ${verdict === 'OFFICE' ? 'rgba(6, 182, 212, 0.15)' : 'rgba(99, 102, 241, 0.15)'}; border: 1px solid ${verdict === 'OFFICE' ? '#06b6d4' : '#6366f1'}; }
+    .verdict-title { font-size: 18px; font-weight: 700; color: ${verdict === 'OFFICE' ? '#22d3ee' : '#a5b4fc'}; margin: 0 0 6px 0; font-family: monospace; }
+    .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: #161b26; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-family: monospace; }
+    .stat-value { font-size: 20px; font-weight: 700; color: #fff; margin-top: 4px; }
+    .table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .table th { text-align: left; padding: 10px; font-size: 11px; text-transform: uppercase; color: #94a3b8; border-bottom: 1px solid #1e293b; font-family: monospace; }
+    .table td { padding: 12px 10px; border-bottom: 1px solid #1e293b; font-size: 13px; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-family: monospace; font-weight: 600; text-transform: uppercase; }
+    .tag-deep_work { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); }
+    .tag-meeting { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .tag-commute { background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .tag-break { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #1e293b; text-align: center; font-size: 11px; color: #64748b; font-family: monospace; }
+    @media print { body { background: #fff; color: #000; padding: 0; } .container { box-shadow: none; border: none; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <div class="logo">⚡ LOCUS COMMAND CENTER</div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Track 5: AI Real World Agent | Autonomous Executive Briefing</div>
+      </div>
+      <div style="text-align: right; font-size: 12px; color: #94a3b8; font-family: monospace;">
+        <div>${city.toUpperCase()}</div>
+        <div>${now}</div>
+      </div>
+    </div>
+
+    <div class="verdict-banner">
+      <div class="verdict-title">OBJECTIVE VERDICT: ${verdict === 'OFFICE' ? 'REPORT TO OFFICE' : 'WORK FROM HOME DIRECTIVE'}</div>
+      <div style="font-size: 13px; color: #cbd5e1;">${response.office_reason || response.ai_summary}</div>
+    </div>
+
+    <div class="grid-stats">
+      <div class="stat-card">
+        <div class="stat-label">Atmosphere & Temp</div>
+        <div class="stat-value">${temp}°C <span style="font-size: 13px; font-weight: normal; color: #94a3b8;">(${weatherCond})</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Weather Score</div>
+        <div class="stat-value">${weatherScore}/100</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Engineering Workload</div>
+        <div class="stat-value">${totalHours}h <span style="font-size: 13px; font-weight: normal; color: #94a3b8;">(Jira + PRs)</span></div>
+      </div>
+    </div>
+
+    <h3 style="font-size: 14px; text-transform: uppercase; font-family: monospace; letter-spacing: 1px; color: #e2e8f0; margin-bottom: 0;">
+      24-Hour Hour-by-Hour Operational Timeline
+    </h3>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Time Window</th>
+          <th>Operational Focus / Activity</th>
+          <th>Category</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${scheduleBlocks
+          .map(
+            (b) => `
+          <tr>
+            <td style="font-family: monospace; font-weight: 600; color: #38bdf8;">${b.time}</td>
+            <td><strong>${b.activity}</strong>${b.context ? `<br/><span style="font-size: 11px; color: #94a3b8;">${b.context}</span>` : ''}</td>
+            <td><span class="tag tag-${b.category}">${b.category.replace('_', ' ')}</span></td>
+            <td style="color: #94a3b8; font-size: 12px;">${b.location || city}</td>
+          </tr>
+        `
+          )
+          .join('')}
+      </tbody>
+    </table>
+
+    <div style="margin-top: 24px; padding: 16px; background: #161b26; border-radius: 10px; border: 1px solid #1e293b;">
+      <div class="stat-label" style="margin-bottom: 8px;">Recommended Outfit & Commute Protocol</div>
+      <div style="font-size: 13px; color: #cbd5e1;">${response.outfit_suggestion || 'Standard engineering attire.'}</div>
+    </div>
+
+    <div class="footer">
+      Generated autonomously by Locus 8-Node LangGraph Pipeline. Integrations: OpenWeather, Gmail, Jira, GitHub, Notion, Slack, Resend.
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+/**
+ * 1-Click Executive HTML Report Download
+ */
+export function downloadExecutiveHtmlReport(response: AgentResponse, scheduleBlocks: ScheduleBlock[]): void {
+  const content = generateExecutiveHtmlReport(response, scheduleBlocks);
+  const city = (response.city || 'executive').toLowerCase().replace(/\s+/g, '_');
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  downloadBlob(content, `locus_executive_briefing_${city}_${dateStr}.html`, 'text/html;charset=utf-8');
+}
+
+/**
+ * Trigger native browser print dialog for executive PDF creation
+ */
+export function triggerPrintReport(): void {
+  if (typeof window !== 'undefined') {
+    window.print();
+  }
+}
