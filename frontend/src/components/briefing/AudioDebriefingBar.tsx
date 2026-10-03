@@ -220,7 +220,7 @@ export const AudioDebriefingBar: React.FC = () => {
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping" />
               </span>
               <Badge
-                variant={speechState.isSpeaking ? (speechState.isPaused ? 'amber' : 'cyan') : 'slate'}
+                variant={speechState.isSpeaking ? (speechState.isPaused ? 'amber' : 'cyan') : 'outline'}
                 size="sm"
                 dot
                 pulse={speechState.isSpeaking && !speechState.isPaused}

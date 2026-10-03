@@ -38,7 +38,7 @@ interface ChaosPreset {
   category: 'weather' | 'workload' | 'fault';
   icon: React.ReactNode;
   badge: string;
-  badgeVariant: 'crimson' | 'amber' | 'cyan' | 'purple';
+  badgeVariant: 'crimson' | 'amber' | 'cyan' | 'indigo';
   description: string;
   city: string;
   prompt: string;
@@ -80,7 +80,7 @@ const CHAOS_PRESETS: ChaosPreset[] = [
     category: 'weather',
     icon: <CloudSnow className="w-5 h-5 text-indigo-400" />,
     badge: 'Sub-Zero',
-    badgeVariant: 'purple',
+    badgeVariant: 'indigo',
     description: 'Sub-zero (-8°C) freeze, heavy snow accumulation, transit suspended. Requires heavy thermal protocol.',
     city: 'London',
     prompt: 'Severe Polar Vortex in London with -8°C blizzard. I have 4 Jira tickets and 2 PRs. Decide office feasibility and formulate indoor schedule.',
@@ -140,7 +140,7 @@ const CHAOS_PRESETS: ChaosPreset[] = [
     category: 'fault',
     icon: <ShieldAlert className="w-5 h-5 text-indigo-500" />,
     badge: 'Self-Healing',
-    badgeVariant: 'purple',
+    badgeVariant: 'indigo',
     description: 'Simulates third-party Notion 500 error & Slack rate limit to verify deterministic LangGraph fallback.',
     city: 'Gurugram',
     prompt: 'Run full morning planning while simulating Notion and Slack webhook downstream latency. Verify graceful circuit-breaker degradation.',

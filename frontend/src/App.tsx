@@ -16,6 +16,8 @@ import { WorkloadMatrix } from './components/workload/WorkloadMatrix';
 import { ArtifactExportBar } from './components/artifacts/ArtifactExportBar';
 import { IntegrationGrid } from './components/artifacts/IntegrationGrid';
 import { TelemetryDrawer } from './components/telemetry/TelemetryDrawer';
+import { AudioDebriefingBar } from './components/briefing/AudioDebriefingBar';
+import { ChaosStudioModal } from './components/simulator/ChaosStudioModal';
 import {
   Trophy,
   Volume2,
@@ -23,6 +25,7 @@ import {
   RotateCcw,
   AlertTriangle,
   Layers,
+  Zap,
   CalendarDays,
   Briefcase,
   TrendingUp,
@@ -81,6 +84,7 @@ function CommandCenterDashboard() {
   // Navigation & Modal State
   const [activeTab, setActiveTab] = useState<NavigationTab>('overview');
   const [showTrack5Modal, setShowTrack5Modal] = useState<boolean>(false);
+  const [showChaosModal, setShowChaosModal] = useState<boolean>(false);
   const [showTempCurve, setShowTempCurve] = useState<boolean>(true);
 
   // Collapsible Section State (users can minimize/maximize individual cards in 'all' view)
@@ -139,6 +143,17 @@ function CommandCenterDashboard() {
                 >
                   <Trophy className="w-3 h-3 text-amber-500 dark:text-amber-400" />
                   <span>Track 5 Showcase</span>
+                </button>
+
+                {/* Live Chaos Simulator Launcher */}
+                <button
+                  type="button"
+                  onClick={() => setShowChaosModal(true)}
+                  className="inline-flex items-center gap-1 text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-gradient-to-r from-rose-500/10 to-amber-500/10 hover:from-rose-500/20 hover:to-amber-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 font-semibold cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-xs"
+                  title="Open Live Chaos & Fault Simulation Studio"
+                >
+                  <Zap className="w-3 h-3 text-rose-500 dark:text-rose-400" />
+                  <span>Chaos Studio</span>
                 </button>
               </div>
               <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-gray-400 hidden md:block">
@@ -322,6 +337,9 @@ function CommandCenterDashboard() {
               aria-label="Hero Command Center and Autonomous Decision Engine"
               className="space-y-6"
             >
+              {/* AI Voice & Audio Briefing HUD */}
+              <AudioDebriefingBar />
+
               {/* 1. Full-Width Spotlight Command Center */}
               <PromptBar
                 onSubmit={(query, city) => runCustomQuery(query, city)}
@@ -701,6 +719,9 @@ function CommandCenterDashboard() {
 
               {!collapsedSections.hero && (
                 <div className="space-y-6">
+                  {/* AI Voice & Audio Briefing HUD */}
+                  <AudioDebriefingBar />
+
                   {/* 1. Full-Width Spotlight Command Center */}
                   <PromptBar
                     onSubmit={(query, city) => runCustomQuery(query, city)}
@@ -906,6 +927,12 @@ function CommandCenterDashboard() {
       <Track5Modal
         isOpen={showTrack5Modal}
         onClose={() => setShowTrack5Modal(false)}
+      />
+
+      {/* ── 5. Live Chaos & Fault Simulation Studio Modal ─────────── */}
+      <ChaosStudioModal
+        isOpen={showChaosModal}
+        onClose={() => setShowChaosModal(false)}
       />
 
       {/* ── 5. Operational Footer ─────────────────────────────────── */}
