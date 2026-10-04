@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DecisionType, RiskLevel } from '../../types';
 import { DECISION_CONFIG, RISK_CONFIG } from '../../constants/theme';
 import { ScoreGauge } from './ScoreGauge';
@@ -14,6 +15,10 @@ import {
   MapPin,
   Flame,
   Briefcase,
+  Copy,
+  Check,
+  Wind,
+  Droplets,
 } from 'lucide-react';
 
 export interface DecisionCardProps {
@@ -55,6 +60,18 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
 }) => {
   const decisionCfg = DECISION_CONFIG[decision] || DECISION_CONFIG.undecided;
   const riskCfg = RISK_CONFIG[riskLevel] || RISK_CONFIG.low;
+  const [stampCopied, setStampCopied] = useState(false);
+  const [stampAnimKey, setStampAnimKey] = useState(0);
+  // Track previous decision to trigger re-animation
+  const prevDecision = useRef<DecisionType | null>(null);
+  const [verdictKey, setVerdictKey] = useState(0);
+
+  useEffect(() => {
+    if (prevDecision.current !== null && prevDecision.current !== decision) {
+      setVerdictKey((k) => k + 1);
+    }
+    prevDecision.current = decision;
+  }, [decision]);
 
   const renderVerdictIcon = () => {
     switch (decision) {
@@ -66,6 +83,24 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
         return <Home className="w-7 h-7 sm:w-8 sm:h-8" />;
       default:
         return <Compass className="w-7 h-7 sm:w-8 sm:h-8 animate-spin" />;
+    }
+  };
+
+  const handleStampDecision = async () => {
+    const summary = `🤖 Locus AI Verdict — ${city}\n` +
+      `📍 Decision: ${decisionCfg.label}\n` +
+      `🌡️ Temp: ${temperature}°C (Feels ${feelsLike}°C)\n` +
+      `🌤️ Condition: ${weatherCondition} | Score: ${weatherScore}/100\n` +
+      `⏱️ Focus Hours: ${productiveHours.toFixed(1)}h | Workload: ${workloadHours.toFixed(1)}h\n` +
+      `💡 ${officeReason}`;
+
+    try {
+      await navigator.clipboard.writeText(summary);
+      setStampCopied(true);
+      setStampAnimKey((k) => k + 1);
+      setTimeout(() => setStampCopied(false), 2500);
+    } catch {
+      // Clipboard not available
     }
   };
 
@@ -111,17 +146,24 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
           </div>
         </div>
 
-        {/* Illuminated Verdict Display */}
+        {/* Illuminated Verdict Display — re-animates on decision change */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-1">
           <div className="space-y-2">
-            <div
-              className={`inline-flex items-center gap-3.5 px-5 py-3.5 rounded-2xl border text-xl sm:text-3xl font-extrabold tracking-tight shadow-md backdrop-blur-md ${decisionCfg.badgeBg} ${decisionCfg.border} ${decisionCfg.textColor}`}
-            >
-              <div className="p-2 rounded-xl bg-slate-100/80 dark:bg-black/30 border border-slate-200 dark:border-white/10 flex-shrink-0">
-                {renderVerdictIcon()}
-              </div>
-              <span className="drop-shadow-xs">{decisionCfg.label}</span>
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`verdict-${verdictKey}-${decision}`}
+                initial={{ opacity: 0, scale: 0.82, y: 12, filter: 'blur(6px)' }}
+                animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.9, y: -8, filter: 'blur(4px)' }}
+                transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                className={`inline-flex items-center gap-3.5 px-5 py-3.5 rounded-2xl border text-xl sm:text-3xl font-extrabold tracking-tight shadow-md backdrop-blur-md ${decisionCfg.badgeBg} ${decisionCfg.border} ${decisionCfg.textColor}`}
+              >
+                <div className="p-2 rounded-xl bg-slate-100/80 dark:bg-black/30 border border-slate-200 dark:border-white/10 flex-shrink-0">
+                  {renderVerdictIcon()}
+                </div>
+                <span className="drop-shadow-xs">{decisionCfg.label}</span>
+              </motion.div>
+            </AnimatePresence>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 max-w-xl font-normal leading-relaxed">
               {decisionCfg.sublabel}
             </p>
@@ -152,7 +194,7 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
         {/* Key Metrics HUD Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
           {/* Temperature & Feels Like */}
-          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col justify-between shadow-xs">
+          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col justify-between shadow-xs hover:bg-surface-elevated transition-colors">
             <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-gray-400">Current Temp</span>
             <div className="my-1">
               <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white tabular-nums tracking-tight">
@@ -165,7 +207,7 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
           </div>
 
           {/* Weather Score */}
-          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col justify-between shadow-xs">
+          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col justify-between shadow-xs hover:bg-surface-elevated transition-colors">
             <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-gray-400">Weather Quality</span>
             <div className="my-1 flex items-baseline gap-1">
               <span className="text-2xl font-extrabold font-mono text-cyan-600 dark:text-cyan-400 tabular-nums tracking-tight">
@@ -179,7 +221,7 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
           </div>
 
           {/* Productive Hours */}
-          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col justify-between shadow-xs">
+          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col justify-between shadow-xs hover:bg-surface-elevated transition-colors">
             <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-gray-400">Focus Hours</span>
             <div className="my-1 flex items-baseline gap-1">
               <span className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">
@@ -193,7 +235,7 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
           </div>
 
           {/* Workload Hours */}
-          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col justify-between shadow-xs">
+          <div className="p-3.5 rounded-xl bg-surface-elevated/70 border border-hairline flex flex-col justify-between shadow-xs hover:bg-surface-elevated transition-colors">
             <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-gray-400">Total Workload</span>
             <div className="my-1 flex items-baseline gap-1">
               <span className="text-2xl font-extrabold font-mono text-amber-600 dark:text-amber-400 tabular-nums tracking-tight">
@@ -205,6 +247,47 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
               <Briefcase className="w-3 h-3" /> Jira + GitHub
             </span>
           </div>
+        </div>
+
+        {/* Extended Weather Details Row */}
+        <div className="flex items-center gap-4 px-1">
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-500 dark:text-gray-400">
+            <Wind className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
+            <span>
+              <span className="text-slate-800 dark:text-gray-200 font-semibold tabular-nums">{windSpeed}</span> km/h wind
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-500 dark:text-gray-400">
+            <Droplets className="w-3.5 h-3.5 text-indigo-400 dark:text-indigo-400" />
+            <span>
+              <span className="text-slate-800 dark:text-gray-200 font-semibold tabular-nums">{humidity}%</span> humidity
+            </span>
+          </div>
+
+          {/* Stamp Decision button — copies summary to clipboard */}
+          <button
+            key={stampAnimKey}
+            type="button"
+            onClick={handleStampDecision}
+            title="Copy AI decision summary to clipboard"
+            className={`ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-semibold border transition-all cursor-pointer select-none ${
+              stampCopied
+                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 stamp-press'
+                : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-300 hover:bg-surface-active hover:border-indigo-500/40 hover:text-indigo-600 dark:hover:text-indigo-400'
+            }`}
+          >
+            {stampCopied ? (
+              <>
+                <Check className="w-3 h-3" />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                <span>Copy Verdict</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Optional 24H Temperature Curve inside Decision Card */}

@@ -84,11 +84,15 @@ export const NodeCard: React.FC<NodeCardProps> = ({
         isSelected
           ? 'bg-surface-active border-indigo-500 ring-2 ring-indigo-500/40 shadow-md'
           : `${statusCfg.border} ${statusCfg.glow} bg-surface-elevated/60 hover:bg-surface-active hover:border-hairline-hover`
-      } ${className}`}
+      } ${node.status === 'running' ? 'node-processing' : ''} ${className}`}
     >
-      {/* Active Pulse Ring Effect for running node */}
+      {/* Scanlines CRT overlay for active running nodes */}
       {node.status === 'running' && (
-        <div className="absolute inset-0 border-2 border-indigo-500/60 rounded-xl animate-pulse pointer-events-none" />
+        <div className="scanlines absolute inset-0 pointer-events-none rounded-xl" />
+      )}
+      {/* Completed checkmark glow */}
+      {node.status === 'completed' && (
+        <div className="absolute inset-0 rounded-xl bg-emerald-500/5 pointer-events-none" />
       )}
 
       {/* Top Header: Step # and Status Indicator */}

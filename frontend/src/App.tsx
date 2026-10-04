@@ -18,6 +18,8 @@ import { IntegrationGrid } from './components/artifacts/IntegrationGrid';
 import { TelemetryDrawer } from './components/telemetry/TelemetryDrawer';
 import { AudioDebriefingBar } from './components/briefing/AudioDebriefingBar';
 import { ChaosStudioModal } from './components/simulator/ChaosStudioModal';
+import { KeyboardShortcutsModal } from './components/common/KeyboardShortcutsModal';
+import { DailyInsightBanner } from './components/hero/DailyInsightBanner';
 import {
   Trophy,
   Volume2,
@@ -85,6 +87,7 @@ function CommandCenterDashboard() {
   const [activeTab, setActiveTab] = useState<NavigationTab>('overview');
   const [showTrack5Modal, setShowTrack5Modal] = useState<boolean>(false);
   const [showChaosModal, setShowChaosModal] = useState<boolean>(false);
+  const [showKeyboardModal, setShowKeyboardModal] = useState<boolean>(false);
   const [showTempCurve, setShowTempCurve] = useState<boolean>(true);
 
   // Collapsible Section State (users can minimize/maximize individual cards in 'all' view)
@@ -102,6 +105,64 @@ function CommandCenterDashboard() {
       [sectionKey]: !prev[sectionKey],
     }));
   };
+
+  // Global keyboard shortcut handler
+  useEffect(() => {
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      // Skip if focus is in an input/textarea
+      const target = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      switch (e.key) {
+        case '?':
+          e.preventDefault();
+          setShowKeyboardModal((v) => !v);
+          break;
+        case '1':
+          e.preventDefault();
+          setActiveTab('overview');
+          break;
+        case '2':
+          e.preventDefault();
+          setActiveTab('pipeline');
+          break;
+        case '3':
+          e.preventDefault();
+          setActiveTab('schedule');
+          break;
+        case '4':
+          e.preventDefault();
+          setActiveTab('workload');
+          break;
+        case '5':
+          e.preventDefault();
+          setActiveTab('artifacts');
+          break;
+        case '6':
+          e.preventDefault();
+          setActiveTab('all');
+          break;
+        case 'r':
+        case 'R':
+          e.preventDefault();
+          resetSchedule();
+          break;
+        case 'm':
+        case 'M':
+          e.preventDefault();
+          setIsMuted(!isMuted);
+          break;
+        case 't':
+        case 'T':
+          e.preventDefault();
+          toggleTheme();
+          break;
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, [isMuted, setIsMuted, resetSchedule, toggleTheme]);
 
   const totalWorkloadHours =
     (activeAgentResponse.jira_estimated_hours || 0) +
@@ -126,7 +187,13 @@ function CommandCenterDashboard() {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
           {/* Left: Brand Identity & Track 5 Showcase Trigger */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl overflow-hidden border border-cyan-500/30 flex items-center justify-center glow-cyan shadow-sm bg-surface-card flex-shrink-0">
+            <div
+              className={`w-9 h-9 rounded-xl overflow-hidden border flex items-center justify-center shadow-sm bg-surface-card flex-shrink-0 transition-all duration-300 ${
+                isRunning
+                  ? 'border-cyan-500/60 logo-running-ring glow-cyan'
+                  : 'border-cyan-500/30 glow-cyan'
+              }`}
+            >
               <img src="/locus_logo.png" alt="Locus Logo" className="w-full h-full object-cover" />
             </div>
             <div>
@@ -281,8 +348,29 @@ function CommandCenterDashboard() {
                 </button>
               );
             })}
+
+            {/* Keyboard shortcut hint */}
+            <button
+              type="button"
+              onClick={() => setShowKeyboardModal(true)}
+              title="Show keyboard shortcuts (?)"
+              className="ml-2 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-mono text-slate-400 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-surface-elevated border border-hairline transition-all cursor-pointer select-none"
+            >
+              <span>?</span>
+              <span className="hidden sm:inline">Shortcuts</span>
+            </button>
           </nav>
         </div>
+
+        {/* ── Task Completion Progress Ribbon ─────────────────────── */}
+        {totalBlocksCount > 0 && (
+          <div className="relative h-0.5 bg-surface-elevated overflow-hidden">
+            <div
+              className="absolute left-0 top-0 h-full progress-ribbon-fill bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+        )}
       </header>
 
       {/* ── 2. Main Incident Command Center Surface ───────────────── */}
@@ -328,6 +416,9 @@ function CommandCenterDashboard() {
                 </Badge>
               </div>
             </div>
+
+            {/* Daily Insight Summary Banner */}
+            <DailyInsightBanner />
 
             {/* Hero Section */}
             <motion.section
@@ -935,6 +1026,12 @@ function CommandCenterDashboard() {
         onClose={() => setShowChaosModal(false)}
       />
 
+      {/* ── 6. Keyboard Shortcuts Reference Modal ──────────────────── */}
+      <KeyboardShortcutsModal
+        isOpen={showKeyboardModal}
+        onClose={() => setShowKeyboardModal(false)}
+      />
+
       {/* ── 5. Operational Footer ─────────────────────────────────── */}
       <footer className="border-t border-hairline bg-surface-card/60 py-6 px-4 sm:px-6 mt-12 text-xs text-slate-500 dark:text-gray-400 select-none pb-16 sm:pb-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -951,6 +1048,15 @@ function CommandCenterDashboard() {
             <span>Zero-CLS Hydration</span>
             <span>WebSocket + REST Dual-Transport</span>
             <span>Light & Dark Themed</span>
+            <button
+              type="button"
+              onClick={() => setShowKeyboardModal(true)}
+              className="flex items-center gap-1 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors cursor-pointer"
+              title="Open keyboard shortcuts"
+            >
+              <kbd className="kbd">?</kbd>
+              <span className="ml-1">shortcuts</span>
+            </button>
           </div>
         </div>
       </footer>
