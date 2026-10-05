@@ -6,6 +6,16 @@ import { ScoreGauge } from './ScoreGauge';
 import { WeatherCanvas } from './WeatherCanvas';
 import { TemperatureCurve } from './TemperatureCurve';
 import {
+  audioService,
+  speakBriefing,
+  stopSpeech,
+  pauseSpeech,
+  resumeSpeech,
+  playTone,
+  SpeechState,
+  subscribeSpeech,
+} from '../../services/audio';
+import {
   Building2,
   Home,
   Shuffle,
@@ -19,6 +29,10 @@ import {
   Check,
   Wind,
   Droplets,
+  Volume2,
+  Radio,
+  Play,
+  Pause,
 } from 'lucide-react';
 
 export interface DecisionCardProps {
@@ -264,30 +278,56 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
             </span>
           </div>
 
-          {/* Stamp Decision button — copies summary to clipboard */}
-          <button
-            key={stampAnimKey}
-            type="button"
-            onClick={handleStampDecision}
-            title="Copy AI decision summary to clipboard"
-            className={`ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-semibold border transition-all cursor-pointer select-none ${
-              stampCopied
-                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 stamp-press'
-                : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-300 hover:bg-surface-active hover:border-indigo-500/40 hover:text-indigo-600 dark:hover:text-indigo-400'
-            }`}
-          >
-            {stampCopied ? (
-              <>
-                <Check className="w-3 h-3" />
-                <span>Copied!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3 h-3" />
-                <span>Copy Verdict</span>
-              </>
-            )}
-          </button>
+          {/* Listen to Verdict Audio Button */}
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleListenVerdict}
+              title={speechState.isSpeaking && !speechState.isPaused ? 'Pause spoken verdict' : 'Listen to AI voice briefing for this verdict'}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-semibold border transition-all cursor-pointer select-none ${
+                speechState.isSpeaking && !speechState.isPaused
+                  ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400 animate-pulse glow-cyan shadow-sm'
+                  : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-300 hover:bg-surface-active hover:border-cyan-500/40 hover:text-cyan-600 dark:hover:text-cyan-400'
+              }`}
+            >
+              {speechState.isSpeaking && !speechState.isPaused ? (
+                <>
+                  <Pause className="w-3 h-3 text-cyan-400" />
+                  <span>Pause Briefing</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-3 h-3 text-cyan-500 dark:text-cyan-400" />
+                  <span>Listen to Verdict</span>
+                </>
+              )}
+            </button>
+
+            {/* Stamp Decision button — copies summary to clipboard */}
+            <button
+              key={stampAnimKey}
+              type="button"
+              onClick={handleStampDecision}
+              title="Copy AI decision summary to clipboard"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-semibold border transition-all cursor-pointer select-none ${
+                stampCopied
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 stamp-press'
+                  : 'bg-surface-elevated border-hairline text-slate-600 dark:text-gray-300 hover:bg-surface-active hover:border-indigo-500/40 hover:text-indigo-600 dark:hover:text-indigo-400'
+              }`}
+            >
+              {stampCopied ? (
+                <>
+                  <Check className="w-3 h-3" />
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3 h-3" />
+                  <span>Copy Verdict</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Optional 24H Temperature Curve inside Decision Card */}
