@@ -71,8 +71,13 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
         icon: <RotateCcw className="w-3 h-3 text-slate-400" />,
       },
       {
+        keys: ['B'],
+        description: 'Toggle AI Morning Voice Briefing',
+        icon: <Radio className="w-3 h-3 text-cyan-400" />,
+      },
+      {
         keys: ['M'],
-        description: 'Toggle audio mute',
+        description: 'Toggle audio synthesizer mute',
         icon: <Volume2 className="w-3 h-3 text-cyan-500" />,
       },
       {

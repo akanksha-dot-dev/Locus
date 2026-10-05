@@ -1061,6 +1061,9 @@ function CommandCenterDashboard() {
         onClose={() => setShowKeyboardModal(false)}
       />
 
+      {/* ── 7. Floating Cyber Audio Docked Mini-Player ────────────── */}
+      <FloatingAudioPlayer />
+
       {/* ── 5. Operational Footer ─────────────────────────────────── */}
       <footer className="border-t border-hairline bg-surface-card/60 py-6 px-4 sm:px-6 mt-12 text-xs text-slate-500 dark:text-gray-400 select-none pb-16 sm:pb-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
