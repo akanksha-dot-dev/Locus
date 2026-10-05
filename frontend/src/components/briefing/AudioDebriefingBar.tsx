@@ -40,7 +40,7 @@ import {
   Download,
   Sliders,
   Activity,
-  Waveform,
+  Waves,
   Disc,
   FastForward,
   SkipForward,
@@ -83,7 +83,7 @@ export const AudioDebriefingBar: React.FC = () => {
     const feels = Math.round(activeAgentResponse.feels_like_c ?? temp);
     const weatherCond = activeAgentResponse.weather_condition || 'Clear';
     const weatherScore = activeAgentResponse.weather_score ?? 85;
-    const wind = activeAgentResponse.wind_speed_kmh ?? 12;
+    const wind = (activeAgentResponse as any).wind_speed_kmh ?? activeAgentResponse.wind_speed ?? 12;
     const jiraCount = activeAgentResponse.jira_tickets?.length || 0;
     const jiraHours = (activeAgentResponse.jira_estimated_hours || 0).toFixed(1);
     const githubPrs = activeAgentResponse.github_prs?.length || 0;
