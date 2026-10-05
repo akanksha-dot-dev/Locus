@@ -17,9 +17,18 @@ import { ArtifactExportBar } from './components/artifacts/ArtifactExportBar';
 import { IntegrationGrid } from './components/artifacts/IntegrationGrid';
 import { TelemetryDrawer } from './components/telemetry/TelemetryDrawer';
 import { AudioDebriefingBar } from './components/briefing/AudioDebriefingBar';
+import { FloatingAudioPlayer } from './components/briefing/FloatingAudioPlayer';
 import { ChaosStudioModal } from './components/simulator/ChaosStudioModal';
 import { KeyboardShortcutsModal } from './components/common/KeyboardShortcutsModal';
 import { DailyInsightBanner } from './components/hero/DailyInsightBanner';
+import {
+  audioService,
+  speakBriefing,
+  stopSpeech,
+  pauseSpeech,
+  resumeSpeech,
+  playTone,
+} from './services/audio';
 import {
   Trophy,
   Volume2,
@@ -148,6 +157,26 @@ function CommandCenterDashboard() {
           e.preventDefault();
           resetSchedule();
           break;
+        case 'b':
+        case 'B': {
+          e.preventDefault();
+          const st = audioService.getSpeechState();
+          if (st.isSpeaking) {
+            if (st.isPaused) resumeSpeech();
+            else pauseSpeech();
+          } else {
+            playTone('start');
+            const city = activeAgentResponse.city || 'Command Center';
+            const verdict = (activeAgentResponse.go_to_office || 'wfh').toUpperCase();
+            speakBriefing(
+              `Locus Morning Debrief for ${city}. Objective verdict: ${verdict}. ${activeAgentResponse.office_reason}`,
+              st.persona,
+              st.rate,
+              st.pitch
+            );
+          }
+          break;
+        }
         case 'm':
         case 'M':
           e.preventDefault();
