@@ -79,6 +79,12 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
   // Track previous decision to trigger re-animation
   const prevDecision = useRef<DecisionType | null>(null);
   const [verdictKey, setVerdictKey] = useState(0);
+  const [speechState, setSpeechState] = useState<SpeechState>(() => audioService.getSpeechState());
+
+  useEffect(() => {
+    const unsub = subscribeSpeech((st) => setSpeechState(st));
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     if (prevDecision.current !== null && prevDecision.current !== decision) {
@@ -86,6 +92,22 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
     }
     prevDecision.current = decision;
   }, [decision]);
+
+  const handleListenVerdict = () => {
+    if (speechState.isSpeaking) {
+      if (speechState.isPaused) {
+        playTone('step');
+        resumeSpeech();
+      } else {
+        playTone('step');
+        pauseSpeech();
+      }
+    } else {
+      playTone('start');
+      const textToSpeak = `Autonomous Verdict for ${city}: ${decisionCfg.label}. ${officeReason}. Weather is ${weatherCondition} at ${temperature} degrees Celsius with a viability score of ${weatherScore} out of 100. Target focus capacity is ${productiveHours.toFixed(1)} hours against ${workloadHours.toFixed(1)} hours of workload commitments.`;
+      speakBriefing(textToSpeak, speechState.persona, speechState.rate, speechState.pitch);
+    }
+  };
 
   const renderVerdictIcon = () => {
     switch (decision) {
