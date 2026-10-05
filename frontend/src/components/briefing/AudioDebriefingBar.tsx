@@ -489,7 +489,7 @@ export const AudioDebriefingBar: React.FC = () => {
                 visualizerMode === 'oscilloscope' ? 'text-indigo-500 bg-indigo-500/10' : 'hover:text-slate-200'
               }`}
             >
-              <Waveform className="w-3.5 h-3.5" />
+              <Waves className="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
